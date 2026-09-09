@@ -250,7 +250,7 @@ Review.
    back, which is how the drift went unnoticed. **Remaining:** side-by-side
    screenshot comparison at representative iPhone and iPad sizes, which needs
    a machine that can run the simulator.
-6. **Catalog completion — implemented except recommendations:** prefix search,
+6. **Catalog completion — implemented:** prefix search,
    debouncing, stale-response suppression, continuous pagination,
    de-duplication, pull-to-refresh, page-level retry, readable/language filter
    controls, and featured and saved public collections are all implemented and
@@ -262,7 +262,7 @@ Review.
    `/works/recommended/`, shown above an unfiltered catalog only. The server
    ranks the work, never the reader, so the shelf is the same for everyone and
    reveals nothing about what anyone has read.
-7. **Work and edition completion — implemented except collection links:** the
+7. **Work and edition completion — implemented:** the
    detail page now enriches a thin catalog row with the full work record
    (contributors by role, original title, literary form, genres, topics,
    additional languages, abstract) and degrades to the summary when that
