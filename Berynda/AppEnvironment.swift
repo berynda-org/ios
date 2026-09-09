@@ -36,12 +36,14 @@ final class AppEnvironment: ObservableObject {
         self.session = session
         let localReadingPositions = LocalReadingPositionStore()
         self.localReadingPositions = localReadingPositions
-        self.recentlyViewed = RecentlyViewedStore()
+        let recentlyViewed = RecentlyViewedStore()
+        self.recentlyViewed = recentlyViewed
         let account = AccountViewModel(
             session: session,
             authentication: authentication,
             repository: accountRepository,
-            localPositions: localReadingPositions
+            localPositions: localReadingPositions,
+            recentlyViewed: recentlyViewed
         )
         self.account = account
         self.library = LibraryViewModel(

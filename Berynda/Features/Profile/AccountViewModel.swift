@@ -17,18 +17,26 @@ final class AccountViewModel: ObservableObject {
     private let authentication: any AuthenticationServing
     private let repository: any AccountRepository
     private let localPositions: LocalReadingPositionStore
+    private let recentlyViewed: RecentlyViewedStore
     private var didRestore = false
+
+    /// `UserDefaults` key behind the interface-language picker. Seeded from the
+    /// server profile so a signed-in reader's stored preference is not silently
+    /// replaced by whatever this device happened to have.
+    static let interfaceLanguageKey = "ui.language"
 
     init(
         session: SessionController,
         authentication: any AuthenticationServing,
         repository: any AccountRepository,
-        localPositions: LocalReadingPositionStore
+        localPositions: LocalReadingPositionStore,
+        recentlyViewed: RecentlyViewedStore
     ) {
         self.session = session
         self.authentication = authentication
         self.repository = repository
         self.localPositions = localPositions
+        self.recentlyViewed = recentlyViewed
     }
 
     func restore() async {
@@ -42,7 +50,7 @@ final class AccountViewModel: ObservableObject {
     func signIn(email: String, password: String) async -> Bool {
         await perform {
             let user = try await session.signIn(email: email, password: password)
-            profile = user
+            apply(profile: user)
             state = .authenticated
             registrationEmail = nil
         }
@@ -89,7 +97,7 @@ final class AccountViewModel: ObservableObject {
                 await session.markExpired()
                 state = .expired
                 profile = nil
-                await localPositions.clearAll()
+                await clearLocalHistory()
             }
             passwordResetComplete = true
             passwordResetEmail = nil
@@ -101,7 +109,8 @@ final class AccountViewModel: ObservableObject {
         errorMessage = nil
         defer { isBusy = false }
         do {
-            profile = try await repository.profile()
+            let loaded = try await repository.profile()
+            apply(profile: loaded)
             state = .authenticated
         } catch {
             let current = await session.state()
@@ -116,7 +125,7 @@ final class AccountViewModel: ObservableObject {
             profile = try await repository.updateProfile(update)
             state = .authenticated
             if update.privacySettings?["reading_history_enabled"] == false {
-                await localPositions.clearAll()
+                await clearLocalHistory()
             }
         }
     }
@@ -132,7 +141,21 @@ final class AccountViewModel: ObservableObject {
         }
         profile = nil
         state = .anonymous
+        await clearLocalHistory()
+    }
+
+    /// Everything on this device that records what the reader opened. The two
+    /// stores must always be dropped together: leaving one behind either
+    /// hands one reader's history to the next account or keeps a shelf
+    /// populated after the reader asked for no history at all.
+    private func clearLocalHistory() async {
         await localPositions.clearAll()
+        await recentlyViewed.clear()
+    }
+
+    private func apply(profile loaded: UserProfile) {
+        profile = loaded
+        UserDefaults.standard.set(loaded.uiLanguage, forKey: Self.interfaceLanguageKey)
     }
 
     private func perform(_ operation: () async throws -> Void) async -> Bool {

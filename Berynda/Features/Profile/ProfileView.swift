@@ -4,7 +4,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @AppStorage("appearance.mode") private var appearanceMode = "system"
-    @AppStorage("ui.language") private var interfaceLanguage = "uk"
+    @AppStorage(AccountViewModel.interfaceLanguageKey) private var interfaceLanguage = "uk"
     @State private var showsAuthentication = false
     @State private var showsEditor = false
 
@@ -59,7 +59,10 @@ private struct ProfileContent: View {
                     Text("English").tag("en")
                 }
                 .onChange(of: interfaceLanguage) { _, language in
-                    guard account.state == .authenticated else { return }
+                    // The stored value is seeded from the profile on sign-in, so
+                    // only a change the reader actually made reaches the server.
+                    guard account.state == .authenticated,
+                          account.profile?.uiLanguage != language else { return }
                     Task { _ = await account.updateProfile(ProfileUpdate(uiLanguage: language)) }
                 }
             }

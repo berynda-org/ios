@@ -335,7 +335,8 @@ final class BeryndaTests: XCTestCase {
             session: session,
             authentication: authentication,
             repository: UITestAccountRepository(),
-            localPositions: positionStore
+            localPositions: positionStore,
+            recentlyViewed: RecentlyViewedStore()
         )
         let model = ReaderViewModel(
             fileID: ReaderPersistenceStub.fileID,
