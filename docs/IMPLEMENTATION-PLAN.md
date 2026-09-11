@@ -1,6 +1,6 @@
 # Berynda iOS implementation plan
 
-Status: testable anonymous vertical slice implemented; Apple identifiers are registered; internal TestFlight, personal features, resilience, accessibility, and release work remain
+Status: catalog, work/edition, reader persistence and performance, cross-client publication resume, and the design-system token pass are implemented and CI-verified; authentication/library/profile are implemented with audited gaps (below); offline policy, localization/accessibility, product configuration, and release work remain
 Written: 30 August 2026
 Implementation target: this native SwiftUI repository
 Reference architecture: `D:/lexykon/client/ios`
@@ -50,7 +50,7 @@ The Windows workspace cannot compile Xcode targets. The workflow in
 `.github/workflows/ios.yml` is the authoritative clean macOS build gate and
 runs on pushes to `main` and through manual dispatch.
 
-## 0. Current implementation audit (3 September 2026)
+## 0. Current implementation audit (11 September 2026)
 
 This status is based on the code in this repository, not on the original sequencing
 below. Some document work planned for Phase 5 was deliberately pulled forward
@@ -84,6 +84,29 @@ of its later features exists.
   capability, and App Store Connect application record `6808289031` are
   registered. Signing credentials, automated archive upload, and TestFlight
   distribution are not configured yet.
+
+### Implemented 4–9 September 2026 (all CI-verified unless noted)
+
+- work detail enriched from the full record, contributors by role, explained
+  rights, one `CoverDesign` seeded by the work id with the web's hash;
+- reader persistence complete, including the server's `recorded: false`
+  refusal;
+- bounded page cache, prefetch capped at two, lifecycle release/recovery, the
+  past-last-page wedge fix, and iPad landscape spread mode;
+- rights-aware download/print, persistent appearance, paged text over
+  Unicode-scalar `page_offsets`, publication TOC navigation and type size;
+- cross-client publication resume through the API's new `locator` position
+  type — this also fixed a data-loss bug where closing a publication on iOS
+  overwrote the reader's web position with an invented `page 1`;
+- catalog recently-viewed offline fallback, recommended shelf, and collection
+  membership on work pages, backed by three new API endpoints
+  (`akrivonos/berynda` commit `504af15`);
+- dark palette realigned to the normative mockups (five of seven tokens had
+  drifted), Increase Contrast support, and tokens asserted by tests;
+- **not yet verified by CI:** commit `d4a1b0f` fixing a privacy leak —
+  `RecentlyViewedStore` was never cleared on sign-out or when history was
+  turned off — and the language picker silently overwriting the server
+  preference. It is on `main` and will be gated by the next push.
 
 ### Authoritative remaining plan
 
@@ -149,17 +172,17 @@ are accepted.
    summaries, removed/restricted/empty/retry states, stable covers, and true
    selected-work columns on iPad are delivered. Collection links await a
    backend route returning the collections that contain a work.
-2. **In progress.** Add authentication UI for login, registration confirmation, password reset,
+2. **Complete except one prompt.** Add authentication UI for login, registration confirmation, password reset,
    logout, session expiry, relaunch persistence, and return-to-action behavior.
 3. **Complete.** Reading-position persistence: quiet-interval PUT, background
    and dismiss flush, privacy-disabled handling for both the local policy and a
    server `recorded: false` refusal, local resume, and restart tests.
-4. **In progress.** Replace the Library placeholder with Continue Reading, bibliography lists,
+4. **Implemented with gaps (see slice 12).** Replace the Library placeholder with Continue Reading, bibliography lists,
    quick add, list-item reader bookmarks, and saved public collections with
    duplicate-safe reconciliation.
-5. **In progress.** Replace the Profile placeholder with account editing, language, appearance,
+5. **Implemented with gaps (see slice 13).** Replace the Profile placeholder with account editing, language, appearance,
    reading-history privacy, storage management, logout, and local-resume cleanup.
-6. **In progress.** Complete catalog discovery: readable/filter controls, featured collections,
+6. **Complete.** Complete catalog discovery: readable/filter controls, featured collections,
    recommendations, saved collections, and recently viewed fallback.
 
 #### Milestone C — reader, offline, and inclusive-quality hardening
@@ -331,15 +354,36 @@ Review.
     the web reader across a round trip. Restoring prefers the exact resource and
     falls back to overall progress.
 
-11. **Authentication UI:** login, registration, confirmation handoff, password
-    reset, logout, relaunch persistence, and return to the action that prompted
-    authentication while anonymous reading remains available.
-12. **Library:** Continue Reading with empty/disabled-history distinctions,
-    bibliography lists, quick add and list-item reader bookmarks, saved public
-    collections, reconciliation, and duplicate prevention.
-13. **Profile/settings:** account editing, language, appearance, history
-    privacy, local storage summary/eviction, session/account actions, and local
-    resume removal when policy requires it.
+11. **Authentication UI — implemented; one gap, thin journey coverage:**
+    login, registration, confirmation and password-reset link handoff, logout
+    with device-first clearing, Keychain relaunch persistence, and return to
+    the prompting action are all in code (audited 9 September against
+    `AuthenticationView`, `AuthenticationLinkView`, `AccountViewModel`,
+    `SessionController`). **Gap:** the reader's bookmark button is hidden from
+    anonymous readers instead of prompting sign-in and resuming — the one
+    protected action outside the `AuthenticatedAction` flow. Registration,
+    reset, confirmation, and logout have contract tests but no UI journey.
+12. **Library — implemented with gaps:** Continue Reading distinguishes empty
+    from disabled history; lists load and can be created; quick add and reader
+    bookmarks work and round-trip back to the page. **Gaps:** a saved public
+    collection can never be unsaved (the repository's DELETE path has no call
+    site) and the save buttons never reflect saved state; lists cannot be
+    renamed, deleted, reordered, or have items removed; reconciliation covers
+    the pre-save reload but has no offline queue or retry; duplicate prevention
+    is a client snapshot only, exempts collections, has an interleaving window
+    before `isMutating` is set, and is untested. `LibraryUnavailableView.swift`
+    holds the real `LibraryView` under a stale name.
+13. **Profile/settings — implemented with gaps:** account editing, appearance,
+    the history-privacy toggle, and local-resume removal on sign-out /
+    privacy-off / forced expiry are in code (the recently-viewed store is now
+    cleared alongside positions, commit `d4a1b0f`). **Gaps:** the local
+    storage section is a hardcoded placeholder ("Немає") with nothing measured
+    and nothing clearable; the language picker stores a preference but changes
+    no strings — there is no String Catalog yet (slice 15), and it must not be
+    presented as working until there is; session/account actions stop at
+    sign-out (no change-password entry, no deletion, no sign-out-everywhere);
+    and no unit test targets `AccountViewModel` or `ProfileView` directly
+    beyond the three privacy tests.
 14. **Offline document policy:** background-safe cache, schema/version/locale
     metadata, corruption recovery, rights revalidation and eviction, plus the
     v1.0 versus v1.1 decision for permanent downloads.
@@ -366,6 +410,49 @@ Post-MVP items remain the features in section 13: OCR/full-text scan search,
 text overlays, annotations beyond list items, TTS/autoplay, advanced page-turn
 effects, extensions/widgets/App Clips/Handoff, social login, and any
 user-selectable file representation.
+
+### Next work, in order (11 September 2026)
+
+Three fixes were started on 9 September as isolated task branches and were
+interrupted before commit; each worktree holds real, uncommitted source and a
+new test file. Finish these first — verify what is on disk, do not re-derive:
+
+1. **Local storage summary and eviction** (`task/storage-summary`): a
+   `LocalStorageSummary` service measuring the two JSON stores and leftover
+   reader temp files, a real profile section with a confirmed "clear" action,
+   tests in `LocalStorageSummaryTests`.
+2. **Unsave for saved collections and saved-state buttons**
+   (`task/collection-unsave`): `isCollectionSaved`, `.alreadySaved` without a
+   network call, swipe-to-unsave in the library, a shared
+   `CollectionSaveButton`, tests in `SavedCollectionsTests`.
+3. **Reader bookmark prompts sign-in and resumes**
+   (`task/reader-bookmark-auth`): `AuthenticatedAction.bookmark(fileID:page:)`,
+   the sheet presented over the full-screen reader, tests in
+   `ReaderBookmarkAuthTests`.
+
+Then, in this order:
+
+4. Library list mutations (rename, delete, remove item) and a unit test for
+   `isDuplicate` / `.alreadySaved`, closing slice 12.
+5. Slice 14, offline document policy, per §5.3 — versioned, locale-isolated
+   cache with corruption recovery and rights revalidation; permanent downloads
+   stay deferred to v1.1.
+6. Slice 15, localization and accessibility — the String Catalog is what makes
+   the profile's language picker honest; do it before any further copy is
+   added.
+7. Slice 16 quality gates, then 17 product configuration.
+
+Decisions waiting on the product owner, not on code:
+
+- **Text anchor navigation** (slice 10): needs the text body split into
+  addressable blocks, which costs selection across block boundaries. Accept
+  per-section selection, rely on paged mode instead, or find a third way.
+- **Slice 5 screenshot comparison** at representative iPhone and iPad sizes
+  needs a machine that can run the simulator.
+- **`recompute_pd_status` on production.** The recommended shelf and the PD
+  badge both gate on `pd_status=CONFIRMED`; on the dev database that count is
+  0 of ~72k readable public-domain works, so the shelf is empty until the
+  command runs. Do not loosen the gate.
 
 ## 1. Objective
 
