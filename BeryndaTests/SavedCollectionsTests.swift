@@ -213,6 +213,20 @@ private actor LibraryRepositoryStub: LibraryRepository {
         throw StubError.unsupported
     }
 
+    // This stub serves no lists; list editing is covered by
+    // LibraryListEditingTests.
+    func renameList(id: UUID, title: String) async throws -> BibliographyList {
+        throw StubError.unsupported
+    }
+
+    func deleteList(id: UUID) async throws {
+        throw StubError.unsupported
+    }
+
+    func removeItem(listID: UUID, itemID: UUID) async throws {
+        throw StubError.unsupported
+    }
+
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,

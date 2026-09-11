@@ -16,7 +16,9 @@ private struct LibraryContent: View {
     @ObservedObject var model: LibraryViewModel
     @ObservedObject private var account: AccountViewModel
     @State private var showsNewList = false
-    @State private var unsaveError: String?
+    @State private var renamingList: BibliographyList?
+    @State private var deletingList: BibliographyList?
+    @State private var failure: LibraryFailure?
 
     init(model: LibraryViewModel) {
         self.model = model
@@ -58,6 +60,37 @@ private struct LibraryContent: View {
             }
         }
         .sheet(isPresented: $showsNewList) { NewListView(model: model) }
+        // Presented from here rather than from the list itself, which is
+        // swapped out whenever the library leaves its loaded state.
+        .sheet(item: $renamingList) { list in RenameListView(model: model, list: list) }
+        .confirmationDialog(
+            deletingList.map { "Видалити список «\($0.title)»?" } ?? "Видалити список?",
+            isPresented: Binding(
+                get: { deletingList != nil },
+                set: { if !$0 { deletingList = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: deletingList
+        ) { list in
+            Button("Видалити", role: .destructive) {
+                Task { await delete(list) }
+            }
+            .accessibilityIdentifier("library.list.delete.confirm.\(Self.identifier(list.id))")
+            Button("Скасувати", role: .cancel) {}
+        } message: { _ in
+            Text("Список і всі записи в ньому буде видалено. Цю дію не можна скасувати.")
+        }
+        .alert(
+            failure?.title ?? "",
+            isPresented: Binding(
+                get: { failure != nil },
+                set: { if !$0 { failure = nil } }
+            )
+        ) {
+            Button("Гаразд", role: .cancel) {}
+        } message: {
+            Text(failure?.message ?? "")
+        }
         .task { await model.load() }
         .onChange(of: account.state) { _, _ in Task { await model.load() } }
     }
@@ -120,12 +153,33 @@ private struct LibraryContent: View {
                             } label: {
                                 Text(item.workTitle ?? item.editionTitle ?? "Запис")
                             }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                removeItemButton(item, from: list)
+                            }
+                            .contextMenu {
+                                removeItemButton(item, from: list)
+                            }
                         }
                     } label: {
                         HStack {
                             Text(list.title)
                             Spacer()
                             Text("\(list.workCount)").foregroundStyle(BeryndaColor.mutedInk)
+                            // A visible way in: a long press alone is easy to
+                            // miss.
+                            Menu {
+                                listActions(for: list)
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                                    .foregroundStyle(BeryndaColor.accent)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Дії зі списком «\(list.title)»")
+                            .accessibilityIdentifier("library.list.actions.\(Self.identifier(list.id))")
+                        }
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            listActions(for: list)
                         }
                     }
                 }
@@ -160,25 +214,77 @@ private struct LibraryContent: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .refreshable { await model.load() }
-        .alert("Колекція", isPresented: Binding(
-            get: { unsaveError != nil },
-            set: { if !$0 { unsaveError = nil } }
-        )) {
-            Button("Гаразд", role: .cancel) {}
-        } message: {
-            Text(unsaveError ?? "")
+    }
+
+    @ViewBuilder
+    private func listActions(for list: BibliographyList) -> some View {
+        Button("Перейменувати", systemImage: "pencil") { renamingList = list }
+            .disabled(model.isMutating)
+            .accessibilityIdentifier("library.list.rename.\(Self.identifier(list.id))")
+        Button("Видалити список", systemImage: "trash", role: .destructive) { deletingList = list }
+            .disabled(model.isMutating)
+            .accessibilityIdentifier("library.list.delete.\(Self.identifier(list.id))")
+    }
+
+    private func removeItemButton(_ item: BibliographyItem, from list: BibliographyList) -> some View {
+        Button("Прибрати", systemImage: "minus.circle", role: .destructive) {
+            Task {
+                let result = await model.removeItem(listID: list.id, itemID: item.id)
+                report(result, title: "Бібліографічний список")
+            }
         }
+        .disabled(model.isMutating)
+        .accessibilityIdentifier("library.item.remove.\(Self.identifier(item.id))")
     }
 
     private func unsaveButton(for collection: PublicCollectionSummary) -> some View {
         Button("Прибрати", systemImage: "bookmark.slash", role: .destructive) {
             Task {
                 let result = await model.setCollectionSaved(collection, saved: false)
-                if case let .failed(message) = result { unsaveError = message }
+                if case let .failed(message) = result {
+                    failure = LibraryFailure(title: "Колекція", message: message)
+                }
             }
         }
         .disabled(model.isMutating)
         .accessibilityIdentifier("library.collection.unsave.\(collection.slug)")
+    }
+
+    private func delete(_ list: BibliographyList) async {
+        let result = await model.deleteList(id: list.id)
+        report(result, title: "Бібліографічний список")
+    }
+
+    private func report(_ result: LibraryViewModel.SaveResult, title: String) {
+        guard let message = result.listEditFailure else { return }
+        failure = LibraryFailure(title: title, message: message)
+    }
+
+    /// Ids appear lower-cased, as they do in the API paths.
+    private static func identifier(_ id: UUID) -> String {
+        id.uuidString.lowercased()
+    }
+}
+
+private struct LibraryFailure {
+    let title: String
+    let message: String
+}
+
+private extension LibraryViewModel.SaveResult {
+    /// What to tell the reader when an edit to a list did not go through;
+    /// nil when it did.
+    var listEditFailure: String? {
+        switch self {
+        case .saved, .removed, .alreadySaved:
+            return nil
+        case .inProgress:
+            return "Інша зміна бібліотеки ще виконується. Спробуйте ще раз."
+        case .signInRequired:
+            return "Сеанс завершився. Увійдіть у профілі й повторіть дію."
+        case let .failed(message):
+            return message
+        }
     }
 }
 
@@ -200,9 +306,72 @@ private struct NewListView: View {
                         Button("Створити") {
                             Task { if await model.createList(title: title) { dismiss() } }
                         }
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .disabled(LibraryViewModel.validListTitle(title) == nil)
                     }
                 }
+        }
+    }
+}
+
+private struct RenameListView: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var model: LibraryViewModel
+    private let list: BibliographyList
+    @State private var title: String
+    @State private var error: String?
+
+    init(model: LibraryViewModel, list: BibliographyList) {
+        _model = ObservedObject(wrappedValue: model)
+        self.list = list
+        _title = State(initialValue: list.title)
+    }
+
+    private var cleanTitle: String? { LibraryViewModel.validListTitle(title) }
+
+    private var isTooLong: Bool {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).unicodeScalars.count
+            > LibraryViewModel.maximumListTitleLength
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Назва списку", text: $title)
+                        .accessibilityIdentifier("library.list.rename.field")
+                } footer: {
+                    if let error {
+                        Text(error).foregroundStyle(.red)
+                    } else if isTooLong {
+                        Text("Назва не може бути довшою за \(LibraryViewModel.maximumListTitleLength) символів.")
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Перейменувати список")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Скасувати") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Зберегти") {
+                        Task { await save() }
+                    }
+                    .disabled(cleanTitle == nil || cleanTitle == list.title || model.isMutating)
+                    .accessibilityIdentifier("library.list.rename.save")
+                }
+            }
+            .onChange(of: title) { _, _ in error = nil }
+        }
+    }
+
+    private func save() async {
+        let result = await model.renameList(id: list.id, title: title)
+        if let message = result.listEditFailure {
+            error = message
+        } else {
+            dismiss()
         }
     }
 }

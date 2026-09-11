@@ -24,6 +24,12 @@ final class LibraryViewModel: ObservableObject {
         case failed(String)
     }
 
+    /// `BibliographyList.title` on the server is a `CharField(max_length=255)`
+    /// that may not be blank. Django counts that length in code points, so it
+    /// is checked on unicode scalars here: `String.count` counts grapheme
+    /// clusters and would pass a title of combined emoji the server rejects.
+    static let maximumListTitleLength = 255
+
     @Published private(set) var state: State = .signedOut
     @Published private(set) var isMutating = false
     @Published private(set) var publicCollections: [PublicCollectionSummary] = []
@@ -38,11 +44,28 @@ final class LibraryViewModel: ObservableObject {
     }
 
     func load() async {
+        await load(keepingSnapshot: false)
+    }
+
+    /// Re-fetches after a mutation. The server renumbers a list's items and
+    /// recounts it on every change, so the snapshot is replaced wholesale
+    /// rather than patched by hand — but a loaded screen stays up meanwhile,
+    /// so the list the reader just edited neither blinks to a spinner nor
+    /// collapses.
+    private func reload() async {
+        await load(keepingSnapshot: true)
+    }
+
+    private func load(keepingSnapshot: Bool) async {
         guard account.state == .authenticated else {
             state = .signedOut
             return
         }
-        state = .loading
+        if keepingSnapshot, case .loaded = state {
+            // Left on screen until the fresh snapshot replaces it.
+        } else {
+            state = .loading
+        }
         do {
             async let recent = repository.continueReading(limit: 20)
             async let lists = repository.bibliographyLists()
@@ -100,9 +123,17 @@ final class LibraryViewModel: ObservableObject {
         return saved.contains { $0.slug == collection.slug }
     }
 
+    // Every mutation below claims `isMutating` straight after its guard and
+    // before its first `await`. The guard is only a guard if nothing can
+    // suspend between checking the flag and setting it: the snapshot fetch a
+    // save may need first is such a suspension, and a second mutation started
+    // from another screen during it used to pass the guard as well.
+
     func setCollectionSaved(_ collection: PublicCollectionSummary, saved: Bool) async -> SaveResult {
         guard account.state == .authenticated else { return .signInRequired }
         guard !isMutating else { return .inProgress }
+        isMutating = true
+        defer { isMutating = false }
         if saved {
             if case .loaded = state {
                 // The current snapshot can be used for duplicate detection.
@@ -116,11 +147,9 @@ final class LibraryViewModel: ObservableObject {
             // Re-saving would re-POST and report success over a no-op.
             if isCollectionSaved(collection) { return .alreadySaved }
         }
-        isMutating = true
-        defer { isMutating = false }
         do {
             try await repository.setCollectionSaved(slug: collection.slug, saved: saved)
-            await load()
+            await reload()
             return saved ? .saved : .removed
         } catch {
             return .failed(error.localizedDescription)
@@ -134,6 +163,8 @@ final class LibraryViewModel: ObservableObject {
     ) async -> SaveResult {
         guard account.state == .authenticated else { return .signInRequired }
         guard !isMutating else { return .inProgress }
+        isMutating = true
+        defer { isMutating = false }
         if case .loaded = state {
             // The current snapshot can be used for duplicate detection.
         } else {
@@ -146,8 +177,6 @@ final class LibraryViewModel: ObservableObject {
         if isDuplicate(workID: workID, fileID: fileID, page: page) {
             return .alreadySaved
         }
-        isMutating = true
-        defer { isMutating = false }
         do {
             _ = try await repository.quickAdd(
                 workID: workID,
@@ -156,7 +185,7 @@ final class LibraryViewModel: ObservableObject {
                 positionValue: page.map(String.init),
                 pageNumber: page
             )
-            await load()
+            await reload()
             return .saved
         } catch {
             return .failed(error.localizedDescription)
@@ -166,17 +195,73 @@ final class LibraryViewModel: ObservableObject {
     func createList(title: String) async -> Bool {
         guard account.state == .authenticated else { return false }
         guard !isMutating else { return false }
-        let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !clean.isEmpty else { return false }
+        guard let clean = Self.validListTitle(title) else { return false }
         isMutating = true
         defer { isMutating = false }
         do {
             _ = try await repository.createList(title: clean)
-            await load()
+            await reload()
             return true
         } catch {
             state = .failed(error.localizedDescription)
             return false
+        }
+    }
+
+    /// The title as the server will store it — trimmed, not blank and at most
+    /// `maximumListTitleLength` code points — or nil if it would be refused.
+    static func validListTitle(_ title: String) -> String? {
+        let clean = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty, clean.unicodeScalars.count <= maximumListTitleLength else {
+            return nil
+        }
+        return clean
+    }
+
+    func renameList(id: UUID, title: String) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        guard let clean = Self.validListTitle(title) else {
+            return .failed(
+                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+            )
+        }
+        isMutating = true
+        defer { isMutating = false }
+        do {
+            _ = try await repository.renameList(id: id, title: clean)
+            await reload()
+            return .saved
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
+
+    func deleteList(id: UUID) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        isMutating = true
+        defer { isMutating = false }
+        do {
+            try await repository.deleteList(id: id)
+            await reload()
+            return .removed
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
+
+    func removeItem(listID: UUID, itemID: UUID) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        isMutating = true
+        defer { isMutating = false }
+        do {
+            try await repository.removeItem(listID: listID, itemID: itemID)
+            await reload()
+            return .removed
+        } catch {
+            return .failed(error.localizedDescription)
         }
     }
 

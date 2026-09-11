@@ -110,6 +110,21 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         throw UITestFixtureError.unsupported
     }
 
+    // The fixture serves no lists, so there is nothing to rename, delete or
+    // take an item out of — exactly what the server answers (404) for a list
+    // the reader does not have.
+    func renameList(id: UUID, title: String) async throws -> BibliographyList {
+        throw UITestFixtureError.missingFixture
+    }
+
+    func deleteList(id: UUID) async throws {
+        throw UITestFixtureError.missingFixture
+    }
+
+    func removeItem(listID: UUID, itemID: UUID) async throws {
+        throw UITestFixtureError.missingFixture
+    }
+
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,

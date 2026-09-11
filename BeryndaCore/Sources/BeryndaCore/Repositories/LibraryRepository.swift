@@ -4,6 +4,15 @@ public protocol LibraryRepository: Sendable {
     func continueReading(limit: Int) async throws -> ContinueReadingResponse
     func bibliographyLists() async throws -> [BibliographyList]
     func createList(title: String) async throws -> BibliographyList
+    /// `PATCH lists/<id>/` with only the title; the response is the whole
+    /// updated list.
+    func renameList(id: UUID, title: String) async throws -> BibliographyList
+    /// `DELETE lists/<id>/` — a hard delete, answered 204 with no body.
+    func deleteList(id: UUID) async throws
+    /// `DELETE lists/<list>/items/<item>/`, answered 204 with no body. The
+    /// server renumbers the remaining items and recounts the list, so callers
+    /// reload rather than patch their copy.
+    func removeItem(listID: UUID, itemID: UUID) async throws
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,
@@ -36,6 +45,27 @@ public struct LiveLibraryRepository: LibraryRepository {
             .bibliographyLists,
             method: .post,
             body: CreateListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines))
+        )
+    }
+
+    public func renameList(id: UUID, title: String) async throws -> BibliographyList {
+        try await client.request(
+            .bibliographyList(id: id),
+            method: .patch,
+            // Only the title: the endpoint is a partial update, and resending
+            // the other fields would overwrite changes made elsewhere.
+            body: RenameListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines))
+        )
+    }
+
+    public func deleteList(id: UUID) async throws {
+        _ = try await client.send(.bibliographyList(id: id), method: .delete)
+    }
+
+    public func removeItem(listID: UUID, itemID: UUID) async throws {
+        _ = try await client.send(
+            .bibliographyListItem(listID: listID, itemID: itemID),
+            method: .delete
         )
     }
 
@@ -73,6 +103,10 @@ public struct LiveLibraryRepository: LibraryRepository {
 }
 
 private struct CreateListBody: Encodable, Sendable {
+    let title: String
+}
+
+private struct RenameListBody: Encodable, Sendable {
     let title: String
 }
 
