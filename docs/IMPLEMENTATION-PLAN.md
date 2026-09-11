@@ -374,13 +374,19 @@ Review.
     bookmarks work and round-trip back to the page. Saved collections can be
     unsaved, a repeat save is answered `.alreadySaved` without a network call,
     and saved state is keyed by slug and cleared on sign-out (`1780330`).
-    **Gaps:** lists cannot be renamed, deleted, reordered, or have items
-    removed; reconciliation covers the pre-save reload but has no offline queue
-    or retry; work-level duplicate prevention is a client snapshot with an
-    interleaving window before `isMutating` is set, and `isDuplicate` is still
-    untested; save buttons can show a previous account's saved state after an
-    account switch if the Library tab was never opened, until something
-    reloads the library. `LibraryUnavailableView.swift`
+    Lists can be renamed (title validated client-side to the server's limit:
+    non-blank, at most 255 code points — Django's `max_length` counts code
+    points, not characters), deleted behind a confirmation, and have items
+    removed; the wire contract is asserted at the transport level, and the
+    library reloads after each mutation without blanking the screen
+    (`ab675ee`). The duplicate check is now tested, and the interleaving window
+    is closed — every mutation claims `isMutating` before its first `await`,
+    with a deterministic test that parks one mutation mid-fetch and shows a
+    second is refused. **Gaps:** items cannot be reordered (the API requires
+    every item id exactly once in `PUT lists/<id>/items/reorder/`);
+    reconciliation has no offline queue or retry; save buttons can show a
+    previous account's saved state after an account switch if the Library tab
+    was never opened, until something reloads the library. `LibraryUnavailableView.swift`
     holds the real `LibraryView` under a stale name.
 13. **Profile/settings — implemented with gaps:** account editing, appearance,
     the history-privacy toggle, and local-resume removal on sign-out /
@@ -428,15 +434,17 @@ The three fixes interrupted on 9 September are done and CI-verified (run
 collection unsave and saved-state buttons (`1780330`), and the reader
 bookmark sign-in prompt (`a4b62e4`). Next, in this order:
 
-4. Library list mutations (rename, delete, remove item) and a unit test for
-   `isDuplicate` / `.alreadySaved`, closing slice 12.
-5. Slice 14, offline document policy, per §5.3 — versioned, locale-isolated
+Library list editing (rename, delete, remove item), the duplicate-check test,
+and the mutation race fix are done and CI-verified (run 34619988762 on `ab675ee`).
+
+4. Slice 14, offline document policy, per §5.3 — versioned, locale-isolated
    cache with corruption recovery and rights revalidation; permanent downloads
    stay deferred to v1.1.
-6. Slice 15, localization and accessibility — the String Catalog is what makes
+5. Slice 15, localization and accessibility — the String Catalog is what makes
    the profile's language picker honest; do it before any further copy is
    added.
-7. Slice 16 quality gates, then 17 product configuration.
+6. Slice 16 quality gates, then 17 product configuration. Item reordering and
+   the library's offline write queue can be picked up alongside slice 14.
 
 Decisions waiting on the product owner, not on code:
 
