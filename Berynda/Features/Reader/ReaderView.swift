@@ -7,6 +7,7 @@ struct ReaderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @EnvironmentObject private var environment: AppEnvironment
     @StateObject private var model: ReaderViewModel
     @ObservedObject private var account: AccountViewModel
     @State private var showsContents = false
@@ -129,20 +130,28 @@ struct ReaderView: View {
                         .accessibilityIdentifier("reader.print")
                     }
                 }
-                if account.state == .authenticated {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Закладка", systemImage: "bookmark") {
-                            Task {
-                                let result = await library.quickAdd(
-                                    fileID: model.fileID,
-                                    page: model.currentPage
+                // Shown to everyone: an anonymous reader is asked to sign in
+                // and the bookmark lands once they have, like every other
+                // protected action in the app.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Закладка", systemImage: "bookmark") {
+                        Task {
+                            let page = model.currentPage
+                            let result = await library.quickAdd(
+                                fileID: model.fileID,
+                                page: page
+                            )
+                            if result == .signInRequired {
+                                environment.requireAuthentication(
+                                    for: .bookmark(fileID: model.fileID, page: page)
                                 )
+                            } else {
                                 saveMessage = result.message
                             }
                         }
-                        .disabled(library.isMutating)
-                        .accessibilityIdentifier("reader.bookmark")
                     }
+                    .disabled(library.isMutating)
+                    .accessibilityIdentifier("reader.bookmark")
                 }
             }
         }
@@ -163,6 +172,25 @@ struct ReaderView: View {
                 lineSpacingScale: lineSpacingScaleBinding
             )
         }
+        // The root view's sign-in sheet sits under this full-screen cover and
+        // cannot appear over it, so the reader presents it itself with the
+        // same wiring; the pending bookmark resumes without leaving the book.
+        .sheet(isPresented: $environment.showsAuthentication, onDismiss: {
+            environment.authenticationDismissed()
+        }) {
+            AuthenticationView(
+                account: environment.account,
+                onAuthenticated: { await environment.resumePendingAuthenticatedAction() }
+            )
+        }
+        .onChange(of: environment.authenticatedActionMessage) { _, message in
+            // Same story for the root alert: surface the resumed action's
+            // outcome in the reader's own alert instead.
+            guard let message else { return }
+            environment.authenticatedActionMessage = nil
+            saveMessage = message
+        }
+        .onAppear { environment.isReaderPresented = true }
         .onChange(of: model.currentPage) { _, page in
             guard !isScrubbing else { return }
             draftPage = Double(page)
@@ -187,6 +215,7 @@ struct ReaderView: View {
             Task { await model.releaseCachedPages() }
         }
         .onDisappear {
+            environment.isReaderPresented = false
             model.discardExportedDocument()
             Task {
                 await model.flushPosition()

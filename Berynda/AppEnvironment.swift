@@ -20,6 +20,10 @@ final class AppEnvironment: ObservableObject {
     @Published var presentedAuthenticationLink: AuthenticationLinkPresentation?
     @Published var showsAuthentication = false
     @Published var authenticatedActionMessage: String?
+    // True while the full-screen reader is on screen. The root view cannot
+    // raise a sheet over a full-screen cover, so the reader presents the
+    // sign-in sheet itself and the root stays quiet meanwhile.
+    @Published var isReaderPresented = false
     private var pendingAuthenticatedAction: AuthenticatedAction?
 
     init(
@@ -156,6 +160,11 @@ final class AppEnvironment: ObservableObject {
         case let .saveCollection(collection):
             result = await library.setCollectionSaved(collection, saved: true)
             successMessage = "Колекцію додано до бібліотеки."
+        case let .bookmark(fileID, page):
+            // The page is the one captured when the reader tapped, not
+            // wherever the reader has scrolled to by the time sign-in ends.
+            result = await library.quickAdd(fileID: fileID, page: page)
+            successMessage = "Закладку додано до бібліографічного списку."
         }
 
         switch result {
@@ -176,6 +185,7 @@ final class AppEnvironment: ObservableObject {
 enum AuthenticatedAction {
     case addWork(UUID)
     case saveCollection(PublicCollectionSummary)
+    case bookmark(fileID: UUID, page: Int)
 }
 
 enum CatalogDestination: Hashable {

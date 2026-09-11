@@ -117,7 +117,9 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         positionValue: String?,
         pageNumber: Int?
     ) async throws -> BibliographyItem {
-        guard workID == Self.kobzarWorkID else { throw UITestFixtureError.unsupported }
+        guard workID == Self.kobzarWorkID || fileID == Self.readerFileID else {
+            throw UITestFixtureError.unsupported
+        }
         return try decode(Self.quickAddedItem)
     }
 

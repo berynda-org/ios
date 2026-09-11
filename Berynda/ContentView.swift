@@ -32,7 +32,7 @@ struct ContentView: View {
             environment.consumePendingRoute()
         }
         .task { await environment.account.restore() }
-        .sheet(isPresented: $environment.showsAuthentication, onDismiss: {
+        .sheet(isPresented: showsRootAuthentication, onDismiss: {
             environment.authenticationDismissed()
         }) {
             AuthenticationView(
@@ -54,6 +54,18 @@ struct ContentView: View {
         } message: {
             Text(environment.authenticatedActionMessage ?? "")
         }
+    }
+
+    // UIKit lets a view controller present one modal at a time, and the
+    // reader is a full-screen cover over this view: a sheet raised here while
+    // a book is open never shows (or pops up only after the book is closed).
+    // ReaderView presents the same sign-in sheet itself, so this one waits
+    // until the reader is gone.
+    private var showsRootAuthentication: Binding<Bool> {
+        Binding(
+            get: { environment.showsAuthentication && !environment.isReaderPresented },
+            set: { if !$0 { environment.showsAuthentication = false } }
+        )
     }
 
     private var preferredColorScheme: ColorScheme? {
