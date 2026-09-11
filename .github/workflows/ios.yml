@@ -19,8 +19,13 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      # App Store Connect rejects uploads built with anything older than
+      # Xcode 26 and the iOS 26 SDK (Apple requirement since 2026-04-28).
+      # Pinned rather than "latest": this macos-15 image ships Xcode 26.3
+      # with an "iPhone 16 Pro" simulator on iOS 26.2, which the test
+      # destinations below name; the macos-26 image has no such simulator.
+      - name: Select Xcode 26.3
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Test core package
