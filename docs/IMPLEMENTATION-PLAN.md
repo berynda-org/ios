@@ -103,10 +103,16 @@ of its later features exists.
   (`akrivonos/berynda` commit `504af15`);
 - dark palette realigned to the normative mockups (five of seven tokens had
   drifted), Increase Contrast support, and tokens asserted by tests;
-- **not yet verified by CI:** commit `d4a1b0f` fixing a privacy leak —
-  `RecentlyViewedStore` was never cleared on sign-out or when history was
-  turned off — and the language picker silently overwriting the server
-  preference. It is on `main` and will be gated by the next push.
+- a privacy leak — `RecentlyViewedStore` was never cleared on sign-out or
+  when history was turned off, so one reader's history survived into the next
+  account — and the language picker silently overwriting the server
+  preference (commit `d4a1b0f`);
+- anonymous readers are asked to sign in for a bookmark instead of never
+  seeing the button, and the sign-in sheet opens over the book (`a4b62e4`);
+- the profile's storage section measures what is actually on the device and
+  can clear it, for signed-in and signed-out readers alike (`ab53c88`);
+- saved collections can be unsaved, save buttons show saved state, and that
+  state no longer survives sign-out or an account switch (`1780330`).
 
 ### Authoritative remaining plan
 
@@ -172,7 +178,7 @@ are accepted.
    summaries, removed/restricted/empty/retry states, stable covers, and true
    selected-work columns on iPad are delivered. Collection links await a
    backend route returning the collections that contain a work.
-2. **Complete except one prompt.** Add authentication UI for login, registration confirmation, password reset,
+2. **Complete.** Add authentication UI for login, registration confirmation, password reset,
    logout, session expiry, relaunch persistence, and return-to-action behavior.
 3. **Complete.** Reading-position persistence: quiet-interval PUT, background
    and dismiss flush, privacy-disabled handling for both the local policy and a
@@ -354,31 +360,35 @@ Review.
     the web reader across a round trip. Restoring prefers the exact resource and
     falls back to overall progress.
 
-11. **Authentication UI — implemented; one gap, thin journey coverage:**
+11. **Authentication UI — implemented; thin journey coverage:**
     login, registration, confirmation and password-reset link handoff, logout
     with device-first clearing, Keychain relaunch persistence, and return to
     the prompting action are all in code (audited 9 September against
     `AuthenticationView`, `AuthenticationLinkView`, `AccountViewModel`,
-    `SessionController`). **Gap:** the reader's bookmark button is hidden from
-    anonymous readers instead of prompting sign-in and resuming — the one
-    protected action outside the `AuthenticatedAction` flow. Registration,
+    `SessionController`). The reader bookmark, formerly hidden from anonymous
+    readers, now prompts sign-in and resumes on the captured page with the
+    sheet presented over the book (`a4b62e4`). **Remaining:** registration,
     reset, confirmation, and logout have contract tests but no UI journey.
 12. **Library — implemented with gaps:** Continue Reading distinguishes empty
     from disabled history; lists load and can be created; quick add and reader
-    bookmarks work and round-trip back to the page. **Gaps:** a saved public
-    collection can never be unsaved (the repository's DELETE path has no call
-    site) and the save buttons never reflect saved state; lists cannot be
-    renamed, deleted, reordered, or have items removed; reconciliation covers
-    the pre-save reload but has no offline queue or retry; duplicate prevention
-    is a client snapshot only, exempts collections, has an interleaving window
-    before `isMutating` is set, and is untested. `LibraryUnavailableView.swift`
+    bookmarks work and round-trip back to the page. Saved collections can be
+    unsaved, a repeat save is answered `.alreadySaved` without a network call,
+    and saved state is keyed by slug and cleared on sign-out (`1780330`).
+    **Gaps:** lists cannot be renamed, deleted, reordered, or have items
+    removed; reconciliation covers the pre-save reload but has no offline queue
+    or retry; work-level duplicate prevention is a client snapshot with an
+    interleaving window before `isMutating` is set, and `isDuplicate` is still
+    untested; save buttons can show a previous account's saved state after an
+    account switch if the Library tab was never opened, until something
+    reloads the library. `LibraryUnavailableView.swift`
     holds the real `LibraryView` under a stale name.
 13. **Profile/settings — implemented with gaps:** account editing, appearance,
     the history-privacy toggle, and local-resume removal on sign-out /
     privacy-off / forced expiry are in code (the recently-viewed store is now
-    cleared alongside positions, commit `d4a1b0f`). **Gaps:** the local
-    storage section is a hardcoded placeholder ("Немає") with nothing measured
-    and nothing clearable; the language picker stores a preference but changes
+    cleared alongside positions, commit `d4a1b0f`). The storage section now
+    measures reading positions, recently viewed works, and leftover reader
+    files, and clears them behind a confirmation (`ab53c88`). **Gaps:** the
+    language picker stores a preference but changes
     no strings — there is no String Catalog yet (slice 15), and it must not be
     presented as working until there is; session/account actions stop at
     sign-out (no change-password entry, no deletion, no sign-out-everywhere);
@@ -413,24 +423,10 @@ user-selectable file representation.
 
 ### Next work, in order (11 September 2026)
 
-Three fixes were started on 9 September as isolated task branches and were
-interrupted before commit; each worktree holds real, uncommitted source and a
-new test file. Finish these first — verify what is on disk, do not re-derive:
-
-1. **Local storage summary and eviction** (`task/storage-summary`): a
-   `LocalStorageSummary` service measuring the two JSON stores and leftover
-   reader temp files, a real profile section with a confirmed "clear" action,
-   tests in `LocalStorageSummaryTests`.
-2. **Unsave for saved collections and saved-state buttons**
-   (`task/collection-unsave`): `isCollectionSaved`, `.alreadySaved` without a
-   network call, swipe-to-unsave in the library, a shared
-   `CollectionSaveButton`, tests in `SavedCollectionsTests`.
-3. **Reader bookmark prompts sign-in and resumes**
-   (`task/reader-bookmark-auth`): `AuthenticatedAction.bookmark(fileID:page:)`,
-   the sheet presented over the full-screen reader, tests in
-   `ReaderBookmarkAuthTests`.
-
-Then, in this order:
+The three fixes interrupted on 9 September are done and CI-verified (run
+34615510011 on `1780330`): storage summary and eviction (`ab53c88`),
+collection unsave and saved-state buttons (`1780330`), and the reader
+bookmark sign-in prompt (`a4b62e4`). Next, in this order:
 
 4. Library list mutations (rename, delete, remove item) and a unit test for
    `isDuplicate` / `.alreadySaved`, closing slice 12.
