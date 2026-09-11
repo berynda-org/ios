@@ -11,6 +11,7 @@ struct ProfileView: View {
     var body: some View {
         ProfileContent(
             account: environment.account,
+            localStorage: environment.localStorage,
             appearanceMode: $appearanceMode,
             interfaceLanguage: $interfaceLanguage,
             showsAuthentication: $showsAuthentication,
@@ -21,10 +22,14 @@ struct ProfileView: View {
 
 private struct ProfileContent: View {
     @ObservedObject var account: AccountViewModel
+    let localStorage: LocalStorageSummary
     @Binding var appearanceMode: String
     @Binding var interfaceLanguage: String
     @Binding var showsAuthentication: Bool
     @Binding var showsEditor: Bool
+    /// `nil` while the summary is being measured or cleared.
+    @State private var storageUsage: LocalStorageUsage?
+    @State private var confirmsStorageClear = false
 
     var body: some View {
         List {
@@ -88,14 +93,53 @@ private struct ProfileContent: View {
                         .font(.footnote)
                         .foregroundStyle(BeryndaColor.mutedInk)
                 }
+            }
 
-                Section("Сховище") {
-                    LabeledContent("Завантажені видання", value: "Немає")
-                    Text("Тимчасові файли видання видаляються після закриття читача.")
-                        .font(.footnote)
-                        .foregroundStyle(BeryndaColor.mutedInk)
+            // Shown signed out as well: an anonymous reader's positions and
+            // history are kept on this device just the same, and signing out
+            // is how a signed-in reader clears them, not an anonymous one.
+            Section("Сховище") {
+                if let usage = storageUsage {
+                    LabeledContent("Позиції читання", value: Self.bytes(usage.readingPositionsBytes))
+                    LabeledContent("Нещодавно переглянуті", value: Self.bytes(usage.recentlyViewedBytes))
+                    LabeledContent("Залишки файлів читача", value: Self.bytes(usage.readerTemporaryBytes))
+                    LabeledContent("Разом", value: Self.bytes(usage.totalBytes))
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("profile.storage.total")
+                } else {
+                    HStack {
+                        Text("Вимірюємо…")
+                            .foregroundStyle(BeryndaColor.mutedInk)
+                        Spacer()
+                        ProgressView().controlSize(.small)
+                    }
+                    .accessibilityIdentifier("profile.storage.measuring")
                 }
+                Text(
+                    "Тимчасові файли видання видаляються після закриття читача; тут показано лише те, що лишилося. Налаштування вигляду й читача займають кілька байтів і не очищаються."
+                )
+                .font(.footnote)
+                .foregroundStyle(BeryndaColor.mutedInk)
+                Button("Очистити локальні дані", role: .destructive) { confirmsStorageClear = true }
+                    .disabled(storageUsage == nil)
+                    .accessibilityIdentifier("profile.storage.clear")
+                    .confirmationDialog(
+                        "Очистити локальні дані?",
+                        isPresented: $confirmsStorageClear,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Очистити", role: .destructive) {
+                            Task { await clearLocalStorage() }
+                        }
+                        Button("Скасувати", role: .cancel) {}
+                    } message: {
+                        Text(
+                            "Буде видалено збережені на цьому пристрої позиції читання, історію переглянутих творів і залишки тимчасових файлів. Вхід і налаштування збережуться."
+                        )
+                    }
+            }
 
+            if account.state == .authenticated, account.profile != nil {
                 Section {
                     Button("Вийти", role: .destructive) { Task { await account.signOut() } }
                         .accessibilityIdentifier("profile.sign-out")
@@ -132,6 +176,33 @@ private struct ProfileContent: View {
                 await account.loadProfile()
             }
         }
+        .task(id: account.state) {
+            // Measured off the main thread by the actor, each time the tab
+            // appears and again on sign-in or sign-out, since signing out
+            // clears the reading history this section reports.
+            storageUsage = await localStorage.measure()
+        }
+    }
+
+    @MainActor
+    private func clearLocalStorage() async {
+        // Dropping the value shows the progress row and disables the button
+        // until the actor has cleared and re-measured.
+        storageUsage = nil
+        storageUsage = await localStorage.clearCaches()
+    }
+
+    private static let byteFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        // "0 bytes" rather than "Zero KB": an empty category should read as a
+        // measurement, not as a shrug.
+        formatter.allowsNonnumericFormatting = false
+        return formatter
+    }()
+
+    private static func bytes(_ count: Int64) -> String {
+        byteFormatter.string(fromByteCount: count)
     }
 }
 

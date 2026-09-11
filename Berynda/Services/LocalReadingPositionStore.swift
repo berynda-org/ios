@@ -7,7 +7,9 @@ struct LocalReadingPosition: Codable, Sendable, Equatable {
 }
 
 actor LocalReadingPositionStore {
-    private let fileURL: URL?
+    /// Where the positions live, so `LocalStorageSummary` can size the file
+    /// without duplicating the name. `nil` when no support directory exists.
+    nonisolated let fileURL: URL?
     private let fileManager: FileManager
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()

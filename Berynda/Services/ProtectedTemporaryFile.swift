@@ -7,6 +7,14 @@ import Foundation
 /// is the one implementation: a second copy would be the one that quietly
 /// drops a protection flag.
 enum ProtectedTemporaryFile {
+    /// The one directory reader copies are written to. `LocalStorageSummary`
+    /// sweeps exactly this directory, so it is named here and nowhere else.
+    static var directory: URL {
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent("org.berynda.ios", isDirectory: true)
+            .appendingPathComponent("reader", isDirectory: true)
+    }
+
     static func write(
         _ data: Data,
         fileID: UUID,
@@ -14,9 +22,7 @@ enum ProtectedTemporaryFile {
     ) async throws -> URL {
         try await Task.detached(priority: .userInitiated) {
             let manager = FileManager.default
-            let directory = manager.temporaryDirectory
-                .appendingPathComponent("org.berynda.ios", isDirectory: true)
-                .appendingPathComponent("reader", isDirectory: true)
+            let directory = ProtectedTemporaryFile.directory
             try manager.createDirectory(
                 at: directory,
                 withIntermediateDirectories: true,

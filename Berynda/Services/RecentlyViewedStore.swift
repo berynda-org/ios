@@ -34,7 +34,9 @@ struct RecentlyViewedWork: Codable, Sendable, Equatable, Identifiable {
 /// position does: when the reader has turned history off, nothing is written
 /// and anything already stored is dropped.
 actor RecentlyViewedStore {
-    private let fileURL: URL?
+    /// Where the history lives, so `LocalStorageSummary` can size the file
+    /// without duplicating the name. `nil` when no support directory exists.
+    nonisolated let fileURL: URL?
     private let fileManager: FileManager
     private let limit: Int
     private let encoder = JSONEncoder()
