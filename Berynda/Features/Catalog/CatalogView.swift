@@ -250,18 +250,10 @@ private struct CollectionShelf: View {
                     }
                 }
                 Spacer()
-                Button("Зберегти", systemImage: "bookmark") {
-                    Task {
-                        let result = await environment.library.setCollectionSaved(collection, saved: true)
-                        if result == .signInRequired {
-                            environment.requireAuthentication(for: .saveCollection(collection))
-                        } else {
-                            saveMessage = result.message
-                        }
-                    }
+                CollectionSaveButton(library: environment.library, collection: collection) { result in
+                    saveMessage = result.collectionMessage
                 }
                 .labelStyle(.iconOnly)
-                .disabled(environment.library.isMutating)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {

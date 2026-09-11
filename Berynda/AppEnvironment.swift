@@ -175,6 +175,9 @@ final class AppEnvironment: ObservableObject {
         switch result {
         case .saved:
             authenticatedActionMessage = successMessage
+        case .removed:
+            // Pending actions only ever save; kept for exhaustiveness.
+            authenticatedActionMessage = "Колекцію прибрано з бібліотеки."
         case .alreadySaved:
             authenticatedActionMessage = "Цей запис уже є у вашій бібліотеці."
         case .inProgress:

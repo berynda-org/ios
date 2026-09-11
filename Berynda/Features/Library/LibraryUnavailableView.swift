@@ -16,6 +16,7 @@ private struct LibraryContent: View {
     @ObservedObject var model: LibraryViewModel
     @ObservedObject private var account: AccountViewModel
     @State private var showsNewList = false
+    @State private var unsaveError: String?
 
     init(model: LibraryViewModel) {
         self.model = model
@@ -142,12 +143,42 @@ private struct LibraryContent: View {
                             .font(.caption)
                             .foregroundStyle(BeryndaColor.mutedInk)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .accessibilityIdentifier("library.collection.\(collection.slug)")
+                    // Saving is offered on the catalog; this list is the only
+                    // place the reader can take a collection back out.
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        unsaveButton(for: collection)
+                    }
+                    .contextMenu {
+                        unsaveButton(for: collection)
+                    }
                 }
             }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .refreshable { await model.load() }
+        .alert("Колекція", isPresented: Binding(
+            get: { unsaveError != nil },
+            set: { if !$0 { unsaveError = nil } }
+        )) {
+            Button("Гаразд", role: .cancel) {}
+        } message: {
+            Text(unsaveError ?? "")
+        }
+    }
+
+    private func unsaveButton(for collection: PublicCollectionSummary) -> some View {
+        Button("Прибрати", systemImage: "bookmark.slash", role: .destructive) {
+            Task {
+                let result = await model.setCollectionSaved(collection, saved: false)
+                if case let .failed(message) = result { unsaveError = message }
+            }
+        }
+        .disabled(model.isMutating)
+        .accessibilityIdentifier("library.collection.unsave.\(collection.slug)")
     }
 }
 

@@ -147,6 +147,7 @@ extension LibraryViewModel.SaveResult {
     var message: String {
         switch self {
         case .saved: "Додано до бібліографічного списку."
+        case .removed: "Прибрано з бібліотеки."
         case .alreadySaved: "Цей твір уже є у вашому списку."
         case .inProgress: "Збереження вже виконується."
         case .signInRequired: "Увійдіть у профілі, щоб зберігати твори."
@@ -301,23 +302,13 @@ private struct CollectionsPanel: View {
                             }
                         }
                         Spacer(minLength: 12)
-                        Button("Зберегти") {
-                            Task {
-                                let result = await environment.library.setCollectionSaved(
-                                    collection,
-                                    saved: true
-                                )
-                                if result == .signInRequired {
-                                    environment.requireAuthentication(
-                                        for: .saveCollection(collection)
-                                    )
-                                } else {
-                                    message = result.message
-                                }
-                            }
+                        CollectionSaveButton(
+                            library: environment.library,
+                            collection: collection
+                        ) { result in
+                            message = result.collectionMessage
                         }
                         .font(.footnote.weight(.semibold))
-                        .disabled(environment.library.isMutating)
                     }
                     .accessibilityIdentifier("work.collection.\(collection.slug)")
                 }

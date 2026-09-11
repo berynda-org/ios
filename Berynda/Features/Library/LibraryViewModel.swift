@@ -17,6 +17,7 @@ final class LibraryViewModel: ObservableObject {
 
     enum SaveResult: Equatable {
         case saved
+        case removed
         case alreadySaved
         case inProgress
         case signInRequired
@@ -70,15 +71,57 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// Brings the snapshot in line with the account for callers that only
+    /// need it — the collection save buttons, which must know what is already
+    /// saved before the reader ever opens the Library tab, and which re-run
+    /// this whenever the account state changes. Signing out drops the snapshot
+    /// so one reader's saved collections are never shown as saved to the
+    /// next. A `.failed` snapshot is left alone while signed in: the library
+    /// screen owns that retry.
+    func loadIfNeeded() async {
+        guard account.state == .authenticated else {
+            if case .signedOut = state { return }
+            state = .signedOut
+            return
+        }
+        guard case .signedOut = state else { return }
+        await load()
+    }
+
+    /// Whether `collection` is in the loaded snapshot of saved collections.
+    ///
+    /// Matched by slug: that is the key the save endpoint is addressed by, so
+    /// it is the one identity guaranteed to agree between a catalog shelf, a
+    /// work page and the saved list. Nothing is reported saved until the
+    /// snapshot has loaded, nor to a reader who is no longer signed in.
+    func isCollectionSaved(_ collection: PublicCollectionSummary) -> Bool {
+        guard account.state == .authenticated,
+              case let .loaded(_, _, saved) = state else { return false }
+        return saved.contains { $0.slug == collection.slug }
+    }
+
     func setCollectionSaved(_ collection: PublicCollectionSummary, saved: Bool) async -> SaveResult {
         guard account.state == .authenticated else { return .signInRequired }
         guard !isMutating else { return .inProgress }
+        if saved {
+            if case .loaded = state {
+                // The current snapshot can be used for duplicate detection.
+            } else {
+                await load()
+                guard case .loaded = state else {
+                    if case let .failed(message) = state { return .failed(message) }
+                    return .failed("Не вдалося перевірити збережені колекції.")
+                }
+            }
+            // Re-saving would re-POST and report success over a no-op.
+            if isCollectionSaved(collection) { return .alreadySaved }
+        }
         isMutating = true
         defer { isMutating = false }
         do {
             try await repository.setCollectionSaved(slug: collection.slug, saved: saved)
             await load()
-            return .saved
+            return saved ? .saved : .removed
         } catch {
             return .failed(error.localizedDescription)
         }
