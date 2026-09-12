@@ -69,6 +69,9 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         PRODUCT_BUNDLE_IDENTIFIER: org.berynda.ios
         PRODUCT_NAME: Berynda
+        # Only the app consumes the CI profile; Swift package resource bundles
+        # do not support provisioning profiles.
+        PROVISIONING_PROFILE_SPECIFIER: "$(BERYNDA_PROFILE_SPECIFIER)"
     entitlements:
       path: Berynda/Berynda.entitlements
 
