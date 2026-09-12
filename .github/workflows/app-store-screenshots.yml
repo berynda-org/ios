@@ -60,6 +60,5 @@ jobs:
           name: app-store-${{ matrix.family }}-${{ github.run_number }}
           path: |
             screenshots/
-            StoreScreenshots.xcresult/
           retention-days: 30
           if-no-files-found: error

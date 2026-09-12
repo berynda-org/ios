@@ -32,7 +32,8 @@ final class AppStoreScreenshotTests: XCTestCase {
 
         // Open a real readable edition through its visible control, just as a
         // reader does. Keep the production navigation path under test on iPad.
-        let read = app.buttons["edition.read.0f2a80aa-a6a6-5d8c-9e49-ee48d857b28e"]
+        let editionID = UUID(uuidString: "0f2a80aa-a6a6-5d8c-9e49-ee48d857b28e")!
+        let read = app.buttons["edition.read.\(editionID)"]
         for _ in 0..<7 {
             if read.exists && read.isHittable { break }
             app.scrollViews.firstMatch.swipeUp()
