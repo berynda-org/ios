@@ -109,6 +109,18 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: org.berynda.ios.uitests
         GENERATE_INFOPLIST_FILE: true
 
+  BeryndaScreenshots:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: BeryndaScreenshots
+    dependencies:
+      - target: Berynda
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.berynda.ios.screenshots
+        GENERATE_INFOPLIST_FILE: true
+
 schemes:
   Berynda:
     build:
@@ -121,3 +133,13 @@ schemes:
         - BeryndaTests
         - BeryndaUITests
       gatherCoverageData: true
+
+  AppStoreScreenshots:
+    build:
+      targets:
+        Berynda: all
+        BeryndaScreenshots: [test]
+    test:
+      config: Release
+      targets:
+        - BeryndaScreenshots

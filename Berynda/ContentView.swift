@@ -27,6 +27,18 @@ struct ContentView: View {
                     .accessibilityIdentifier("network.offline-banner")
                 }
         }
+        .fullScreenCover(item: $environment.presentedReader) { presentation in
+            ReaderView(
+                fileID: presentation.fileID,
+                fallbackTitle: presentation.fallbackTitle,
+                initialPage: presentation.initialPage,
+                repository: environment.readerRepository,
+                session: environment.session,
+                account: environment.account,
+                localPositions: environment.localReadingPositions,
+                library: environment.library
+            )
+        }
         .task { environment.consumePendingRoute() }
         .onChange(of: environment.pendingRoute) { _, _ in
             environment.consumePendingRoute()
@@ -185,18 +197,6 @@ private struct CatalogNavigationView: View {
                         )
                     }
                 }
-        }
-        .fullScreenCover(item: $environment.presentedReader) { presentation in
-            ReaderView(
-                fileID: presentation.fileID,
-                fallbackTitle: presentation.fallbackTitle,
-                initialPage: presentation.initialPage,
-                repository: environment.readerRepository,
-                session: environment.session,
-                account: environment.account,
-                localPositions: environment.localReadingPositions,
-                library: environment.library
-            )
         }
     }
 }

@@ -1,0 +1,65 @@
+name: App Store screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    name: ${{ matrix.family }} screenshots
+    runs-on: macos-15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - family: iphone
+            device: iPhone 16 Pro Max
+          - family: ipad
+            device: iPad Pro 13-inch (M4)
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select Xcode 26.3
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate --spec project.yml
+      - name: Prepare simulator
+        env:
+          DEVICE_NAME: ${{ matrix.device }}
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,os,sys; d=json.load(sys.stdin); print(next(x["udid"] for rows in reversed(list(d["devices"].values())) for x in rows if x["name"] == os.environ["DEVICE_NAME"]))')
+          echo "DEVICE_ID=$DEVICE_ID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$DEVICE_ID"
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          xcrun simctl status_bar "$DEVICE_ID" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+      - name: Capture real production screens
+        run: >-
+          xcodebuild
+          -project Berynda.xcodeproj
+          -scheme AppStoreScreenshots
+          -configuration Release
+          -destination "platform=iOS Simulator,id=$DEVICE_ID"
+          -parallel-testing-enabled NO
+          -resultBundlePath StoreScreenshots.xcresult
+          CODE_SIGNING_ALLOWED=NO
+          test
+      - name: Export screenshots
+        if: always()
+        run: |
+          if [ -d StoreScreenshots.xcresult ]; then
+            xcrun xcresulttool export attachments --path StoreScreenshots.xcresult --output-path screenshots
+          fi
+      - name: Save screenshots and capture results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-${{ matrix.family }}-${{ github.run_number }}
+          path: |
+            screenshots/
+            StoreScreenshots.xcresult/
+          retention-days: 30
+          if-no-files-found: error
