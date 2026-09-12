@@ -278,6 +278,40 @@ final class AuthenticationServiceTests: XCTestCase {
         XCTAssertTrue(requests.isEmpty)
     }
 
+
+    func testSocialChallengeAndLoginUseNonceAndStoreBeryndaTokens() async throws {
+        let challengeID = UUID()
+        let challengeJSON = "{\"challenge_id\":\"\(challengeID)\",\"nonce\":\"one-time-challenge\",\"expires_in\":300}"
+        let login = #"{"access":"header.access.signature","refresh":"header.refresh.signature","user":{"id":"11111111-1111-1111-1111-111111111111","email":"reader@example.org"}}"#
+        let transport = AuthTransportStub([
+            AuthStubResponse(status: 200, data: Data(challengeJSON.utf8), headers: ["Content-Type": "application/json"]),
+            AuthStubResponse(status: 200, data: Data(login.utf8), headers: ["Content-Type": "application/json"]),
+        ])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+        let challenge = try await service.socialChallenge(provider: .apple, accessToken: nil)
+        XCTAssertEqual(challenge.nonce, "one-time-challenge")
+        let credential = SocialCredential(provider: .apple, challengeID: challenge.challengeID, identityToken: "provider.identity.signature")
+        let session = try await service.socialLogin(credential)
+        XCTAssertEqual(session.tokens.access, "header.access.signature")
+        XCTAssertFalse(credential.description.contains(credential.identityToken))
+        let requests = await transport.recordedRequests()
+        XCTAssertEqual(requests[0].url?.path, "/api/v1/auth/social/challenge/")
+        XCTAssertEqual(try jsonObject(requests[0].body)["link_account"] as? Bool, false)
+        XCTAssertEqual(try jsonObject(requests[1].body)["identity_token"] as? String, "provider.identity.signature")
+        XCTAssertNil(requests[1].headers["Authorization"])
+    }
+
+    func testSocialEmailCollisionOffersExplicitLinking() async {
+        let transport = AuthTransportStub([
+            AuthStubResponse(status: 409, data: Data(#"{"error":{"code":"SOCIAL_ACCOUNT_EXISTS"}}"#.utf8), headers: ["Content-Type": "application/json"]),
+        ])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+        do {
+            _ = try await service.socialLogin(SocialCredential(provider: .google, challengeID: UUID(), identityToken: "token"))
+            XCTFail("Must not silently merge existing accounts")
+        } catch { XCTAssertEqual(error as? SessionError, .socialAccountExists) }
+    }
+
     private func jsonObject(_ data: Data?) throws -> [String: Any] {
         let data = try XCTUnwrap(data)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])

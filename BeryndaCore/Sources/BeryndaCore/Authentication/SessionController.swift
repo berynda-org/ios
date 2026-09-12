@@ -30,6 +30,34 @@ public actor SessionController: AuthorizationSession {
     @discardableResult
     public func signIn(email: String, password: String) async throws -> UserProfile {
         let session = try await authentication.login(email: email, password: password)
+        return try await accept(session)
+    }
+
+    public func socialChallenge(provider: SocialProvider, linking: Bool) async throws -> SocialChallenge {
+        guard linking else { return try await authentication.socialChallenge(provider: provider, accessToken: nil) }
+        guard let token = accessToken() else { throw SessionError.expired }
+        do { return try await authentication.socialChallenge(provider: provider, accessToken: token) }
+        catch SessionError.expired {
+            let fresh = try await refreshAccessToken(rejectedAccessToken: token)
+            return try await authentication.socialChallenge(provider: provider, accessToken: fresh)
+        }
+    }
+
+    public func signIn(_ credential: SocialCredential) async throws -> UserProfile {
+        let session = try await authentication.socialLogin(credential)
+        return try await accept(session)
+    }
+
+    public func link(_ credential: SocialCredential) async throws -> UserProfile {
+        guard let token = accessToken() else { throw SessionError.expired }
+        do { return try await authentication.linkSocialIdentity(credential, accessToken: token) }
+        catch SessionError.expired {
+            let fresh = try await refreshAccessToken(rejectedAccessToken: token)
+            return try await authentication.linkSocialIdentity(credential, accessToken: fresh)
+        }
+    }
+
+    private func accept(_ session: AuthSession) async throws -> UserProfile {
         do {
             try tokenStore.save(session.tokens)
         } catch {

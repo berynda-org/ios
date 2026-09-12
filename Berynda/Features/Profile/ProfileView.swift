@@ -39,6 +39,7 @@ private struct ProfileContent: View {
                     LabeledContent("Електронна адреса", value: profile.email)
                     Button("Редагувати профіль") { showsEditor = true }
                 }
+                SocialSignInButtons(account: account, linking: true)
             } else {
                 Section {
                     BeryndaEmptyState(
@@ -142,6 +143,7 @@ private struct ProfileContent: View {
             if account.state == .authenticated, account.profile != nil {
                 Section {
                     Button("Вийти", role: .destructive) { Task { await account.signOut() } }
+                        .disabled(account.isBusy)
                         .accessibilityIdentifier("profile.sign-out")
                 }
             }

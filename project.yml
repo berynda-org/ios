@@ -9,6 +9,9 @@ options:
 packages:
   BeryndaCore:
     path: BeryndaCore
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS.git
+    exactVersion: 9.2.0
   Readium:
     url: https://github.com/readium/swift-toolkit.git
     exactVersion: 3.11.0
@@ -31,6 +34,10 @@ targets:
         buildPhase: resources
     dependencies:
       - package: BeryndaCore
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: GoogleSignIn
+        product: GoogleSignInSwift
       - package: Readium
         product: ReadiumShared
       - package: Readium
@@ -41,6 +48,8 @@ targets:
       path: Berynda/Info.plist
       properties:
         CFBundleDevelopmentRegion: uk
+        UIAppFonts:
+          - Fedorovsk-glyphs.ttf
         CFBundleDisplayName: Берында
         CFBundleExecutable: $(EXECUTABLE_NAME)
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)

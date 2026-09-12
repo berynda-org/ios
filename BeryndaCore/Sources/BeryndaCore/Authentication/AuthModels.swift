@@ -129,6 +129,9 @@ public enum SessionError: Error, Equatable, Sendable {
     case invalidResponse
     case unavailable
     case storage
+    case socialAccountExists
+    case socialIdentityAlreadyLinked
+    case socialVerificationFailed
 }
 
 extension SessionError: LocalizedError {
@@ -144,6 +147,12 @@ extension SessionError: LocalizedError {
             "Сервіс повернув неочікувану відповідь."
         case .unavailable:
             "Не вдалося з’єднатися із сервісом."
+        case .socialAccountExists:
+            "Ця адреса вже зареєстрована. Увійдіть звичним способом, а потім під’єднайте Apple чи Google у профілі."
+        case .socialIdentityAlreadyLinked:
+            "Цей спосіб входу вже під’єднано до іншого облікового запису."
+        case .socialVerificationFailed:
+            "Не вдалося підтвердити вхід. Спробуйте ще раз."
         case .storage:
             "Не вдалося безпечно зберегти сеанс."
         }

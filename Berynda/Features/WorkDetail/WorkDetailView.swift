@@ -70,6 +70,11 @@ struct WorkDetailView: View {
         }
     }
 
+    private var linkedAuthors: [WorkAuthor] {
+        var seen = Set<UUID>()
+        return work.authors.filter { seen.insert($0.id).inserted }
+    }
+
     private var header: some View {
         HStack(alignment: .top, spacing: BeryndaSpacing.standard) {
             BeryndaBookCover(
@@ -88,8 +93,9 @@ struct WorkDetailView: View {
                     Text(subtitle).font(.title3).foregroundStyle(BeryndaColor.mutedInk)
                 }
                 if !work.authors.isEmpty {
-                    Text(work.authors.map { $0.displayName }.joined(separator: ", "))
-                        .foregroundStyle(BeryndaColor.accent)
+                    ForEach(linkedAuthors) { author in
+                        AuthorLink(id: author.id, name: author.displayName)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -42,7 +42,8 @@ private struct CatalogLoadedView: View {
                 WorkList(
                     works: works,
                     totalCount: totalCount,
-                    collections: model.query.isEmpty ? environment.library.publicCollections : [],
+                    collections: model.query.isEmpty && !model.readableOnly && model.languageFilter == nil
+                        ? environment.library.publicCollections : [],
                     model: model
                 )
             case let .failed(message):
@@ -59,11 +60,13 @@ private struct CatalogLoadedView: View {
         }
             .background(BeryndaColor.paper)
             .navigationTitle("Каталог")
+            .safeAreaInset(edge: .top, spacing: 0) {
+                CatalogReadingFilter(readableOnly: $model.readableOnly)
+            }
             .searchable(text: $model.query, prompt: "Назва або автор")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Фільтри", systemImage: "line.3.horizontal.decrease.circle") {
-                        Toggle("Лише доступні для читання", isOn: $model.readableOnly)
                         Picker("Мова", selection: $model.languageFilter) {
                             Text("Усі мови").tag(String?.none)
                             Text("Українська").tag(String?.some("uk"))
@@ -136,11 +139,13 @@ struct TabletCatalogColumn: View {
             }
         }
         .navigationTitle("Каталог")
+            .safeAreaInset(edge: .top, spacing: 0) {
+                CatalogReadingFilter(readableOnly: $model.readableOnly)
+            }
         .searchable(text: $model.query, prompt: "Назва або автор")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu("Фільтри", systemImage: "line.3.horizontal.decrease.circle") {
-                    Toggle("Лише доступні для читання", isOn: $model.readableOnly)
                     Picker("Мова", selection: $model.languageFilter) {
                         Text("Усі мови").tag(String?.none)
                         Text("Українська").tag(String?.some("uk"))
@@ -176,7 +181,7 @@ private struct WorkList: View {
             }
             // Only above an unfiltered catalog: a shelf that ignores the
             // reader's query would be noise next to their own search.
-            if model.query.isEmpty, !model.recommended.isEmpty {
+            if model.query.isEmpty, !model.readableOnly, model.languageFilter == nil, !model.recommended.isEmpty {
                 Section("Рекомендовані") {
                     RecommendedShelf(works: model.recommended)
                 }
@@ -393,7 +398,7 @@ private struct RecommendedShelf: View {
     }
 }
 
-private struct WorkRow: View {
+struct WorkRow: View {
     let work: WorkSummary
 
     var body: some View {
@@ -434,5 +439,21 @@ private struct WorkRow: View {
         case 1: "1 видання"
         default: "\(work.editionsCount) видань"
         }
+    }
+}
+
+struct CatalogReadingFilter: View {
+    @Binding var readableOnly: Bool
+
+    var body: some View {
+        Toggle(isOn: $readableOnly) {
+            Label("Лише доступні для читання", systemImage: "book")
+                .font(.subheadline)
+        }
+        .tint(BeryndaColor.accent)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(.bar)
+        .accessibilityIdentifier("catalog.readable-only")
     }
 }

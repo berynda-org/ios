@@ -145,18 +145,21 @@ private struct TabletRootView: View {
         } detail: {
             switch environment.selectedTab {
             case .catalog:
-                switch environment.tabletCatalogSelection {
-                case let .work(work):
-                    WorkDetailView(work: work, repository: environment.catalogRepository)
-                case let .linkedWork(identifier):
-                    LinkedWorkView(identifier: identifier, repository: environment.catalogRepository)
-                case nil:
-                    ContentUnavailableView(
-                        "Оберіть твір",
-                        systemImage: "books.vertical",
-                        description: Text("Відомості про твір і його видання відкриються тут.")
-                    )
+                NavigationStack {
+                    switch environment.tabletCatalogSelection {
+                    case let .work(work):
+                        WorkDetailView(work: work, repository: environment.catalogRepository)
+                    case let .linkedWork(identifier):
+                        LinkedWorkView(identifier: identifier, repository: environment.catalogRepository)
+                    case nil:
+                        ContentUnavailableView(
+                            "Оберіть твір",
+                            systemImage: "books.vertical",
+                            description: Text("Відомості про твір і його видання відкриються тут.")
+                        )
+                    }
                 }
+                .id(environment.tabletCatalogSelection)
             case .library:
                 ContentUnavailableView("Бібліотека", systemImage: "bookmark")
             case .profile:

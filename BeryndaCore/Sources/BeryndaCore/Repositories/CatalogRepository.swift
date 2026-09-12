@@ -8,6 +8,8 @@ public protocol CatalogRepository: Sendable {
         readableOnly: Bool,
         language: String?
     ) async throws -> PaginatedResponse<WorkSummary>
+    func author(id: UUID) async throws -> AuthorSummary
+    func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary>
     func work(identifier: String) async throws -> WorkSummary
     func editions(workID: UUID) async throws -> [EditionSummary]
     /// Public collections that contain this work.
@@ -18,6 +20,11 @@ public protocol CatalogRepository: Sendable {
 }
 
 public extension CatalogRepository {
+    func author(id: UUID) async throws -> AuthorSummary { throw APIError.invalidResponse }
+    func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary> {
+        throw APIError.invalidResponse
+    }
+
     // Defaulted so the UI-test and unit-test doubles do not each have to
     // restate a discovery surface they do not exercise.
     func collections(workID: UUID) async throws -> [PublicCollectionSummary] { [] }
@@ -59,6 +66,14 @@ public struct LiveCatalogRepository: CatalogRepository {
                 language: language
             )
         )
+    }
+
+    public func author(id: UUID) async throws -> AuthorSummary {
+        try await client.request(.author(id: id))
+    }
+
+    public func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary> {
+        try await client.request(.authorWorks(id: authorID, page: page, readableOnly: readableOnly))
     }
 
     public func work(identifier: String) async throws -> WorkSummary {

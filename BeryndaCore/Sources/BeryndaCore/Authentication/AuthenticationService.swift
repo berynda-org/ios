@@ -4,6 +4,10 @@ import FoundationNetworking
 #endif
 
 public protocol AuthenticationServing: Sendable {
+    func socialConfiguration() async throws -> SocialProviderConfiguration
+    func socialChallenge(provider: SocialProvider, accessToken: String?) async throws -> SocialChallenge
+    func socialLogin(_ credential: SocialCredential) async throws -> AuthSession
+    func linkSocialIdentity(_ credential: SocialCredential, accessToken: String) async throws -> UserProfile
     func login(email: String, password: String) async throws -> AuthSession
     func register(email: String, password: String, displayName: String) async throws -> RegistrationResult
     func confirmEmail(token: String) async throws -> UserProfile
@@ -15,6 +19,17 @@ public protocol AuthenticationServing: Sendable {
     ) async throws
     func refresh(refreshToken: String) async throws -> AuthTokens
     func logout(accessToken: String, refreshToken: String) async throws
+}
+
+public extension AuthenticationServing {
+    func socialConfiguration() async throws -> SocialProviderConfiguration { .disabled }
+    func socialChallenge(provider: SocialProvider, accessToken: String?) async throws -> SocialChallenge {
+        throw SessionError.unavailable
+    }
+    func socialLogin(_ credential: SocialCredential) async throws -> AuthSession { throw SessionError.unavailable }
+    func linkSocialIdentity(_ credential: SocialCredential, accessToken: String) async throws -> UserProfile {
+        throw SessionError.unavailable
+    }
 }
 
 public actor LiveAuthenticationService: AuthenticationServing {
@@ -32,6 +47,27 @@ public actor LiveAuthenticationService: AuthenticationServing {
         self.baseURL = baseURL
         self.transport = transport
         self.language = language
+    }
+
+    public func socialConfiguration() async throws -> SocialProviderConfiguration {
+        try await get(path: "auth/social/config/")
+    }
+
+    public func socialChallenge(provider: SocialProvider, accessToken: String?) async throws -> SocialChallenge {
+        try await post(path: "auth/social/challenge/",
+                       body: SocialChallengeBody(provider: provider, linkAccount: accessToken != nil),
+                       bearerToken: accessToken, unauthorizedError: .expired)
+    }
+
+    public func socialLogin(_ credential: SocialCredential) async throws -> AuthSession {
+        let response: LoginResponse = try await post(path: "auth/social/login/", body: credential,
+                                                    bearerToken: nil, unauthorizedError: .socialVerificationFailed)
+        return AuthSession(tokens: try AuthTokens(access: response.access, refresh: response.refresh), user: response.user)
+    }
+
+    public func linkSocialIdentity(_ credential: SocialCredential, accessToken: String) async throws -> UserProfile {
+        try await post(path: "auth/social/link/", body: credential,
+                       bearerToken: accessToken, unauthorizedError: .expired)
     }
 
     public func login(email: String, password: String) async throws -> AuthSession {
@@ -218,6 +254,16 @@ public actor LiveAuthenticationService: AuthenticationServing {
             throw SessionError.unavailable
         }
 
+        if !(200..<300).contains(http.statusCode),
+           let problem = try? decoder.decode(SocialErrorResponse.self, from: data) {
+            switch problem.error.code {
+            case "SOCIAL_ACCOUNT_EXISTS": throw SessionError.socialAccountExists
+            case "SOCIAL_IDENTITY_ALREADY_LINKED": throw SessionError.socialIdentityAlreadyLinked
+            case "SOCIAL_CREDENTIALS_INVALID", "SOCIAL_VERIFIED_EMAIL_REQUIRED":
+                throw SessionError.socialVerificationFailed
+            default: break
+            }
+        }
         switch http.statusCode {
         case 200..<300:
             if acceptsEmptyResponse, data.isEmpty, let empty = EmptyResponse() as? Response {
@@ -301,4 +347,14 @@ private struct EmptyResponse: Decodable {
 
 private struct StatusResponse: Decodable {
     let status: String
+}
+
+private struct SocialChallengeBody: Encodable {
+    let provider: SocialProvider
+    let linkAccount: Bool
+    enum CodingKeys: String, CodingKey { case provider, linkAccount = "link_account" }
+}
+private struct SocialErrorResponse: Decodable {
+    let error: Problem
+    struct Problem: Decodable { let code: String }
 }

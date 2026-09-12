@@ -1,4 +1,5 @@
 import Foundation
+import GoogleSignIn
 import SwiftUI
 
 @main
@@ -23,7 +24,9 @@ struct BeryndaApp: App {
                 .environmentObject(environment)
                 .environmentObject(environment.networkMonitor)
                 .tint(BeryndaColor.accent)
-                .onOpenURL { environment.open($0) }
+                .onOpenURL { url in
+                    if !GIDSignIn.sharedInstance.handle(url) { environment.open(url) }
+                }
         }
     }
 }

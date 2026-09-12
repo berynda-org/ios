@@ -38,6 +38,11 @@ struct AuthenticationView: View {
                 }
                 .pickerStyle(.segmented)
 
+                SocialSignInButtons(account: account) {
+                    await onAuthenticated()
+                    dismiss()
+                }
+
                 if let confirmation = account.registrationEmail {
                     Section {
                         Label("Перевірте пошту", systemImage: "envelope.badge")
@@ -93,8 +98,10 @@ struct AuthenticationView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Закрити") { dismiss() }
+                        .disabled(account.isBusy)
                 }
             }
+            .interactiveDismissDisabled(account.isBusy)
             .sheet(isPresented: $showsPasswordReset) {
                 PasswordResetView(account: account, initialEmail: email)
             }

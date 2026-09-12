@@ -56,6 +56,26 @@ final class AccountViewModel: ObservableObject {
         }
     }
 
+    func socialConfiguration() async throws -> SocialProviderConfiguration {
+        try await authentication.socialConfiguration()
+    }
+
+    func socialSignIn(provider: SocialProvider, linking: Bool,
+                      authorize: (SocialChallenge) async throws -> SocialCredential) async -> Bool {
+        guard !isBusy else { return false }
+        return await perform {
+            let challenge = try await session.socialChallenge(provider: provider, linking: linking)
+            let credential = try await authorize(challenge)
+            try Task.checkCancellation()
+            let user: UserProfile
+            if linking { user = try await session.link(credential) }
+            else { user = try await session.signIn(credential) }
+            apply(profile: user)
+            state = .authenticated
+            registrationEmail = nil
+        }
+    }
+
     func register(email: String, password: String, displayName: String) async -> Bool {
         await perform {
             emailConfirmationComplete = false
@@ -165,6 +185,8 @@ final class AccountViewModel: ObservableObject {
         do {
             try await operation()
             return true
+        } catch is CancellationError {
+            return false
         } catch {
             errorMessage = error.localizedDescription
             state = await session.state()

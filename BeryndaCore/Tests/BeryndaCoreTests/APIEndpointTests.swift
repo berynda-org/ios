@@ -71,7 +71,7 @@ final class APIEndpointTests: XCTestCase {
 
         XCTAssertEqual(query["q"]!, "Кобзар")
         XCTAssertEqual(query["page"]!, "2")
-        XCTAssertEqual(query["has_text"]!, "true")
+        XCTAssertEqual(query["mobile_readable"]!, "true")
         XCTAssertEqual(query["language"]!, "uk")
     }
 
@@ -111,6 +111,18 @@ final class APIEndpointTests: XCTestCase {
         XCTAssertEqual(try limit(9_999), "48")
         XCTAssertEqual(try limit(0), "1")
         XCTAssertEqual(try limit(-5), "1")
+    }
+
+    func testAuthorWorksArePaginatedAndCanBeFiltered() throws {
+        let url = try XCTUnwrap(APIEndpoint.authorWorks(id: fileID, page: 2, readableOnly: true).url(relativeTo: baseURL))
+        let parts = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        let query = Dictionary(uniqueKeysWithValues: (parts.queryItems ?? []).map { ($0.name, $0.value) })
+        XCTAssertEqual(parts.path, "/api/v1/works/")
+        XCTAssertEqual(query["person_id"]!, fileID.uuidString.lowercased())
+        XCTAssertEqual(query["page"]!, "2")
+        XCTAssertEqual(query["mobile_readable"]!, "true")
+        XCTAssertEqual(APIEndpoint.author(id: fileID).url(relativeTo: baseURL)?.path,
+                       "/api/v1/persons/44444444-4444-4444-4444-444444444444/")
     }
 
 }

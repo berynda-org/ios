@@ -3,6 +3,8 @@ import Foundation
 public enum APIEndpoint: Sendable, Equatable {
     case works(search: String?, page: Int)
     case worksFiltered(search: String?, page: Int, readableOnly: Bool, language: String?)
+    case author(id: UUID)
+    case authorWorks(id: UUID, page: Int, readableOnly: Bool)
     case work(slug: String)
     case editions(workID: UUID)
     case workCollections(workID: UUID)
@@ -46,11 +48,18 @@ public enum APIEndpoint: Sendable, Equatable {
                 queryItems.append(.init(name: "q", value: normalizedSearch))
             }
             if readableOnly {
-                queryItems.append(.init(name: "has_text", value: "true"))
+                queryItems.append(.init(name: "mobile_readable", value: "true"))
             }
             if let language, !language.isEmpty {
                 queryItems.append(.init(name: "language", value: language))
             }
+        case let .author(id):
+            path = "persons/\(id.uuidString.lowercased())/"
+        case let .authorWorks(id, page, readableOnly):
+            path = "works/"
+            queryItems.append(.init(name: "person_id", value: id.uuidString.lowercased()))
+            queryItems.append(.init(name: "page", value: String(max(page, 1))))
+            if readableOnly { queryItems.append(.init(name: "mobile_readable", value: "true")) }
         case let .work(slug):
             path = "works/\(Self.encodePathSegment(slug))/"
         case let .editions(workID):

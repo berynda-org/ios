@@ -21,6 +21,38 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Каталог"].waitForExistence(timeout: 10))
     }
 
+    func testReadingFilterHidesUnavailableWorksAndCanBeCleared() {
+        XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
+        let toggle = app.switches["catalog.readable-only"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        toggle.tap()
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: app.staticTexts["Лісова пісня"])
+        waitForExpectations(timeout: 5)
+        XCTAssertTrue(app.staticTexts["Кобзар"].exists)
+        XCTAssertFalse(app.staticTexts["Слово о полку Ігоревім"].exists)
+        toggle.tap()
+        XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
+    }
+
+    func testAuthorNavigationOpensWorksAndReader() {
+        openWork(named: "Кобзар")
+        let authorID = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
+        let author = app.buttons["work.author.\(authorID)"]
+        XCTAssertTrue(author.waitForExistence(timeout: 5))
+        author.tap()
+        XCTAssertTrue(app.staticTexts["author.name"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["author.name"].label, "Тарас Шевченко")
+        let workID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        let work = app.buttons["author.work.\(workID)"]
+        XCTAssertTrue(work.waitForExistence(timeout: 5))
+        work.tap()
+        let read = app.buttons["edition.read.\(EditionID.readable)"]
+        XCTAssertTrue(read.waitForExistence(timeout: 5))
+        read.tap()
+        XCTAssertTrue(app.staticTexts["I · с. 1 з 3"].waitForExistence(timeout: 5))
+    }
+
     func testLaunchShowsAnonymousCatalog() {
         XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.tabBars.buttons["Каталог"].isSelected)

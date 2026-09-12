@@ -33,3 +33,8 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+## Fedorovsk cover font
+
+Copyright 2025 The Fedorovsk Project Authors. Licensed under the SIL Open Font License 1.1. The production website subset is bundled as TrueType without changing its glyphs. The full license is included in `Fedorovsk-OFL.txt`.

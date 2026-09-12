@@ -161,7 +161,7 @@ struct BeryndaBookCover: View {
     private func glyphView(ink: Color) -> some View {
         if let glyph = design.glyph {
             Text(glyph)
-                .font(.system(size: width * 0.42, weight: .semibold, design: .serif))
+                .font(BeryndaCoverFont.font(for: glyph, size: width * 0.42))
                 .minimumScaleFactor(0.5)
                 .foregroundStyle(ink)
                 .padding(width * 0.14)

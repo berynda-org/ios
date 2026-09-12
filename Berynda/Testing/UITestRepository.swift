@@ -32,6 +32,28 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         }
     }
 
+    func works(search: String?, page: Int, readableOnly: Bool, language: String?) async throws -> PaginatedResponse<WorkSummary> {
+        guard language == nil || language == "uk" else { return try decode(Self.page(count: 0, next: nil, results: "")) }
+        if readableOnly {
+            let query = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let matches = page == 1 && (query.isEmpty || "кобзар".contains(query))
+            return try decode(Self.page(count: matches ? 1 : 0, next: nil, results: matches ? Self.kobzarWork : ""))
+        }
+        return try await works(search: search, page: page)
+    }
+
+    func author(id: UUID) async throws -> AuthorSummary {
+        let name = id.uuidString.lowercased().hasPrefix("aaaaaaaa") ? "Тарас Шевченко" : "Леся Українка"
+        return try decode("{\"id\":\"\(id)\",\"display_name\":\"\(name)\",\"birth_year\":1814,\"death_year\":1861,\"bio\":\"Український письменник і художник.\"}")
+    }
+
+    func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary> {
+        let isTaras = authorID.uuidString.lowercased().hasPrefix("aaaaaaaa")
+        let matches = page == 1 && (isTaras || !readableOnly)
+        return try decode(Self.page(count: matches ? 1 : 0, next: nil,
+                                    results: matches ? (isTaras ? Self.kobzarWork : Self.forestSongWork) : ""))
+    }
+
     func work(identifier: String) async throws -> WorkSummary {
         let json: String
         switch identifier.lowercased() {
