@@ -69,6 +69,7 @@ struct AuthorView: View {
                 .refreshable { await model.load() }
             }
         }
+        .accessibilityIdentifier("author.screen")
         .background(BeryndaColor.paper)
         .navigationTitle("Автор")
         .navigationBarTitleDisplayMode(.inline)
@@ -76,7 +77,6 @@ struct AuthorView: View {
             CatalogReadingFilter(readableOnly: $model.readableOnly)
         }
         .task(id: model.readableOnly) { await model.load() }
-        .accessibilityIdentifier("author.screen")
     }
 }
 

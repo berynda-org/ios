@@ -24,7 +24,7 @@ final class BeryndaUITests: XCTestCase {
     func testReadingFilterHidesUnavailableWorksAndCanBeCleared() {
         XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
         let toggle = app.switches["catalog.readable-only"]
-        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
         toggle.tap()
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: app.staticTexts["Лісова пісня"])

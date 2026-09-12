@@ -58,6 +58,7 @@ private struct CatalogLoadedView: View {
                 }
             }
         }
+            .accessibilityIdentifier("catalog_screen")
             .background(BeryndaColor.paper)
             .navigationTitle("Каталог")
             .safeAreaInset(edge: .top, spacing: 0) {
@@ -75,7 +76,6 @@ private struct CatalogLoadedView: View {
                     }
                 }
             }
-            .accessibilityIdentifier("catalog_screen")
             .onChange(of: model.query) { _, _ in model.searchChanged() }
             .onChange(of: model.readableOnly) { _, _ in model.searchChanged() }
             .onChange(of: model.languageFilter) { _, _ in model.searchChanged() }
@@ -450,10 +450,11 @@ struct CatalogReadingFilter: View {
             Label("Лише доступні для читання", systemImage: "book")
                 .font(.subheadline)
         }
+        .toggleStyle(.switch)
+        .accessibilityIdentifier("catalog.readable-only")
         .tint(BeryndaColor.accent)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(.bar)
-        .accessibilityIdentifier("catalog.readable-only")
     }
 }
