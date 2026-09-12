@@ -287,12 +287,12 @@ struct ReaderView: View {
                 case let .image(data):
                     if case let .image(facing)? = model.facingContent {
                         HStack(spacing: 0) {
-                            ServerPageImage(data: data)
-                            ServerPageImage(data: facing)
+                            ServerPageImage(data: data, page: model.currentPage)
+                            ServerPageImage(data: facing, page: model.currentPage + 1)
                         }
                         .accessibilityIdentifier("reader.spread")
                     } else {
-                        ServerPageImage(data: data)
+                        ServerPageImage(data: data, page: model.currentPage)
                     }
                 case let .epub(payload):
                     EPUBReaderView(
@@ -594,41 +594,6 @@ private struct PDFReaderView: UIViewRepresentable {
 
         deinit {
             if let observer { NotificationCenter.default.removeObserver(observer) }
-        }
-    }
-}
-
-private struct ServerPageImage: View {
-    let data: Data
-    @State private var scale: CGFloat = 1
-    @GestureState private var gestureScale: CGFloat = 1
-
-    var body: some View {
-        GeometryReader { geometry in
-            ScrollView([.horizontal, .vertical]) {
-                if let image = UIImage(data: data) {
-                    let effectiveScale = min(max(scale * gestureScale, 1), 4)
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(
-                            width: geometry.size.width * effectiveScale,
-                            height: geometry.size.height * effectiveScale
-                        )
-                        .gesture(
-                            MagnifyGesture()
-                                .updating($gestureScale) { value, state, _ in
-                                    state = value.magnification
-                                }
-                                .onEnded { value in
-                                    scale = min(max(scale * value.magnification, 1), 4)
-                                }
-                        )
-                        .onTapGesture(count: 2) { scale = scale > 1 ? 1 : 2 }
-                } else {
-                    ContentUnavailableView("Сторінку пошкоджено", systemImage: "exclamationmark.triangle")
-                }
-            }
         }
     }
 }
