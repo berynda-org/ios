@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+
+      - name: Test upload result handling
+        run: python3 -m unittest discover -s .github/scripts -p test_upload_testflight.py
       # App Store Connect rejects uploads built with anything older than
       # Xcode 26 and the iOS 26 SDK (Apple requirement since 2026-04-28).
       # Pinned rather than "latest": this macos-15 image ships Xcode 26.3

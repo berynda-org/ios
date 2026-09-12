@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Test upload result handling
+        run: python3 -m unittest discover -s .github/scripts -p test_upload_testflight.py
+
       - name: Require signing and upload secrets
         env:
           CERTIFICATE_P12_BASE64: ${{ secrets.APP_STORE_CERTIFICATE_P12_BASE64 }}
@@ -159,16 +162,7 @@ jobs:
           set -eu
           IPA_PATH="$(find "$RUNNER_TEMP/export" -maxdepth 1 -name '*.ipa' -print -quit)"
           test -n "$IPA_PATH"
-          xcrun altool --validate-app \
-            --file "$IPA_PATH" \
-            --type ios \
-            --apiKey "$ASC_KEY_ID" \
-            --apiIssuer "$ASC_ISSUER_ID"
-          xcrun altool --upload-app \
-            --file "$IPA_PATH" \
-            --type ios \
-            --apiKey "$ASC_KEY_ID" \
-            --apiIssuer "$ASC_ISSUER_ID"
+          python3 .github/scripts/upload_testflight.py "$IPA_PATH"
 
       - name: Retain archive symbols and signed IPA
         if: success()

@@ -16,3 +16,6 @@ xcuserdata/
 *.certSigningRequest
 *.keychain-db
 .appstoreconnect/
+
+# Local checks for the upload helper.
+__pycache__/
