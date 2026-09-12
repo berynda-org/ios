@@ -121,8 +121,8 @@ final class APIEndpointTests: XCTestCase {
         XCTAssertEqual(query["person_id"]!, fileID.uuidString.lowercased())
         XCTAssertEqual(query["page"]!, "2")
         XCTAssertEqual(query["mobile_readable"]!, "true")
-        XCTAssertEqual(APIEndpoint.author(id: fileID).url(relativeTo: baseURL)?.path,
-                       "/api/v1/persons/44444444-4444-4444-4444-444444444444/")
+        XCTAssertEqual(APIEndpoint.author(id: fileID).url(relativeTo: baseURL)?.absoluteString,
+                       "https://berynda.org/api/v1/persons/44444444-4444-4444-4444-444444444444/")
     }
 
 }

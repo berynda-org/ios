@@ -295,7 +295,7 @@ final class AuthenticationServiceTests: XCTestCase {
         XCTAssertEqual(session.tokens.access, "header.access.signature")
         XCTAssertFalse(credential.description.contains(credential.identityToken))
         let requests = await transport.recordedRequests()
-        XCTAssertEqual(requests[0].url?.path, "/api/v1/auth/social/challenge/")
+        XCTAssertEqual(requests[0].url?.absoluteString, "https://berynda.org/api/v1/auth/social/challenge/")
         XCTAssertEqual(try jsonObject(requests[0].body)["link_account"] as? Bool, false)
         XCTAssertEqual(try jsonObject(requests[1].body)["identity_token"] as? String, "provider.identity.signature")
         XCTAssertNil(requests[1].headers["Authorization"])
