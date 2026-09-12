@@ -116,11 +116,17 @@ public actor BeryndaAPIClient {
         accept: String = "*/*",
         maximumBytes: Int = 5 * 1_024 * 1_024
     ) async throws -> HTTPPayload {
-        try await performData(
+        // The API negotiates its JSON renderer before a view returns a binary
+        // file response. Image/PDF/EPUB-only Accept headers therefore get 406.
+        // Still validate the successful payload's MIME type in the repository.
+        let responseTypes = accept == "*/*" || accept.contains("application/json")
+            ? accept
+            : "\(accept), application/json"
+        return try await performData(
             endpoint,
             method: .get,
             body: nil,
-            accept: accept,
+            accept: responseTypes,
             maximumBytes: maximumBytes
         )
     }

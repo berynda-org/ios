@@ -25,6 +25,8 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.3.app
       - name: Install XcodeGen
         run: brew install xcodegen
+      - name: Test core package
+        run: swift test --package-path BeryndaCore
       - name: Generate project
         run: xcodegen generate --spec project.yml
       - name: Prepare simulator

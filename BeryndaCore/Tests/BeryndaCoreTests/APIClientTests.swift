@@ -134,6 +134,35 @@ final class APIClientTests: XCTestCase {
         }
     }
 
+    func testBinaryRequestsPassTheAPIsJSONContentNegotiation() async throws {
+        // Reproduce the live API's 406 response when its JSON renderer cannot
+        // negotiate, even though the endpoint ultimately serves a binary file.
+        for mimeType in ["image/jpeg", "application/pdf", "application/epub+zip"] {
+            let expected = Data("binary fixture".utf8)
+            let transport = StubTransport { request in
+                let acceptsJSON = request.value(forHTTPHeaderField: "Accept")?
+                    .contains("application/json") == true
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: acceptsJSON ? 200 : 406,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": acceptsJSON ? mimeType : "application/json"]
+                )!
+                return (acceptsJSON ? expected : Data("{}".utf8), response)
+            }
+            let client = BeryndaAPIClient(
+                baseURL: URL(string: "https://berynda.org/api/v1/")!,
+                transport: transport
+            )
+            let payload = try await client.data(
+                .readerContent(fileID: UUID(), structuredText: false),
+                accept: mimeType == "image/jpeg" ? "image/*" : mimeType
+            )
+            XCTAssertEqual(payload.contentType, mimeType)
+            XCTAssertEqual(payload.data, expected)
+        }
+    }
+
     func testBinaryPayloadNormalizesContentType() async throws {
         let transport = StubTransport { request in
             let response = HTTPURLResponse(

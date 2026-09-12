@@ -89,7 +89,7 @@ final class ReaderRepositoryTests: XCTestCase {
 
     func testEPUBAcceptsCanonicalContentTypeAndZipSignature() async throws {
         let repository = repository { request in
-            XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/epub+zip")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/epub+zip, application/json")
             return (
                 Data([0x50, 0x4b, 0x03, 0x04, 0x00]),
                 Self.response(request, contentType: "application/epub+zip")
