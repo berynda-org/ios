@@ -87,6 +87,19 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["work.rights.explanation"].exists)
     }
 
+    func testUnconfirmedPublicDomainClaimIsAbsentFromCatalogAndDetail() {
+        let confirmedID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        let unconfirmedID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["catalog.rights.\(confirmedID)"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["catalog.rights.\(unconfirmedID)"].exists)
+
+        openWork(named: "Лісова пісня")
+        XCTAssertTrue(app.staticTexts["edition.restricted.\(EditionID.restricted)"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["work.rights.title"].exists)
+        XCTAssertFalse(app.staticTexts["work.rights.explanation"].exists)
+    }
+
     func testRestrictedEditionExplainsWhyItCannotOpen() {
         openWork(named: "Лісова пісня")
 

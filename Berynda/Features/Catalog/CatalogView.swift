@@ -416,10 +416,11 @@ private struct WorkRow: View {
                 Text(editionsLabel)
                     .font(.caption)
                     .foregroundStyle(BeryndaColor.mutedInk)
-                if let rights = work.rightsSummary, rights != "none", rights != "mixed" {
-                    Label(rightsLabel(rights), systemImage: "checkmark.shield")
+                if let rights = work.rightsClaim {
+                    Label(rights.title, systemImage: rights.symbol)
                         .font(.caption2)
                         .foregroundStyle(BeryndaColor.accent)
+                        .accessibilityIdentifier("catalog.rights.\(work.id)")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -432,15 +433,6 @@ private struct WorkRow: View {
         case 0: "Бібліографічний запис"
         case 1: "1 видання"
         default: "\(work.editionsCount) видань"
-        }
-    }
-
-    private func rightsLabel(_ value: String) -> String {
-        switch value {
-        case "public_domain": "Суспільне надбання"
-        case "open_license": "Відкрита ліцензія"
-        case "permission": "Дозволено правовласником"
-        default: "Умови доступу визначено"
         }
     }
 }

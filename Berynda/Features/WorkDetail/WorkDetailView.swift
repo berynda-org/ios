@@ -332,7 +332,7 @@ private struct RightsPanel: View {
     let work: WorkSummary
 
     var body: some View {
-        if let summary = Self.summary(for: work.rightsSummary) {
+        if let summary = work.rightsClaim {
             BeryndaPanel {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
@@ -353,46 +353,6 @@ private struct RightsPanel: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-        }
-    }
-
-    struct Summary {
-        let title: String
-        let symbol: String
-        let explanation: String
-    }
-
-    /// Bound to `rights_summary`, the work-level aggregate the backend derives.
-    /// `pd_status` is a separate, rarely-confirmed confidence pipeline and is
-    /// deliberately not used for this badge.
-    static func summary(for rightsSummary: String?) -> Summary? {
-        switch rightsSummary {
-        case "public_domain":
-            Summary(
-                title: "Суспільне надбання",
-                symbol: "building.columns",
-                explanation: "Строк майнових авторських прав сплив — твір можна вільно читати, копіювати й поширювати."
-            )
-        case "open_license":
-            Summary(
-                title: "Відкрита ліцензія",
-                symbol: "checkmark.seal",
-                explanation: "Правовласник дозволив вільне використання на умовах відкритої ліцензії."
-            )
-        case "permission":
-            Summary(
-                title: "Дозволено правовласником",
-                symbol: "hand.raised",
-                explanation: "Твір опубліковано з дозволу правовласника; умови можуть відрізнятися для окремих видань."
-            )
-        case "copyrighted":
-            Summary(
-                title: "Захищено авторським правом",
-                symbol: "lock",
-                explanation: "Читання доступне лише там, де це прямо дозволено правовласником."
-            )
-        default:
-            nil
         }
     }
 }
