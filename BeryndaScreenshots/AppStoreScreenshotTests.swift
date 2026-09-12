@@ -13,12 +13,13 @@ final class AppStoreScreenshotTests: XCTestCase {
     private func capture(locale: String, catalogTitle: String) throws {
         let app = XCUIApplication()
         let isPad = UIDevice.current.userInterfaceIdiom == .pad
-        XCUIDevice.shared.orientation = isPad ? .landscapeLeft : .portrait
+        XCUIDevice.shared.orientation = .portrait
         app.launchArguments = [
             "-AppleLanguages", "(\(locale))", "-AppleLocale", locale == "uk" ? "uk_UA" : "en_US",
             "-ui.language", locale, "-appearance.mode", "light"
         ]
         app.launch()
+        if isPad { XCUIDevice.shared.orientation = .landscapeLeft }
         XCTAssertTrue(app.navigationBars[catalogTitle].waitForExistence(timeout: 30))
         // Allow the live catalog and its cover images to finish rendering.
         Thread.sleep(forTimeInterval: 5)
@@ -60,7 +61,7 @@ final class AppStoreScreenshotTests: XCTestCase {
 
     private func snapshot(_ app: XCUIApplication, _ locale: String, _ name: String) {
         XCTAssertFalse(app.alerts.firstMatch.exists, "Do not capture a blocking alert")
-        let attachment = XCTAttachment(screenshot: app.screenshot())
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "store-\(locale)-\(name)"
         attachment.lifetime = .keepAlways
         add(attachment)
