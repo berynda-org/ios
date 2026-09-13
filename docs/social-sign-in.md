@@ -24,6 +24,16 @@ Create OAuth clients in the Berynda Google Cloud project:
 
 The app obtains public client IDs from `/api/v1/auth/social/config/` and initializes GoogleSignIn with both IDs. It hides Google sign-in unless its installed callback scheme matches. Disabled providers are also rejected by the server. No private Google client secret is embedded in the app.
 
+Configured public identifiers:
+
+```dotenv
+SOCIAL_AUTH_APPLE_CLIENT_ID=org.berynda.ios
+SOCIAL_AUTH_GOOGLE_IOS_CLIENT_ID=366237017432-j02ggoeegtdisdbqpneis3feif807m6q.apps.googleusercontent.com
+SOCIAL_AUTH_GOOGLE_CLIENT_ID=366237017432-guh10jm0d0ue4958kcemnrmnbffba5kq.apps.googleusercontent.com
+```
+
+The Google callback registered in both app configuration files is `com.googleusercontent.apps.366237017432-j02ggoeegtdisdbqpneis3feif807m6q`. Keep these public identifiers consistent with the runtime environment. Updating an environment file requires recreating the API container with the social-login release before the running service can expose the configuration.
+
 ## Validation
 
 Server regression tests cover signature, issuer, audience, expiry, nonce, Google authorized presenter, replay rejection, blocked users, explicit linking, account collisions and the native JSON endpoints. iOS tests cover the transport contract and error handling. A device test with real provider credentials remains required before release.

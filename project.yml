@@ -62,6 +62,9 @@ targets:
           - CFBundleURLName: org.berynda.ios
             CFBundleURLSchemes:
               - berynda
+          - CFBundleURLName: org.berynda.ios.google
+            CFBundleURLSchemes:
+              - com.googleusercontent.apps.366237017432-j02ggoeegtdisdbqpneis3feif807m6q
         LSApplicationCategoryType: public.app-category.books
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
