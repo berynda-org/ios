@@ -25,13 +25,13 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
         let toggle = app.switches["catalog.readable-only"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
-        toggle.tap()
+        flip(toggle, to: "1")
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: app.staticTexts["Лісова пісня"])
         waitForExpectations(timeout: 5)
         XCTAssertTrue(app.staticTexts["Кобзар"].exists)
         XCTAssertFalse(app.staticTexts["Слово о полку Ігоревім"].exists)
-        toggle.tap()
+        flip(toggle, to: "0")
         XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
     }
 
@@ -202,6 +202,18 @@ final class BeryndaUITests: XCTestCase {
             app.staticTexts["Твір додано до бібліографічного списку."]
                 .waitForExistence(timeout: 8)
         )
+    }
+
+    /// A labelled SwiftUI `Toggle` is one wide accessibility element, and
+    /// `tap()` lands on its centre — the label — which does not flip it. The
+    /// control itself sits at the trailing edge, so the tap is aimed there,
+    /// and the new value is asserted so a tap that missed fails here rather
+    /// than as a confusing timeout several lines later.
+    private func flip(_ toggle: XCUIElement, to value: String) {
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        let flipped = NSPredicate(format: "value == %@", value)
+        expectation(for: flipped, evaluatedWith: toggle)
+        waitForExpectations(timeout: 5)
     }
 
     private func openWork(named title: String) {
