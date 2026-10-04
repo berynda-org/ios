@@ -123,7 +123,7 @@ final class AppEnvironment: ObservableObject {
             selectedTab = .catalog
             presentedReader = ReaderPresentation(
                 fileID: fileID,
-                fallbackTitle: "Берында",
+                fallbackTitle: "Беринда",
                 initialPage: page
             )
         case .confirmEmail, .resetPassword:

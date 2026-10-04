@@ -128,7 +128,7 @@ private struct TabletRootView: View {
                 sidebarButton("Бібліотека", systemImage: "bookmark", tab: .library)
                 sidebarButton("Профіль", systemImage: "person.crop.circle", tab: .profile)
             }
-            .navigationTitle("Берында")
+            .navigationTitle("Беринда")
         } content: {
             switch environment.selectedTab {
             case .catalog:

@@ -278,7 +278,7 @@ final class ReaderViewModel: ObservableObject {
         let controller = UIPrintInteractionController.shared
         let printInfo = UIPrintInfo.printInfo()
         printInfo.outputType = .general
-        printInfo.jobName = info?.book.title ?? "Берында"
+        printInfo.jobName = info?.book.title ?? "Беринда"
         controller.printInfo = printInfo
         controller.printingItem = data
         controller.present(animated: true, completionHandler: nil)

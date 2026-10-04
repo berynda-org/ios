@@ -50,7 +50,7 @@ targets:
         CFBundleDevelopmentRegion: uk
         UIAppFonts:
           - Fedorovsk-glyphs.ttf
-        CFBundleDisplayName: Берында
+        CFBundleDisplayName: Беринда
         CFBundleExecutable: $(EXECUTABLE_NAME)
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         CFBundleInfoDictionaryVersion: "6.0"
