@@ -12,6 +12,7 @@ final class AccountViewModel: ObservableObject {
     @Published var passwordResetEmail: String?
     @Published private(set) var emailConfirmationComplete = false
     @Published private(set) var passwordResetComplete = false
+    @Published private(set) var socialProviders = SocialProviderConfiguration.disabled
 
     private let session: SessionController
     private let authentication: any AuthenticationServing
@@ -56,8 +57,13 @@ final class AccountViewModel: ObservableObject {
         }
     }
 
-    func socialConfiguration() async throws -> SocialProviderConfiguration {
-        try await authentication.socialConfiguration()
+    /// Called by the screens that host `SocialSignInButtons`. The buttons
+    /// cannot load this themselves: they render nothing until a provider is
+    /// known, and SwiftUI never runs a `.task` attached to an empty view.
+    func loadSocialProviders() async {
+        guard socialProviders == .disabled,
+              let loaded = try? await authentication.socialConfiguration() else { return }
+        socialProviders = loaded
     }
 
     func socialSignIn(provider: SocialProvider, linking: Bool,

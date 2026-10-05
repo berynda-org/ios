@@ -206,6 +206,13 @@ struct UITestTokenStore: TokenStore {
 }
 
 actor UITestAuthenticationService: AuthenticationServing {
+    func socialConfiguration() async throws -> SocialProviderConfiguration {
+        try JSONDecoder().decode(
+            SocialProviderConfiguration.self,
+            from: Data(#"{"apple_enabled": true, "google_enabled": false}"#.utf8)
+        )
+    }
+
     func login(email: String, password: String) async throws -> AuthSession {
         guard email == "reader@example.org", password == "password123" else {
             throw SessionError.invalidCredentials

@@ -173,6 +173,7 @@ private struct ProfileContent: View {
                 ProfileEditorView(account: account, profile: profile)
             }
         }
+        .task { await account.loadSocialProviders() }
         .task {
             if account.state == .authenticated, account.profile == nil {
                 await account.loadProfile()

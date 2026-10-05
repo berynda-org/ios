@@ -8,7 +8,6 @@ struct SocialSignInButtons: View {
     @ObservedObject var account: AccountViewModel
     var linking = false
     var onSuccess: () async -> Void = {}
-    @State private var configuration = SocialProviderConfiguration.disabled
     @State private var linked = false
     @StateObject private var apple = AppleSignInCoordinator()
 
@@ -34,8 +33,9 @@ struct SocialSignInButtons: View {
                 .disabled(account.isBusy)
             }
         }
-        .task { configuration = (try? await account.socialConfiguration()) ?? .disabled }
     }
+
+    private var configuration: SocialProviderConfiguration { account.socialProviders }
 
     // The callback scheme is part of the signed app. Server configuration alone
     // cannot enable Google on an older build without that scheme.

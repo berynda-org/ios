@@ -160,6 +160,17 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertFalse(app.buttons["edition.read.\(EditionID.withoutFile)"].exists)
     }
 
+    func testSignInSheetOffersEnabledSocialProvider() {
+        app.tabBars.buttons["Профіль"].tap()
+        let authenticate = app.buttons["profile.authenticate"]
+        XCTAssertTrue(authenticate.waitForExistence(timeout: 5))
+        authenticate.tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["auth.apple"].waitForExistence(timeout: 5)
+        )
+    }
+
     func testSignInUnlocksProfileAndLibrary() {
         app.tabBars.buttons["Профіль"].tap()
         let authenticate = app.buttons["profile.authenticate"]

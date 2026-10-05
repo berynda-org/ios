@@ -94,6 +94,7 @@ struct AuthenticationView: View {
                 }
             }
             .navigationTitle(mode.title)
+            .task { await account.loadSocialProviders() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
