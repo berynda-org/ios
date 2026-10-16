@@ -13,15 +13,29 @@ struct SocialSignInButtons: View {
 
     var body: some View {
         Group {
+            if account.socialProviderLoadState == .loading {
+                Section { ProgressView("Завантажуємо способи входу…") }
+            } else if account.socialProviderLoadState == .failed || account.socialProviderLoadState == .idle {
+                Section("Швидкий вхід") {
+                    Text("Не вдалося завантажити вхід через Apple та Google.")
+                        .accessibilityIdentifier("auth.providers-error")
+                    Button("Спробувати ще раз") {
+                        Task { await account.loadSocialProviders() }
+                    }
+                    .accessibilityIdentifier("auth.providers-retry")
+                }
+            }
             if configuration.appleEnabled || googleAvailable {
                 Section(linking ? "Під’єднати спосіб входу" : "Швидкий вхід") {
                     if configuration.appleEnabled {
                         AppleSignInButton { begin(.apple) }
+                            .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .accessibilityIdentifier("auth.apple")
                     }
                     if googleAvailable {
                         GoogleSignInButton { begin(.google) }
+                            .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .accessibilityIdentifier("auth.google")
                     }

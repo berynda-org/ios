@@ -169,6 +169,34 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(
             app.descendants(matching: .any)["auth.apple"].waitForExistence(timeout: 5)
         )
+        XCTAssertTrue(app.descendants(matching: .any)["auth.google"].waitForExistence(timeout: 5))
+    }
+
+    func testSocialConfigurationFailureCanBeRetried() {
+        app.terminate()
+        app.launchArguments.append("--ui-testing-social-failure")
+        app.launch()
+        app.tabBars.buttons["Профіль"].tap()
+        let retry = app.buttons["auth.providers-retry"]
+        XCTAssertTrue(retry.waitForExistence(timeout: 5))
+        retry.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["auth.apple"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["auth.google"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["auth.providers-error"].exists)
+    }
+
+    func testLongCRLFTextBookDisplaysContent() {
+        app.terminate()
+        app.launchArguments.append("--ui-testing-long-text")
+        app.launch()
+        openWork(named: "Кобзар")
+        app.buttons["edition.read.\(EditionID.readable)"].tap()
+        let first = app.staticTexts["reader.text.block.0"]
+        XCTAssertTrue(first.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(first.label.hasPrefix("Тіні забутих предків."))
+        XCTAssertTrue(first.isHittable)
+        app.swipeUp()
+        XCTAssertGreaterThan(app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH %@", "reader.text.block.")).count, 1)
     }
 
     func testSignInUnlocksProfileAndLibrary() {

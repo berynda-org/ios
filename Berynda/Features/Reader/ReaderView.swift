@@ -508,11 +508,18 @@ private struct TextReaderView: View {
 
     var body: some View {
         ScrollView {
-            Group {
-                if allowsSelection {
-                    renderedText.textSelection(.enabled)
-                } else {
-                    renderedText
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(ReaderTextBlock.split(content)) { block in
+                    Group {
+                        if allowsSelection {
+                            renderedText(block.text).textSelection(.enabled)
+                        } else {
+                            renderedText(block.text)
+                        }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("reader.text.block.\(block.id)")
                 }
             }
             .font(.system(size: baseFontSize * textScale, weight: .regular, design: .serif))
@@ -524,13 +531,13 @@ private struct TextReaderView: View {
         }
     }
 
-    private var renderedText: Text {
+    private func renderedText(_ text: String) -> Text {
         guard isMarkdown,
               let attributed = try? AttributedString(
-                markdown: content,
+                markdown: text,
                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
               )
-        else { return Text(content) }
+        else { return Text(text) }
         return Text(attributed)
     }
 }

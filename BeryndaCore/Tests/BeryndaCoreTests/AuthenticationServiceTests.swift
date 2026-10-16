@@ -60,6 +60,27 @@ private actor AuthTransportStub: HTTPTransport {
 }
 
 final class AuthenticationServiceTests: XCTestCase {
+    func testSocialConfigurationLoadsBothProvidersWithoutAuthentication() async throws {
+        let transport = AuthTransportStub([AuthStubResponse(
+            status: 200,
+            data: Data(#"{"apple_enabled":true,"google_enabled":true,"google_ios_client_id":"ios.apps.googleusercontent.com","google_server_client_id":"web.apps.googleusercontent.com"}"#.utf8),
+            headers: ["Content-Type": "application/json"]
+        )])
+        let service: any AuthenticationServing = LiveAuthenticationService(
+            baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport
+        )
+        let configuration = try await service.socialConfiguration()
+        XCTAssertTrue(configuration.appleEnabled)
+        XCTAssertTrue(configuration.googleEnabled)
+        XCTAssertEqual(configuration.googleIOSClientID, "ios.apps.googleusercontent.com")
+        XCTAssertEqual(configuration.googleServerClientID, "web.apps.googleusercontent.com")
+        let requests = await transport.recordedRequests()
+        XCTAssertEqual(requests.count, 1)
+        XCTAssertEqual(requests[0].url?.absoluteString, "https://berynda.org/api/v1/auth/social/config/")
+        XCTAssertEqual(requests[0].method, "GET")
+        XCTAssertNil(requests[0].headers["Authorization"])
+    }
+
     func testLoginRefreshAndLogoutMatchMobileBodyContract() async throws {
         let access1 = "header.access-one.signature"
         let refresh1 = "header.refresh-one.signature"

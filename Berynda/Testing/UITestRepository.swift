@@ -86,11 +86,27 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
 
     func info(fileID: UUID) async throws -> ReaderInfo {
         guard fileID == Self.readerFileID else { throw UITestFixtureError.missingFixture }
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing-long-text") {
+            var json = try JSONSerialization.jsonObject(with: Data(Self.readerInfo.utf8)) as! [String: Any]
+            json["rendering_mode"] = "txt"
+            json["page_delivery"] = "client_full"
+            json["mime_type"] = "text/plain"
+            json["total_pages"] = NSNull()
+            json["has_toc"] = false
+            json["toc"] = [] as [String]
+            json["page_labels"] = [] as [String]
+            return try JSONDecoder().decode(ReaderInfo.self, from: JSONSerialization.data(withJSONObject: json))
+        }
         return try decode(Self.readerInfo)
     }
 
     func text(fileID: UUID) async throws -> TextReaderContent {
-        try decode(#"{"body":"Тестовий текст","page_offsets":[]}"#)
+        let body = ProcessInfo.processInfo.arguments.contains("--ui-testing-long-text")
+            ? String(repeating: "Тіні забутих предків. " + String(repeating: "Текст для читання. ", count: 12) + "\r\n", count: 625)
+            : "Тестовий текст"
+        return try JSONDecoder().decode(TextReaderContent.self, from: JSONSerialization.data(
+            withJSONObject: ["body": body, "page_offsets": []] as [String: Any]
+        ))
     }
 
     func epubDocument(fileID: UUID) async throws -> Data {
@@ -206,10 +222,15 @@ struct UITestTokenStore: TokenStore {
 }
 
 actor UITestAuthenticationService: AuthenticationServing {
+    private var configurationAttempts = 0
     func socialConfiguration() async throws -> SocialProviderConfiguration {
-        try JSONDecoder().decode(
+        configurationAttempts += 1
+        if configurationAttempts == 1 && ProcessInfo.processInfo.arguments.contains("--ui-testing-social-failure") {
+            throw URLError(.notConnectedToInternet)
+        }
+        return try JSONDecoder().decode(
             SocialProviderConfiguration.self,
-            from: Data(#"{"apple_enabled": true, "google_enabled": false}"#.utf8)
+            from: Data(#"{"apple_enabled":true,"google_enabled":true,"google_ios_client_id":"366237017432-j02ggoeegtdisdbqpneis3feif807m6q.apps.googleusercontent.com","google_server_client_id":"366237017432-guh10jm0d0ue4958kcemnrmnbffba5kq.apps.googleusercontent.com"}"#.utf8)
         )
     }
 

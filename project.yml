@@ -91,6 +91,11 @@ targets:
         PROVISIONING_PROFILE_SPECIFIER: "$(BERYNDA_PROFILE_SPECIFIER)"
     entitlements:
       path: Berynda/Berynda.entitlements
+      properties:
+        com.apple.developer.associated-domains:
+          - applinks:berynda.org
+        com.apple.developer.applesignin:
+          - Default
 
   BeryndaTests:
     type: bundle.unit-test

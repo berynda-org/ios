@@ -52,6 +52,7 @@ private struct ProfileContent: View {
                         .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("profile.authenticate")
                 }
+                SocialSignInButtons(account: account)
             }
 
             Section("Вигляд") {

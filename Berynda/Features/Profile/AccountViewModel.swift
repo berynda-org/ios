@@ -13,6 +13,8 @@ final class AccountViewModel: ObservableObject {
     @Published private(set) var emailConfirmationComplete = false
     @Published private(set) var passwordResetComplete = false
     @Published private(set) var socialProviders = SocialProviderConfiguration.disabled
+    enum SocialProviderLoadState: Equatable { case idle, loading, loaded, failed }
+    @Published private(set) var socialProviderLoadState: SocialProviderLoadState = .idle
 
     private let session: SessionController
     private let authentication: any AuthenticationServing
@@ -61,9 +63,16 @@ final class AccountViewModel: ObservableObject {
     /// cannot load this themselves: they render nothing until a provider is
     /// known, and SwiftUI never runs a `.task` attached to an empty view.
     func loadSocialProviders() async {
-        guard socialProviders == .disabled,
-              let loaded = try? await authentication.socialConfiguration() else { return }
-        socialProviders = loaded
+        guard socialProviderLoadState != .loading, socialProviderLoadState != .loaded else { return }
+        socialProviderLoadState = .loading
+        do {
+            socialProviders = try await authentication.socialConfiguration()
+            socialProviderLoadState = .loaded
+        } catch is CancellationError {
+            socialProviderLoadState = .idle
+        } catch {
+            socialProviderLoadState = .failed
+        }
     }
 
     func socialSignIn(provider: SocialProvider, linking: Bool,

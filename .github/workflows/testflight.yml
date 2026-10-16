@@ -63,6 +63,9 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate --spec project.yml
 
+      - name: Verify generated Apple sign-in entitlement
+        run: python3 -c 'import plistlib; p=plistlib.load(open("Berynda/Berynda.entitlements", "rb")); assert p.get("com.apple.developer.applesignin") == ["Default"], "Generated project lost Sign in with Apple"'
+
       - name: Run app and UI tests
         run: >-
           xcodebuild
@@ -89,6 +92,8 @@ jobs:
 
           printf '%s' "$CERTIFICATE_P12_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
           printf '%s' "$PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          security cms -D -i "$PROFILE_PATH" > "$RUNNER_TEMP/profile.plist"
+          python3 -c 'import os, plistlib; p=plistlib.load(open(os.environ["RUNNER_TEMP"] + "/profile.plist", "rb")); assert p["Entitlements"].get("com.apple.developer.applesignin") == ["Default"], "Regenerate the App Store profile with Sign in with Apple enabled"'
           mkdir -p "$ASC_KEY_DIR"
           printf '%s' "$ASC_PRIVATE_KEY_BASE64" | base64 --decode > "$ASC_KEY_PATH"
           chmod 600 "$ASC_KEY_PATH"
