@@ -116,7 +116,7 @@ private struct PhoneRootView: View {
                 }
                 .tag(RootTab.library)
 
-            NavigationStack { ProfileView() }
+            ProfileNavigationStack(account: environment.account)
                 .tabItem {
                     Label("Профіль", systemImage: "person.crop.circle")
                         .accessibilityIdentifier("tab_profile")
@@ -148,7 +148,7 @@ private struct TabletRootView: View {
             case .library:
                 NavigationStack { LibraryView() }
             case .profile:
-                NavigationStack { ProfileView() }
+                ProfileNavigationStack(account: environment.account)
             }
         } detail: {
             switch environment.selectedTab {
@@ -217,5 +217,16 @@ private struct CatalogNavigationView: View {
                     }
                 }
         }
+    }
+}
+
+/// The Profile tab's stack, rebuilt when the session changes: a screen
+/// pushed for one account (security, deletion) must not outlive it.
+private struct ProfileNavigationStack: View {
+    @ObservedObject var account: AccountViewModel
+
+    var body: some View {
+        NavigationStack { ProfileView() }
+            .id(account.state)
     }
 }
