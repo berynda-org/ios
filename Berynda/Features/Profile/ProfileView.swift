@@ -42,6 +42,9 @@ private struct ProfileContent: View {
                     LabeledContent("Ім’я", value: profile.displayName ?? "—")
                     LabeledContent("Електронна адреса", value: profile.email)
                     Button("Редагувати профіль") { showsEditor = true }
+                    Button("Вийти", role: .destructive) { Task { await account.signOut() } }
+                        .disabled(account.isBusy)
+                        .accessibilityIdentifier("profile.sign-out")
                 }
             } else {
                 Section {
@@ -143,14 +146,6 @@ private struct ProfileContent: View {
             }
 
             OfflineStorageSection(offline: offline)
-
-            if account.state == .authenticated, account.profile != nil {
-                Section {
-                    Button("Вийти", role: .destructive) { Task { await account.signOut() } }
-                        .disabled(account.isBusy)
-                        .accessibilityIdentifier("profile.sign-out")
-                }
-            }
 
             Section("Беринда") {
                 Link(destination: AppConfiguration.supportURL) {
