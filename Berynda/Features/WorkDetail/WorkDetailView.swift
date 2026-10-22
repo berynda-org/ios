@@ -413,6 +413,14 @@ private struct EditionRow: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("edition.read.\(edition.id)")
+                } else if edition.isAwaitingPages {
+                    Label(
+                        edition.restrictionReason ?? "Сторінки ще готуються. Спробуйте трохи згодом.",
+                        systemImage: "hourglass"
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(BeryndaColor.mutedInk)
+                    .accessibilityIdentifier("edition.pages-not-ready.\(edition.id)")
                 } else {
                     Label(
                         edition.restrictionReason ?? "Файл для читання недоступний",

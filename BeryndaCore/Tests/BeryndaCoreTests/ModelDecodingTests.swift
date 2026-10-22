@@ -18,6 +18,23 @@ final class ModelDecodingTests: XCTestCase {
         XCTAssertFalse(edition.canDownload)
     }
 
+    func testEditionWithUnsplitDjVuIsAwaitingPages() throws {
+        let json = #"""
+        {"id": "33333333-3333-3333-3333-333333333333", "work": "11111111-1111-1111-1111-111111111111",
+         "display_title": "Збірка", "language": "uk", "year": 1900, "publisher_name": null,
+         "publication_place": null, "page_count": null, "readable_file_id": null,
+         "can_read": false, "can_download": false,
+         "restriction_reason": "Сторінки ще готуються.", "restriction_code": "pages_not_ready"}
+        """#
+        let edition = try JSONDecoder().decode(EditionSummary.self, from: Data(json.utf8))
+        XCTAssertTrue(edition.isAwaitingPages)
+        XCTAssertEqual(edition.restrictionReason, "Сторінки ще готуються.")
+
+        let older: PaginatedResponse<EditionSummary> = try decode("editions-page")
+        XCTAssertNil(older.results.first?.restrictionCode)
+        XCTAssertEqual(older.results.first?.isAwaitingPages, false)
+    }
+
     func testReaderInfoFixtureDecodesMobileRendererContract() throws {
         let info: ReaderInfo = try decode("reader-info-text")
         XCTAssertEqual(info.renderingMode, .text)
