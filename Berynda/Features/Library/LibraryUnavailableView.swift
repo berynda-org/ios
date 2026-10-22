@@ -292,10 +292,17 @@ private struct NewListView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var model: LibraryViewModel
     @State private var title = ""
+    @State private var error: String?
 
     var body: some View {
         NavigationStack {
-            Form { TextField("Назва списку", text: $title) }
+            Form {
+                Section {
+                    TextField("Назва списку", text: $title)
+                } footer: {
+                    if let error { Text(error).foregroundStyle(.red) }
+                }
+            }
                 .navigationTitle("Новий список")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -304,11 +311,19 @@ private struct NewListView: View {
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Створити") {
-                            Task { if await model.createList(title: title) { dismiss() } }
+                            Task {
+                                let result = await model.createList(title: title)
+                                if let message = result.listEditFailure {
+                                    error = message
+                                } else {
+                                    dismiss()
+                                }
+                            }
                         }
-                        .disabled(LibraryViewModel.validListTitle(title) == nil)
+                        .disabled(LibraryViewModel.validListTitle(title) == nil || model.isMutating)
                     }
                 }
+                .onChange(of: title) { _, _ in error = nil }
         }
     }
 }

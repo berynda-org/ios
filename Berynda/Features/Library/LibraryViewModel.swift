@@ -192,19 +192,27 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
-    func createList(title: String) async -> Bool {
-        guard account.state == .authenticated else { return false }
-        guard !isMutating else { return false }
-        guard let clean = Self.validListTitle(title) else { return false }
+    /// A failure stays in the sheet that asked for it. It used to replace the
+    /// whole library with an error screen, although the lists already shown
+    /// were still valid.
+    func createList(title: String) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        guard let clean = Self.validListTitle(title) else {
+            return .failed(
+                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+            )
+        }
         isMutating = true
         defer { isMutating = false }
         do {
             _ = try await repository.createList(title: clean)
             await reload()
-            return true
+            return .saved
         } catch {
-            state = .failed(error.localizedDescription)
-            return false
+            // The list may exist even though the response could not be read.
+            await reload()
+            return .failed(error.localizedDescription)
         }
     }
 

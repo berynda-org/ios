@@ -70,4 +70,36 @@ final class ModelDecodingTests: XCTestCase {
         XCTAssertTrue(collection.isFeatured)
     }
 
+    func testNewListWithoutDescriptionOrNoteDecodes() throws {
+        // `POST /lists/` with a title only stores `description` as null, and
+        // an item can carry a null `note`. Failing on either broke the create
+        // response and every library load after it.
+        let json = #"""
+        {
+          "id": "88888888-8888-8888-8888-888888888888",
+          "owner": "99999999-9999-9999-9999-999999999999",
+          "title": "Нове",
+          "description": null,
+          "citation_style": "dstu_8302",
+          "visibility": "private",
+          "is_pinned": false,
+          "work_count": 1,
+          "items": [{
+            "id": "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+            "work": "11111111-1111-1111-1111-111111111111",
+            "edition": null,
+            "file": null,
+            "note": null
+          }],
+          "created_at": "2026-10-22T10:00:00Z",
+          "updated_at": "2026-10-22T10:00:00Z"
+        }
+        """#
+        let list = try JSONDecoder().decode(BibliographyList.self, from: Data(json.utf8))
+
+        XCTAssertEqual(list.title, "Нове")
+        XCTAssertEqual(list.description, "")
+        XCTAssertEqual(list.items.first?.note, "")
+    }
+
 }

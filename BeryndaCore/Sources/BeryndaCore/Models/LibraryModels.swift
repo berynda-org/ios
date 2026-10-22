@@ -68,6 +68,27 @@ public struct BibliographyItem: Codable, Identifiable, Sendable, Equatable {
     }
 }
 
+// The server's `note` and the list's `description` are nullable text columns
+// serialised verbatim. A new list has no description, so a strict `String`
+// failed the create response and every later library load with it.
+extension BibliographyItem {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        work = try container.decode(UUID.self, forKey: .work)
+        workTitle = try container.decodeIfPresent(String.self, forKey: .workTitle)
+        workSlug = try container.decodeIfPresent(String.self, forKey: .workSlug)
+        edition = try container.decodeIfPresent(UUID.self, forKey: .edition)
+        editionYear = try container.decodeIfPresent(Int.self, forKey: .editionYear)
+        editionTitle = try container.decodeIfPresent(String.self, forKey: .editionTitle)
+        file = try container.decodeIfPresent(UUID.self, forKey: .file)
+        positionType = try container.decodeIfPresent(String.self, forKey: .positionType)
+        positionValue = try container.decodeIfPresent(String.self, forKey: .positionValue)
+        pageNumber = try container.decodeIfPresent(Int.self, forKey: .pageNumber)
+        note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
+    }
+}
+
 public struct BibliographyList: Codable, Identifiable, Sendable, Equatable {
     public let id: UUID
     public let title: String
@@ -83,6 +104,20 @@ public struct BibliographyList: Codable, Identifiable, Sendable, Equatable {
         case citationStyle = "citation_style"
         case isPinned = "is_pinned"
         case workCount = "work_count"
+    }
+}
+
+extension BibliographyList {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        citationStyle = try container.decode(String.self, forKey: .citationStyle)
+        visibility = try container.decode(String.self, forKey: .visibility)
+        isPinned = try container.decode(Bool.self, forKey: .isPinned)
+        workCount = try container.decode(Int.self, forKey: .workCount)
+        items = try container.decode([BibliographyItem].self, forKey: .items)
     }
 }
 
