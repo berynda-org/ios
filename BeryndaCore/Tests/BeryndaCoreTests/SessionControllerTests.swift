@@ -117,6 +117,21 @@ private actor AuthenticationStub: AuthenticationServing {
 
     func refreshCalls() -> Int { refreshCallsValue }
     func logoutCalls() -> [(String, String)] { logoutCallsValue }
+
+    private var accountCallTokens: [String] = []
+    func accountTokens() -> [String] { accountCallTokens }
+
+    /// Rejects the stored "old" access token the way an expired one is.
+    func changePassword(currentPassword: String, newPassword: String, accessToken: String) async throws -> AuthTokens {
+        accountCallTokens.append(accessToken)
+        if accessToken.contains("old-access") { throw SessionError.expired }
+        return try AuthTokens(access: "header.changed-access.signature", refresh: "header.changed-refresh.signature")
+    }
+
+    func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws {
+        accountCallTokens.append(accessToken)
+        if accessToken.contains("old-access") { throw SessionError.expired }
+    }
 }
 
 final class SessionControllerTests: XCTestCase {
@@ -291,6 +306,36 @@ final class SessionControllerTests: XCTestCase {
         XCTAssertEqual(store.snapshot(), old)
         let memoryAccess = await controller.accessToken()
         XCTAssertNil(memoryAccess)
+    }
+
+    func testPasswordChangeRefreshesOnceAndKeepsTheFreshPair() async throws {
+        let store = MemoryTokenStore(tokens: try tokens("old"))
+        let service = try service()
+        let controller = SessionController(tokenStore: store, authentication: service)
+
+        try await controller.changePassword(currentPassword: "old-secret", newPassword: "new-secret-1")
+
+        let used = await service.accountTokens()
+        XCTAssertEqual(used, ["header.old-access.signature", "header.refreshed-access.signature"])
+        XCTAssertEqual(store.snapshot(), try tokens("changed"))
+        let state = await controller.state()
+        XCTAssertEqual(state, .authenticated)
+        let logouts = await service.logoutCalls()
+        XCTAssertTrue(logouts.isEmpty)
+    }
+
+    func testDeletionForgetsTheSessionWithoutALogoutCall() async throws {
+        let store = MemoryTokenStore(tokens: try tokens("login"))
+        let service = try service()
+        let controller = SessionController(tokenStore: store, authentication: service)
+
+        try await controller.deleteAccount(proof: .password("secret"))
+
+        XCTAssertNil(store.snapshot())
+        let state = await controller.state()
+        XCTAssertEqual(state, .anonymous)
+        let logouts = await service.logoutCalls()
+        XCTAssertTrue(logouts.isEmpty, "The server already revoked every token")
     }
 
     func testTokenDescriptionsNeverExposeCredentials() throws {

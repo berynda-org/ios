@@ -19,6 +19,13 @@ public protocol AuthenticationServing: Sendable {
     ) async throws
     func refresh(refreshToken: String) async throws -> AuthTokens
     func logout(accessToken: String, refreshToken: String) async throws
+    /// A challenge bound to the signed-in user, for proving control of a
+    /// linked Apple or Google identity before deleting the account.
+    func reauthenticationChallenge(provider: SocialProvider, accessToken: String) async throws -> SocialChallenge
+    /// Returns the fresh pair the server issues; every older refresh token
+    /// is revoked by the change.
+    func changePassword(currentPassword: String, newPassword: String, accessToken: String) async throws -> AuthTokens
+    func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws
 }
 
 public extension AuthenticationServing {
@@ -28,6 +35,15 @@ public extension AuthenticationServing {
     }
     func socialLogin(_ credential: SocialCredential) async throws -> AuthSession { throw SessionError.unavailable }
     func linkSocialIdentity(_ credential: SocialCredential, accessToken: String) async throws -> UserProfile {
+        throw SessionError.unavailable
+    }
+    func reauthenticationChallenge(provider: SocialProvider, accessToken: String) async throws -> SocialChallenge {
+        throw SessionError.unavailable
+    }
+    func changePassword(currentPassword: String, newPassword: String, accessToken: String) async throws -> AuthTokens {
+        throw SessionError.unavailable
+    }
+    func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws {
         throw SessionError.unavailable
     }
 }
@@ -164,6 +180,102 @@ public actor LiveAuthenticationService: AuthenticationServing {
             unauthorizedError: .expired,
             acceptsEmptyResponse: true
         )
+    }
+
+    public func reauthenticationChallenge(provider: SocialProvider, accessToken: String) async throws -> SocialChallenge {
+        try await accountRequest(
+            method: "POST",
+            path: "auth/social/challenge/",
+            body: ReauthenticationChallengeBody(provider: provider),
+            accessToken: accessToken
+        )
+    }
+
+    public func changePassword(
+        currentPassword: String,
+        newPassword: String,
+        accessToken: String
+    ) async throws -> AuthTokens {
+        let response: RefreshResponse = try await accountRequest(
+            method: "POST",
+            path: "auth/me/password/",
+            body: PasswordChangeBody(currentPassword: currentPassword, newPassword: newPassword),
+            accessToken: accessToken
+        )
+        return try AuthTokens(access: response.access, refresh: response.refresh)
+    }
+
+    public func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws {
+        let _: EmptyResponse = try await accountRequest(
+            method: "DELETE",
+            path: "auth/me/",
+            body: AccountDeletionBody(proof: proof),
+            accessToken: accessToken
+        )
+    }
+
+    /// The self-service account endpoints: always authenticated, and their
+    /// refusals carry codes the screens act on, so the envelope is decoded
+    /// into `AccountSecurityError` before falling back on the status.
+    private func accountRequest<Body: Encodable, Response: Decodable>(
+        method: String,
+        path: String,
+        body: Body,
+        accessToken: String
+    ) async throws -> Response {
+        guard AuthTokens.isValidJWT(accessToken) else { throw SessionError.expired }
+        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw SessionError.invalidResponse
+        }
+        let requestData: Data
+        do {
+            requestData = try encoder.encode(body)
+        } catch {
+            throw SessionError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.httpBody = requestData
+        request.timeoutInterval = 30
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(language(), forHTTPHeaderField: "Accept-Language")
+        request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        let data: Data
+        let http: HTTPURLResponse
+        do {
+            (data, http) = try await transport.data(for: request, maximumBytes: 1 * 1_024 * 1_024)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            try Task.checkCancellation()
+            throw SessionError.unavailable
+        }
+
+        switch http.statusCode {
+        case 200..<300:
+            if data.isEmpty, let empty = EmptyResponse() as? Response { return empty }
+            guard let response = try? decoder.decode(Response.self, from: data) else {
+                throw SessionError.invalidResponse
+            }
+            return response
+        case 401:
+            throw SessionError.expired
+        case 429:
+            throw AccountSecurityError.rateLimited
+        default:
+            if let problem = try? decoder.decode(AccountProblemResponse.self, from: data),
+               let error = problem.accountError {
+                throw error
+            }
+            switch http.statusCode {
+            case 400, 409, 422: throw SessionError.invalidInput
+            default: throw SessionError.unavailable
+            }
+        }
     }
 
     private func get<Response: Decodable>(path: String) async throws -> Response {
@@ -354,6 +466,40 @@ private struct SocialChallengeBody: Encodable {
     let linkAccount: Bool
     enum CodingKeys: String, CodingKey { case provider, linkAccount = "link_account" }
 }
+private struct ReauthenticationChallengeBody: Encodable {
+    let provider: SocialProvider
+    let purpose = "reauthenticate"
+}
+
+private struct PasswordChangeBody: Encodable {
+    let currentPassword: String
+    let newPassword: String
+
+    enum CodingKeys: String, CodingKey {
+        case currentPassword = "current_password"
+        case newPassword = "new_password"
+    }
+}
+
+private struct AccountDeletionBody: Encodable {
+    let proof: AccountDeletionProof
+
+    enum CodingKeys: String, CodingKey {
+        case currentPassword = "current_password"
+        case social
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch proof {
+        case let .password(password):
+            try container.encode(password, forKey: .currentPassword)
+        case let .social(credential):
+            try container.encode(credential, forKey: .social)
+        }
+    }
+}
+
 private struct SocialErrorResponse: Decodable {
     let error: Problem
     struct Problem: Decodable { let code: String }

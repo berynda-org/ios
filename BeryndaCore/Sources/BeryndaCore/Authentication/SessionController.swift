@@ -57,6 +57,56 @@ public actor SessionController: AuthorizationSession {
         }
     }
 
+    public func reauthenticationChallenge(provider: SocialProvider) async throws -> SocialChallenge {
+        try await withAccessToken { token in
+            try await self.authentication.reauthenticationChallenge(provider: provider, accessToken: token)
+        }
+    }
+
+    /// Changes the password and keeps this device signed in with the fresh
+    /// pair the server returns; the old pair is already revoked.
+    public func changePassword(currentPassword: String, newPassword: String) async throws {
+        let rotated = try await withAccessToken { token in
+            try await self.authentication.changePassword(
+                currentPassword: currentPassword,
+                newPassword: newPassword,
+                accessToken: token
+            )
+        }
+        do {
+            try tokenStore.save(rotated)
+        } catch {
+            expireSession()
+            throw SessionError.storage
+        }
+        tokens = rotated
+        didLoadTokens = true
+        currentState = .authenticated
+    }
+
+    /// Deletes the account, then forgets the session locally. No logout call
+    /// follows: the server has already revoked every token of the account.
+    public func deleteAccount(proof: AccountDeletionProof) async throws {
+        try await withAccessToken { token in
+            try await self.authentication.deleteAccount(proof: proof, accessToken: token)
+        }
+        clearLocalSession(state: .anonymous)
+    }
+
+    /// Runs an authenticated call, refreshing the access token once if the
+    /// server reports it expired.
+    private func withAccessToken<Value: Sendable>(
+        _ operation: @Sendable (String) async throws -> Value
+    ) async throws -> Value {
+        guard let token = accessToken() else { throw SessionError.expired }
+        do {
+            return try await operation(token)
+        } catch SessionError.expired {
+            let fresh = try await refreshAccessToken(rejectedAccessToken: token)
+            return try await operation(fresh)
+        }
+    }
+
     private func accept(_ session: AuthSession) async throws -> UserProfile {
         do {
             try tokenStore.save(session.tokens)

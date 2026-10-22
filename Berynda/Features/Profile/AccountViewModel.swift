@@ -179,6 +179,33 @@ final class AccountViewModel: ObservableObject {
         await clearLocalHistory()
     }
 
+    /// Throws the endpoint's own refusal for the security screen to map.
+    func changePassword(currentPassword: String, newPassword: String) async throws {
+        try await session.changePassword(currentPassword: currentPassword, newPassword: newPassword)
+        state = .authenticated
+    }
+
+    func reauthenticationChallenge(provider: SocialProvider) async throws -> SocialChallenge {
+        try await session.reauthenticationChallenge(provider: provider)
+    }
+
+    /// Deletes the account, then leaves nothing of it on the device: the
+    /// session, the reading positions and the recently viewed shelf.
+    func deleteAccount(proof: AccountDeletionProof) async throws {
+        try await session.deleteAccount(proof: proof)
+        profile = nil
+        state = .anonymous
+        errorMessage = nil
+        await clearLocalHistory()
+    }
+
+    /// Re-reads the session after a call reported it expired, so the profile
+    /// screen falls back to its signed-out state.
+    func syncSessionState() async {
+        state = await session.state()
+        if state != .authenticated { profile = nil }
+    }
+
     /// Everything on this device that records what the reader opened. The two
     /// stores must always be dropped together: leaving one behind either
     /// hands one reader's history to the next account or keeps a shelf

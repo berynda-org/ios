@@ -94,6 +94,7 @@ private struct ProfileContent: View {
                         .font(.footnote)
                         .foregroundStyle(BeryndaColor.mutedInk)
                 }
+                AccountSecuritySection(account: account, profile: profile)
             }
 
             // Shown signed out as well: an anonymous reader's positions and

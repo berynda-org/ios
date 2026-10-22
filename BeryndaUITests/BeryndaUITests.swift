@@ -316,6 +316,87 @@ final class BeryndaUITests: XCTestCase {
         )
     }
 
+    func testSignedInReaderChangesPassword() {
+        signInFromProfile()
+        let link = app.buttons["profile.security.password"]
+        reveal(link)
+        link.tap()
+
+        let current = app.secureTextFields["security.current-password"]
+        XCTAssertTrue(current.waitForExistence(timeout: 5), app.debugDescription)
+        current.tap()
+        current.typeText("password123")
+        let fresh = app.secureTextFields["security.new-password"]
+        fresh.tap()
+        fresh.typeText("a-new-password")
+        let repeated = app.secureTextFields["security.repeat-password"]
+        repeated.tap()
+        repeated.typeText("a-new-password\n")
+
+        let submit = app.buttons["security.change-password"]
+        XCTAssertTrue(submit.waitForExistence(timeout: 5))
+        submit.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["security.password-changed"].waitForExistence(timeout: 5),
+            app.debugDescription
+        )
+    }
+
+    func testSignedInReaderDeletesTheAccountWithAPassword() {
+        signInFromProfile()
+        let link = app.buttons["profile.security.delete"]
+        reveal(link)
+        link.tap()
+
+        let password = app.secureTextFields["security.delete-password"]
+        reveal(password)
+        password.tap()
+        password.typeText("password123\n")
+        let delete = app.buttons["security.delete-with-password"]
+        reveal(delete)
+        delete.tap()
+
+        let confirm = app.alerts.buttons["Видалити"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
+        confirm.tap()
+
+        let notice = app.alerts["Обліковий запис"]
+        XCTAssertTrue(notice.waitForExistence(timeout: 5), app.debugDescription)
+        notice.buttons["Гаразд"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Каталог"].isSelected)
+
+        app.tabBars.buttons["Профіль"].tap()
+        XCTAssertTrue(app.buttons["profile.authenticate"].waitForExistence(timeout: 5))
+    }
+
+    private func signInFromProfile() {
+        app.tabBars.buttons["Профіль"].tap()
+        let authenticate = app.buttons["profile.authenticate"]
+        XCTAssertTrue(authenticate.waitForExistence(timeout: 5))
+        authenticate.tap()
+
+        let email = app.textFields["auth.email"]
+        let password = app.secureTextFields["auth.password"]
+        XCTAssertTrue(email.waitForExistence(timeout: 5))
+        email.tap()
+        email.typeText("reader@example.org")
+        password.tap()
+        password.typeText("password123")
+        app.buttons["auth.submit"].tap()
+        XCTAssertTrue(app.buttons["Редагувати профіль"].waitForExistence(timeout: 5))
+    }
+
+    /// Lists build rows lazily, so a row below the fold does not exist until
+    /// it has been scrolled to.
+    private func reveal(_ element: XCUIElement) {
+        var swipes = 0
+        while !(element.exists && element.isHittable), swipes < 8 {
+            app.swipeUp()
+            swipes += 1
+        }
+        XCTAssertTrue(element.waitForExistence(timeout: 5), app.debugDescription)
+    }
+
     /// A labelled SwiftUI `Toggle` is one wide accessibility element, and
     /// `tap()` lands on its centre — the label — which does not flip it. The
     /// control itself sits at the trailing edge, so the tap is aimed there,

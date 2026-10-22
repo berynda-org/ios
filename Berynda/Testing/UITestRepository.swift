@@ -362,6 +362,19 @@ actor UITestAuthenticationService: AuthenticationServing {
     }
 
     func logout(accessToken: String, refreshToken: String) async throws {}
+
+    /// `password123` is the fixture account's password; anything else is
+    /// the server's INVALID_CURRENT_PASSWORD.
+    func changePassword(currentPassword: String, newPassword: String, accessToken: String) async throws -> AuthTokens {
+        guard currentPassword == "password123" else { throw AccountSecurityError.invalidCurrentPassword }
+        guard newPassword.count >= 8 else { throw AccountSecurityError.passwordRejected(["Пароль занадто короткий."]) }
+        return try AuthTokens(access: "header.ui-access-2.signature", refresh: "header.ui-refresh-2.signature")
+    }
+
+    func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws {
+        guard case let .password(password) = proof else { throw AccountSecurityError.socialReauthenticationFailed }
+        guard password == "password123" else { throw AccountSecurityError.invalidCurrentPassword }
+    }
 }
 
 actor UITestAccountRepository: AccountRepository {
@@ -381,7 +394,9 @@ actor UITestAccountRepository: AccountRepository {
             bio: update.bio ?? user.bio,
             institutionName: update.institutionName ?? user.institutionName,
             uiLanguage: update.uiLanguage ?? user.uiLanguage,
-            privacySettings: update.privacySettings ?? user.privacySettings
+            privacySettings: update.privacySettings ?? user.privacySettings,
+            hasPassword: user.hasPassword,
+            socialProviders: user.socialProviders
         )
         return user
     }

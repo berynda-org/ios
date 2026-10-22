@@ -333,6 +333,146 @@ final class AuthenticationServiceTests: XCTestCase {
         } catch { XCTAssertEqual(error as? SessionError, .socialAccountExists) }
     }
 
+    func testPasswordChangeSendsBothPasswordsAndReturnsTheFreshPair() async throws {
+        let transport = AuthTransportStub([
+            AuthStubResponse(
+                status: 200,
+                data: Data(#"{"access":"header.new-access.signature","refresh":"header.new-refresh.signature"}"#.utf8),
+                headers: ["Content-Type": "application/json"]
+            ),
+        ])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+
+        let tokens = try await service.changePassword(
+            currentPassword: "old-secret",
+            newPassword: "new-secret-1",
+            accessToken: "header.access.signature"
+        )
+
+        XCTAssertEqual(tokens.access, "header.new-access.signature")
+        let recorded = await transport.recordedRequests()
+        let request = try XCTUnwrap(recorded.first)
+        XCTAssertEqual(request.url?.absoluteString, "https://berynda.org/api/v1/auth/me/password/")
+        XCTAssertEqual(request.method, "POST")
+        XCTAssertEqual(request.headers["Authorization"], "Bearer header.access.signature")
+        let body = try jsonObject(request.body)
+        XCTAssertEqual(body["current_password"] as? String, "old-secret")
+        XCTAssertEqual(body["new_password"] as? String, "new-secret-1")
+    }
+
+    func testAccountRefusalsMapToTheirCodes() async throws {
+        let cases: [(Int, String, AccountSecurityError)] = [
+            (400, #"{"error":{"code":"INVALID_CURRENT_PASSWORD","message":"x"}}"#, .invalidCurrentPassword),
+            (400, #"{"error":{"code":"VALIDATION_ERROR","message":"x","details":{"new_password":["Too common."]}}}"#,
+             .passwordRejected(["Too common."])),
+            (409, #"{"error":{"code":"NO_PASSWORD","message":"x"}}"#, .noPassword),
+            (409, #"{"error":{"code":"APPLE_REAUTH_REQUIRED","message":"x","details":{"methods":["apple"]}}}"#,
+             .appleReauthenticationRequired),
+            (409, #"{"error":{"code":"REAUTH_REQUIRED","message":"x","details":{"methods":["password","google"]}}}"#,
+             .reauthenticationRequired([.password, .google])),
+            (400, #"{"error":{"code":"SOCIAL_REAUTH_FAILED","message":"x"}}"#, .socialReauthenticationFailed),
+            (503, #"{"error":{"code":"SOCIAL_PROVIDER_UNAVAILABLE","message":"x"}}"#, .socialProviderUnavailable),
+            (403, #"{"error":{"code":"PERMISSION_DENIED","message":"x"}}"#, .permissionDenied),
+            (429, #"{"error":{"code":"THROTTLED","message":"x"}}"#, .rateLimited),
+        ]
+        for (status, json, expected) in cases {
+            let transport = AuthTransportStub([
+                AuthStubResponse(status: status, data: Data(json.utf8), headers: ["Content-Type": "application/json"]),
+            ])
+            let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+            do {
+                try await service.deleteAccount(proof: .password("secret"), accessToken: "header.access.signature")
+                XCTFail("\(status) must not succeed")
+            } catch {
+                XCTAssertEqual(error as? AccountSecurityError, expected, json)
+            }
+        }
+    }
+
+    func testAnExpiredAccessTokenIsReportedForRefresh() async {
+        let transport = AuthTransportStub([AuthStubResponse(status: 401)])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+        do {
+            _ = try await service.changePassword(currentPassword: "a", newPassword: "b", accessToken: "header.access.signature")
+            XCTFail("401 must not succeed")
+        } catch {
+            XCTAssertEqual(error as? SessionError, .expired)
+        }
+    }
+
+    func testDeletionSendsAPasswordOrAnAppleProofWithItsCode() async throws {
+        let transport = AuthTransportStub([AuthStubResponse(status: 204), AuthStubResponse(status: 204)])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+        let challengeID = UUID()
+
+        try await service.deleteAccount(proof: .password("secret"), accessToken: "header.access.signature")
+        try await service.deleteAccount(
+            proof: .social(SocialReauthentication(
+                provider: .apple,
+                challengeID: challengeID,
+                identityToken: "apple.identity.token",
+                authorizationCode: "one-time-code"
+            )),
+            accessToken: "header.access.signature"
+        )
+
+        let requests = await transport.recordedRequests()
+        XCTAssertEqual(requests.map(\.method), ["DELETE", "DELETE"])
+        XCTAssertEqual(requests[0].url?.absoluteString, "https://berynda.org/api/v1/auth/me/")
+        XCTAssertEqual(try jsonObject(requests[0].body) as NSDictionary, ["current_password": "secret"] as NSDictionary)
+        let social = try XCTUnwrap(try jsonObject(requests[1].body)["social"] as? [String: Any])
+        XCTAssertEqual(social["provider"] as? String, "apple")
+        XCTAssertEqual(social["challenge_id"] as? String, challengeID.uuidString)
+        XCTAssertEqual(social["identity_token"] as? String, "apple.identity.token")
+        XCTAssertEqual(social["authorization_code"] as? String, "one-time-code")
+        XCTAssertFalse(SocialReauthentication(
+            provider: .apple, challengeID: challengeID, identityToken: "apple.identity.token", authorizationCode: nil
+        ).description.contains("apple.identity.token"))
+    }
+
+    func testReauthenticationChallengeIsBoundToTheSignedInUser() async throws {
+        let challengeID = UUID()
+        let transport = AuthTransportStub([AuthStubResponse(
+            status: 200,
+            data: Data("{\"challenge_id\":\"\(challengeID)\",\"nonce\":\"n\",\"expires_in\":300}".utf8),
+            headers: ["Content-Type": "application/json"]
+        )])
+        let service = LiveAuthenticationService(baseURL: URL(string: "https://berynda.org/api/v1/")!, transport: transport)
+
+        let challenge = try await service.reauthenticationChallenge(provider: .google, accessToken: "header.access.signature")
+
+        XCTAssertEqual(challenge.challengeID, challengeID)
+        let recorded = await transport.recordedRequests()
+        let request = try XCTUnwrap(recorded.first)
+        XCTAssertEqual(request.headers["Authorization"], "Bearer header.access.signature")
+        let body = try jsonObject(request.body)
+        XCTAssertEqual(body["purpose"] as? String, "reauthenticate")
+        XCTAssertEqual(body["provider"] as? String, "google")
+    }
+
+    func testProfileReportsPasswordAndLinkedProviders() throws {
+        let json = #"{"id":"11111111-1111-1111-1111-111111111111","email":"a@b.c","has_password":false,"social_providers":["apple"]}"#
+        let profile = try JSONDecoder().decode(UserProfile.self, from: Data(json.utf8))
+        XCTAssertFalse(profile.hasPassword)
+        XCTAssertEqual(profile.socialProviders, ["apple"])
+        XCTAssertEqual(profile.deletionMethods, [.apple])
+
+        let older = try JSONDecoder().decode(
+            UserProfile.self,
+            from: Data(#"{"id":"11111111-1111-1111-1111-111111111111","email":"a@b.c"}"#.utf8)
+        )
+        XCTAssertTrue(older.hasPassword)
+        XCTAssertEqual(older.deletionMethods, [.password])
+    }
+
+    func testDeletionMethodsFollowTheLinkedProviders() {
+        XCTAssertEqual(ReauthenticationMethod.available(hasPassword: true, socialProviders: ["google"]), [.password, .google])
+        XCTAssertEqual(ReauthenticationMethod.available(hasPassword: false, socialProviders: ["google"]), [.google])
+        // Apple-linked accounts must re-check with Apple, password or not.
+        XCTAssertEqual(ReauthenticationMethod.available(hasPassword: true, socialProviders: ["apple", "google"]), [.apple])
+        XCTAssertEqual(ReauthenticationMethod.available(hasPassword: false, socialProviders: []), [])
+    }
+
     private func jsonObject(_ data: Data?) throws -> [String: Any] {
         let data = try XCTUnwrap(data)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])

@@ -58,6 +58,14 @@ struct ContentView: View {
                 account: environment.account
             )
         }
+        .alert("Обліковий запис", isPresented: Binding(
+            get: { environment.accountNotice != nil },
+            set: { if !$0 { environment.accountNotice = nil } }
+        )) {
+            Button("Гаразд", role: .cancel) {}
+        } message: {
+            Text(environment.accountNotice ?? "")
+        }
         .alert("Бібліотека", isPresented: Binding(
             get: { environment.authenticatedActionMessage != nil },
             set: { if !$0 { environment.authenticatedActionMessage = nil } }

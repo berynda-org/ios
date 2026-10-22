@@ -21,6 +21,9 @@ final class AppEnvironment: ObservableObject {
     @Published var presentedAuthenticationLink: AuthenticationLinkPresentation?
     @Published var showsAuthentication = false
     @Published var authenticatedActionMessage: String?
+    /// A one-line confirmation after the account itself changed, e.g. it
+    /// was deleted.
+    @Published var accountNotice: String?
     // True while the full-screen reader is on screen. The root view cannot
     // raise a sheet over a full-screen cover, so the reader presents the
     // sign-in sheet itself and the root stays quiet meanwhile.
@@ -143,6 +146,18 @@ final class AppEnvironment: ObservableObject {
     func requireAuthentication(for action: AuthenticatedAction) {
         pendingAuthenticatedAction = action
         showsAuthentication = true
+    }
+
+    /// After deletion the device has already forgotten the account; this
+    /// leaves every screen that showed it and says it is done.
+    func accountWasDeleted() async {
+        pendingAuthenticatedAction = nil
+        presentedReader = nil
+        catalogPath = []
+        tabletCatalogSelection = nil
+        selectedTab = .catalog
+        await library.loadIfNeeded()
+        accountNotice = "Обліковий запис видалено."
     }
 
     func authenticationDismissed() {

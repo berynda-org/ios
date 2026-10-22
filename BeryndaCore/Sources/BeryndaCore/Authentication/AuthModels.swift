@@ -44,6 +44,11 @@ public struct UserProfile: Codable, Equatable, Sendable {
     public let institutionName: String?
     public let uiLanguage: String
     public let privacySettings: [String: Bool]
+    /// `false` for an Apple/Google-only account, which sets a password via
+    /// the reset email. A server too old to say is taken to mean `true`.
+    public let hasPassword: Bool
+    /// Linked sign-in providers, e.g. `["apple"]`.
+    public let socialProviders: [String]
 
     public init(
         id: UUID,
@@ -52,7 +57,9 @@ public struct UserProfile: Codable, Equatable, Sendable {
         bio: String? = nil,
         institutionName: String? = nil,
         uiLanguage: String = "uk",
-        privacySettings: [String: Bool] = [:]
+        privacySettings: [String: Bool] = [:],
+        hasPassword: Bool = true,
+        socialProviders: [String] = []
     ) {
         self.id = id
         self.email = email
@@ -61,6 +68,13 @@ public struct UserProfile: Codable, Equatable, Sendable {
         self.institutionName = institutionName
         self.uiLanguage = uiLanguage
         self.privacySettings = privacySettings
+        self.hasPassword = hasPassword
+        self.socialProviders = socialProviders
+    }
+
+    /// How this account can confirm its deletion, before the server says.
+    public var deletionMethods: [ReauthenticationMethod] {
+        ReauthenticationMethod.available(hasPassword: hasPassword, socialProviders: socialProviders)
     }
 
     public var readingHistoryEnabled: Bool {
@@ -76,6 +90,8 @@ public struct UserProfile: Codable, Equatable, Sendable {
         institutionName = try container.decodeIfPresent(String.self, forKey: .institutionName)
         uiLanguage = (try? container.decode(String.self, forKey: .uiLanguage)) ?? "uk"
         privacySettings = (try? container.decode([String: Bool].self, forKey: .privacySettings)) ?? [:]
+        hasPassword = (try? container.decode(Bool.self, forKey: .hasPassword)) ?? true
+        socialProviders = (try? container.decode([String].self, forKey: .socialProviders)) ?? []
     }
 
     enum CodingKeys: String, CodingKey {
@@ -86,6 +102,8 @@ public struct UserProfile: Codable, Equatable, Sendable {
         case institutionName = "institution_name"
         case uiLanguage = "ui_language"
         case privacySettings = "privacy_settings"
+        case hasPassword = "has_password"
+        case socialProviders = "social_providers"
     }
 }
 
