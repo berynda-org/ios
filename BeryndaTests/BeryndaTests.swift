@@ -1250,8 +1250,7 @@ private struct FailingCatalogStub: CatalogRepository {
     func works(
         search: String?,
         page: Int,
-        readableOnly: Bool,
-        language: String?
+        filters: WorkFilters
     ) async throws -> PaginatedResponse<WorkSummary> {
         throw failure
     }

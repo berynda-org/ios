@@ -35,6 +35,29 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
     }
 
+    func testYearFilterIsShownAsAChipAndCanBeCleared() {
+        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        let filters = app.buttons["catalog.filters"]
+        XCTAssertTrue(filters.waitForExistence(timeout: 5), app.debugDescription)
+        filters.tap()
+
+        let from = app.textFields["catalog.filters.year-from"]
+        XCTAssertTrue(from.waitForExistence(timeout: 5), app.debugDescription)
+        from.tap()
+        from.typeText("1900")
+        app.buttons["catalog.filters.apply"].tap()
+
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: app.staticTexts["Кобзар"])
+        waitForExpectations(timeout: 5)
+        XCTAssertTrue(app.staticTexts["Лісова пісня"].exists)
+        XCTAssertTrue(app.buttons["catalog.filter.years"].exists)
+
+        app.buttons["catalog.filters.clear"].tap()
+        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["catalog.filter.years"].exists)
+    }
+
     func testAuthorNavigationOpensWorksAndReader() {
         openWork(named: "Кобзар")
         let authorID = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!

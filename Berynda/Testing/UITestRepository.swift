@@ -32,14 +32,55 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         }
     }
 
-    func works(search: String?, page: Int, readableOnly: Bool, language: String?) async throws -> PaginatedResponse<WorkSummary> {
-        guard language == nil || language == "uk" else { return try decode(Self.page(count: 0, next: nil, results: "")) }
-        if readableOnly {
-            let query = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            let matches = page == 1 && (query.isEmpty || "кобзар".contains(query))
-            return try decode(Self.page(count: matches ? 1 : 0, next: nil, results: matches ? Self.kobzarWork : ""))
+    func works(search: String?, page: Int, filters: WorkFilters) async throws -> PaginatedResponse<WorkSummary> {
+        guard filters.hasRefinements else {
+            if filters.readableOnly {
+                let query = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let matches = page == 1 && (query.isEmpty || "кобзар".contains(query))
+                return try decode(Self.page(count: matches ? 1 : 0, next: nil, results: matches ? Self.kobzarWork : ""))
+            }
+            return try await works(search: search, page: page)
         }
-        return try await works(search: search, page: page)
+        // Every refinement on one small fixture list, served as one page.
+        let query = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let years = filters.normalizedYears
+        let rows = Self.fixtureRows.filter { row in
+            (query.isEmpty || row.title.lowercased().contains(query))
+                && (!filters.readableOnly || row.readable)
+                && (filters.language == nil || filters.language == "uk")
+                && (filters.workType == nil || filters.workType == "book")
+                && (years.from.map { row.year >= $0 } ?? true)
+                && (years.to.map { row.year <= $0 } ?? true)
+                && (filters.topic == nil || row.topics.contains(filters.topic?.slug ?? ""))
+        }
+        let results = page == 1 ? rows.map(\.json).joined(separator: ",") : ""
+        return try decode(Self.page(count: rows.count, next: nil, results: results))
+    }
+
+    func facets(search: String?, filters: WorkFilters) async throws -> WorkFacets {
+        try decode(Self.facets)
+    }
+
+    func topics(parent: String?, search: String?, page: Int) async throws -> PaginatedResponse<TopicSummary> {
+        let term = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let all = [Self.literatureTopic, Self.poetryTopic]
+        let rows: [String]
+        if !term.isEmpty {
+            rows = all.filter { $0.lowercased().contains(term) }
+        } else if parent == "root" {
+            rows = [Self.literatureTopic]
+        } else {
+            rows = all
+        }
+        return try decode(Self.page(count: rows.count, next: nil, results: page == 1 ? rows.joined(separator: ",") : ""))
+    }
+
+    func topic(slug: String) async throws -> TopicSummary {
+        switch slug {
+        case "ukrainska-literatura": return try decode(Self.literatureTopic)
+        case "poeziia": return try decode(Self.poetryTopic)
+        default: throw UITestFixtureError.missingFixture
+        }
     }
 
     func author(id: UUID) async throws -> AuthorSummary {
@@ -201,9 +242,29 @@ private extension UITestRepository {
         return #"{"count":\#(count),"next":\#(nextValue),"previous":null,"results":[\#(results)]}"#
     }
 
+    struct FixtureRow {
+        let json: String
+        let title: String
+        let year: Int
+        let readable: Bool
+        let topics: [String]
+    }
+
+    static let fixtureRows = [
+        FixtureRow(json: kobzarWork, title: "Кобзар", year: 1840, readable: true, topics: ["ukrainska-literatura", "poeziia"]),
+        FixtureRow(json: forestSongWork, title: "Лісова пісня", year: 1911, readable: false, topics: ["ukrainska-literatura"]),
+        FixtureRow(json: noFileWork, title: "Слово о полку Ігоревім", year: 1187, readable: false, topics: []),
+    ]
+
+    static let facets = #"{"total":3,"languages":[{"language":"uk","count":3},{"language":"ru","count":1}],"work_types":[{"work_type":"book","count":3}],"decades":[{"decade":1180,"count":1},{"decade":1840,"count":1},{"decade":1910,"count":1}]}"#
+
+    static let literatureTopic = #"{"id":"eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee","name":"Українська література","name_en":null,"slug":"ukrainska-literatura","parent_slug":null,"parent_name":null,"description":"Класика української літератури.","work_count":2,"year_min":1840,"year_max":1911,"children":[{"id":"eeeeeeee-1111-eeee-eeee-eeeeeeeeeeee","name":"Поезія","name_en":null,"slug":"poeziia","color":null}]}"#
+
+    static let poetryTopic = #"{"id":"eeeeeeee-1111-eeee-eeee-eeeeeeeeeeee","name":"Поезія","name_en":null,"slug":"poeziia","parent_slug":"ukrainska-literatura","parent_name":"Українська література","description":null,"work_count":1,"year_min":1840,"year_max":1840,"children":[]}"#
+
     static let kobzarWork = #"{"id":"11111111-1111-1111-1111-111111111111","slug":"kobzar","title":"Кобзар","subtitle":"Вибрані поезії","language":"uk","rights_summary":"public_domain","pd_status":"confirmed","first_published_year":1840,"authors":[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","display_name":"Тарас Шевченко"}],"editions_count":1,"has_text_file":true,"cover_image_url":null,"cover_tone":"burgundy","cover_variant":"frame","cover_glyph":"К"}"#
 
-    static let kobzarDetail = #"{"id":"11111111-1111-1111-1111-111111111111","slug":"kobzar","title":"Кобзар","subtitle":"Вибрані поезії","original_title":null,"language":"uk","additional_languages":["ru"],"first_published_year":1840,"work_type":"book","is_collection":true,"rights_summary":"public_domain","pd_status":"confirmed","editions_count":1,"has_text_file":true,"cover_image_url":null,"cover_tone":"burgundy","cover_variant":"frame","cover_glyph":"К","literary_form":{"id":"cccccccc-cccc-cccc-cccc-cccccccccccc","name":"Поезія","name_en":"Poetry"},"genres":[{"id":"dddddddd-dddd-dddd-dddd-dddddddddddd","name":"Лірика","name_en":"Lyric"}],"topics":[{"id":"eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee","name":"Українська література","name_en":null}],"contributions":[{"person_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","role":"author","person_display_name":"Тарас Шевченко","display_name_override":null},{"person_id":"ffffffff-ffff-ffff-ffff-ffffffffffff","role":"editor","person_display_name":"Іван Редактор","display_name_override":null}]}"#
+    static let kobzarDetail = #"{"id":"11111111-1111-1111-1111-111111111111","slug":"kobzar","title":"Кобзар","subtitle":"Вибрані поезії","original_title":null,"language":"uk","additional_languages":["ru"],"first_published_year":1840,"work_type":"book","is_collection":true,"rights_summary":"public_domain","pd_status":"confirmed","editions_count":1,"has_text_file":true,"cover_image_url":null,"cover_tone":"burgundy","cover_variant":"frame","cover_glyph":"К","literary_form":{"id":"cccccccc-cccc-cccc-cccc-cccccccccccc","name":"Поезія","name_en":"Poetry"},"genres":[{"id":"dddddddd-dddd-dddd-dddd-dddddddddddd","name":"Лірика","name_en":"Lyric"}],"topics":[{"id":"eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee","name":"Українська література","name_en":null,"slug":"ukrainska-literatura"}],"contributions":[{"person_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","role":"author","person_display_name":"Тарас Шевченко","display_name_override":null},{"person_id":"ffffffff-ffff-ffff-ffff-ffffffffffff","role":"editor","person_display_name":"Іван Редактор","display_name_override":null}]}"#
 
     static let forestSongWork = #"{"id":"22222222-2222-2222-2222-222222222222","slug":"lisova-pisnia","title":"Лісова пісня","rights_summary":"public_domain","pd_status":"unknown","subtitle":null,"language":"uk","first_published_year":1911,"authors":[{"id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","display_name":"Леся Українка"}],"editions_count":1,"has_text_file":false,"cover_image_url":null,"cover_tone":"green","cover_variant":"frame","cover_glyph":"Л"}"#
 

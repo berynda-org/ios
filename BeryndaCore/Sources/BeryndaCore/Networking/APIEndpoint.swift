@@ -2,7 +2,14 @@ import Foundation
 
 public enum APIEndpoint: Sendable, Equatable {
     case works(search: String?, page: Int)
-    case worksFiltered(search: String?, page: Int, readableOnly: Bool, language: String?)
+    case worksFiltered(search: String?, page: Int, filters: WorkFilters)
+    /// Option counts for the filter sheet; takes the same parameters as
+    /// `works/`, minus the page.
+    case workFacets(search: String?, filters: WorkFilters)
+    /// `parent` is `"root"` or a topic slug. Servers without the filter
+    /// ignore it, so callers must not rely on it alone.
+    case topics(parent: String?, search: String?, page: Int)
+    case topic(slug: String)
     case author(id: UUID)
     case authorWorks(id: UUID, page: Int, readableOnly: Bool)
     case work(slug: String)
@@ -41,19 +48,33 @@ public enum APIEndpoint: Sendable, Equatable {
                 // catalogue instead of search results.
                 queryItems.append(.init(name: "q", value: normalizedSearch))
             }
-        case let .worksFiltered(search, page, readableOnly, language):
+        case let .worksFiltered(search, page, filters):
             path = "works/"
             queryItems.append(.init(name: "page", value: String(max(page, 1))))
             if let normalizedSearch = search?.trimmingCharacters(in: .whitespacesAndNewlines),
                !normalizedSearch.isEmpty {
                 queryItems.append(.init(name: "q", value: normalizedSearch))
             }
-            if readableOnly {
-                queryItems.append(.init(name: "mobile_readable", value: "true"))
+            queryItems.append(contentsOf: filters.queryItems)
+        case let .workFacets(search, filters):
+            path = "works/facets/"
+            if let normalizedSearch = search?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !normalizedSearch.isEmpty {
+                queryItems.append(.init(name: "q", value: normalizedSearch))
             }
-            if let language, !language.isEmpty {
-                queryItems.append(.init(name: "language", value: language))
+            queryItems.append(contentsOf: filters.queryItems)
+        case let .topics(parent, search, page):
+            path = "topics/"
+            queryItems.append(.init(name: "page", value: String(max(page, 1))))
+            if let parent, !parent.isEmpty {
+                queryItems.append(.init(name: "parent", value: parent))
             }
+            if let normalizedSearch = search?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !normalizedSearch.isEmpty {
+                queryItems.append(.init(name: "search", value: normalizedSearch))
+            }
+        case let .topic(slug):
+            path = "topics/\(Self.encodePathSegment(slug))/"
         case let .author(id):
             path = "persons/\(id.uuidString.lowercased())/"
         case let .authorWorks(id, page, readableOnly):

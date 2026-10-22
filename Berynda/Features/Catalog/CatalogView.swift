@@ -33,16 +33,18 @@ private struct CatalogLoadedView: View {
             case let .loaded(works, _) where works.isEmpty:
                 BeryndaEmptyState(
                     title: "Нічого не знайдено",
-                    message: model.query.isEmpty
-                        ? "У каталозі поки немає доступних творів."
-                        : "Спробуйте скоротити або змінити запит.",
+                    message: model.filters.hasRefinements
+                        ? "Спробуйте змінити або скинути фільтри."
+                        : model.query.isEmpty
+                            ? "У каталозі поки немає доступних творів."
+                            : "Спробуйте скоротити або змінити запит.",
                     systemImage: "text.magnifyingglass"
                 )
             case let .loaded(works, totalCount):
                 WorkList(
                     works: works,
                     totalCount: totalCount,
-                    collections: model.query.isEmpty && !model.readableOnly && model.languageFilter == nil
+                    collections: model.query.isEmpty && model.filters.isUnfiltered
                         ? environment.library.publicCollections : [],
                     model: model
                 )
@@ -61,24 +63,8 @@ private struct CatalogLoadedView: View {
             .accessibilityIdentifier("catalog_screen")
             .background(BeryndaColor.paper)
             .navigationTitle("Каталог")
-            .safeAreaInset(edge: .top, spacing: 0) {
-                CatalogReadingFilter(readableOnly: $model.readableOnly)
-            }
             .searchable(text: $model.query, prompt: "Назва або автор")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu("Фільтри", systemImage: "line.3.horizontal.decrease.circle") {
-                        Picker("Мова", selection: $model.languageFilter) {
-                            Text("Усі мови").tag(String?.none)
-                            Text("Українська").tag(String?.some("uk"))
-                            Text("English").tag(String?.some("en"))
-                        }
-                    }
-                }
-            }
-            .onChange(of: model.query) { _, _ in model.searchChanged() }
-            .onChange(of: model.readableOnly) { _, _ in model.searchChanged() }
-            .onChange(of: model.languageFilter) { _, _ in model.searchChanged() }
+            .modifier(CatalogFiltering(model: model))
             .task {
                 if case .idle = model.state { await model.load() }
                 await model.loadRecommendedIfNeeded()
@@ -139,24 +125,8 @@ struct TabletCatalogColumn: View {
             }
         }
         .navigationTitle("Каталог")
-            .safeAreaInset(edge: .top, spacing: 0) {
-                CatalogReadingFilter(readableOnly: $model.readableOnly)
-            }
         .searchable(text: $model.query, prompt: "Назва або автор")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu("Фільтри", systemImage: "line.3.horizontal.decrease.circle") {
-                    Picker("Мова", selection: $model.languageFilter) {
-                        Text("Усі мови").tag(String?.none)
-                        Text("Українська").tag(String?.some("uk"))
-                        Text("English").tag(String?.some("en"))
-                    }
-                }
-            }
-        }
-        .onChange(of: model.query) { _, _ in model.searchChanged() }
-        .onChange(of: model.readableOnly) { _, _ in model.searchChanged() }
-        .onChange(of: model.languageFilter) { _, _ in model.searchChanged() }
+        .modifier(CatalogFiltering(model: model))
         // No recommended shelf here: the iPad master column is a narrow list
         // that does not render one, so fetching it would be a request whose
         // result is never shown.
@@ -181,7 +151,7 @@ private struct WorkList: View {
             }
             // Only above an unfiltered catalog: a shelf that ignores the
             // reader's query would be noise next to their own search.
-            if model.query.isEmpty, !model.readableOnly, model.languageFilter == nil, !model.recommended.isEmpty {
+            if model.query.isEmpty, model.filters.isUnfiltered, !model.recommended.isEmpty {
                 Section("Рекомендовані") {
                     RecommendedShelf(works: model.recommended)
                 }

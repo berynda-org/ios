@@ -18,8 +18,10 @@ final class CatalogViewModel: ObservableObject {
     @Published private(set) var isLoadingNextPage = false
     @Published private(set) var nextPageError: String?
     @Published var query = ""
-    @Published var readableOnly = false
-    @Published var languageFilter: String?
+    @Published var filters = WorkFilters()
+    /// Options for the filter sheet. `nil` until first asked for, and left
+    /// as it was when a lookup fails: the sheet still works without counts.
+    @Published private(set) var facets: WorkFacets?
     /// Server-ranked shelf shown above an unfiltered catalog. Empty is normal
     /// and not an error: it simply means nothing is being suggested.
     @Published private(set) var recommended: [WorkSummary] = []
@@ -29,6 +31,7 @@ final class CatalogViewModel: ObservableObject {
     private var currentPage = 0
     private var hasNextPage = false
     private var loadGeneration = 0
+    private var facetsKey: FacetsKey?
 
     init(repository: any CatalogRepository, recentlyViewed: RecentlyViewedStore? = nil) {
         self.repository = repository
@@ -49,6 +52,7 @@ final class CatalogViewModel: ObservableObject {
         loadGeneration += 1
         let generation = loadGeneration
         let requestedQuery = query.nilIfBlank
+        let requestedFilters = filters
         isLoadingNextPage = false
         nextPageError = nil
         state = .loading
@@ -56,10 +60,12 @@ final class CatalogViewModel: ObservableObject {
             let page = try await repository.works(
                 search: requestedQuery,
                 page: 1,
-                readableOnly: readableOnly,
-                language: languageFilter
+                filters: requestedFilters
             )
-            guard generation == loadGeneration, requestedQuery == query.nilIfBlank else { return }
+            guard generation == loadGeneration,
+                  requestedQuery == query.nilIfBlank,
+                  requestedFilters == filters
+            else { return }
             currentPage = 1
             hasNextPage = page.next != nil && page.results.count < page.count
             state = .loaded(page.results, totalCount: page.count)
@@ -90,6 +96,7 @@ final class CatalogViewModel: ObservableObject {
 
         let generation = loadGeneration
         let requestedQuery = query.nilIfBlank
+        let requestedFilters = filters
         let requestedPage = currentPage + 1
         isLoadingNextPage = true
         nextPageError = nil
@@ -101,10 +108,12 @@ final class CatalogViewModel: ObservableObject {
             let page = try await repository.works(
                 search: requestedQuery,
                 page: requestedPage,
-                readableOnly: readableOnly,
-                language: languageFilter
+                filters: requestedFilters
             )
-            guard generation == loadGeneration, requestedQuery == query.nilIfBlank else { return }
+            guard generation == loadGeneration,
+                  requestedQuery == query.nilIfBlank,
+                  requestedFilters == filters
+            else { return }
             let knownIDs = Set(works.map(\.id))
             let newWorks = page.results.filter { !knownIDs.contains($0.id) }
             let combined = works + newWorks
@@ -124,6 +133,29 @@ final class CatalogViewModel: ObservableObject {
         await loadNextPageIfNeeded(after: last)
     }
 
+    /// Fetched when the filter sheet opens, not per keystroke: the facet
+    /// query is the heaviest catalog request, and its options matter only
+    /// while the sheet is up.
+    ///
+    /// The options are counted without the sheet's own choices (language,
+    /// type, years), so picking one does not hide the others; the search,
+    /// the readable switch and the topic still narrow them.
+    func loadFacetsIfNeeded() async {
+        let key = FacetsKey(
+            query: query.nilIfBlank,
+            filters: WorkFilters(readableOnly: filters.readableOnly, topic: filters.topic)
+        )
+        guard key != facetsKey else { return }
+        guard let loaded = try? await repository.facets(search: key.query, filters: key.filters) else { return }
+        facets = loaded
+        facetsKey = key
+    }
+
+    /// Everything the sheet set, cleared at once; the readable switch stays.
+    func clearRefinements() {
+        filters = filters.clearingRefinements()
+    }
+
     func searchChanged() {
         searchTask?.cancel()
         loadGeneration += 1
@@ -133,6 +165,11 @@ final class CatalogViewModel: ObservableObject {
             await self?.load()
         }
     }
+}
+
+private struct FacetsKey: Equatable {
+    let query: String?
+    let filters: WorkFilters
 }
 
 private extension String {

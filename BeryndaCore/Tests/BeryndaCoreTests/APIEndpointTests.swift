@@ -62,17 +62,76 @@ final class APIEndpointTests: XCTestCase {
             APIEndpoint.worksFiltered(
                 search: "Кобзар",
                 page: 2,
-                readableOnly: true,
-                language: "uk"
+                filters: WorkFilters(
+                    readableOnly: true,
+                    language: "uk",
+                    workType: "book",
+                    yearFrom: 1900,
+                    yearTo: 1850,
+                    topic: TopicReference(slug: "poeziia", name: "Поезія")
+                )
             ).url(relativeTo: baseURL)
         )
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
         let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value) })
 
+        XCTAssertEqual(components.path, "/api/v1/works/")
         XCTAssertEqual(query["q"]!, "Кобзар")
         XCTAssertEqual(query["page"]!, "2")
         XCTAssertEqual(query["mobile_readable"]!, "true")
         XCTAssertEqual(query["language"]!, "uk")
+        XCTAssertEqual(query["work_type"]!, "book")
+        // A range typed back to front is sent the right way round.
+        XCTAssertEqual(query["year_from"]!, "1850")
+        XCTAssertEqual(query["year_to"]!, "1900")
+        XCTAssertEqual(query["topic"]!, "poeziia")
+    }
+
+    func testUnfilteredWorksSendOnlyTheSearchAndPage() throws {
+        let url = try XCTUnwrap(
+            APIEndpoint.worksFiltered(search: "  ", page: 0, filters: WorkFilters()).url(relativeTo: baseURL)
+        )
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+
+        XCTAssertEqual(components.queryItems?.map(\.name), ["page"])
+        XCTAssertEqual(components.queryItems?.first?.value, "1")
+    }
+
+    func testFacetsTakeTheWorksFiltersWithoutAPage() throws {
+        let url = try XCTUnwrap(
+            APIEndpoint.workFacets(
+                search: "Шевченко",
+                filters: WorkFilters(readableOnly: true, topic: TopicReference(slug: "poeziia", name: "Поезія"))
+            ).url(relativeTo: baseURL)
+        )
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value) })
+
+        XCTAssertEqual(components.path, "/api/v1/works/facets/")
+        XCTAssertEqual(query["q"]!, "Шевченко")
+        XCTAssertEqual(query["mobile_readable"]!, "true")
+        XCTAssertEqual(query["topic"]!, "poeziia")
+        XCTAssertFalse(query.keys.contains("page"))
+    }
+
+    func testTopicsListAsksForRootsAndSearchesByName() throws {
+        let roots = try XCTUnwrap(
+            APIEndpoint.topics(parent: "root", search: nil, page: 2).url(relativeTo: baseURL)
+        )
+        XCTAssertEqual(roots.absoluteString, "https://berynda.org/api/v1/topics/?page=2&parent=root")
+
+        let search = try XCTUnwrap(
+            APIEndpoint.topics(parent: nil, search: " історія ", page: 1).url(relativeTo: baseURL)
+        )
+        let components = try XCTUnwrap(URLComponents(url: search, resolvingAgainstBaseURL: false))
+        let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value) })
+        XCTAssertEqual(query["search"]!, "історія")
+        XCTAssertFalse(query.keys.contains("parent"))
+
+        XCTAssertEqual(
+            APIEndpoint.topic(slug: "shkilni-pidruchnyky").url(relativeTo: baseURL)?.absoluteString,
+            "https://berynda.org/api/v1/topics/shkilni-pidruchnyky/"
+        )
     }
 
     func testWorkIdentifierCannotInjectAnotherPathSegment() throws {
