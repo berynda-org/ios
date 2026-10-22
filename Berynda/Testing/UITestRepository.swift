@@ -163,6 +163,11 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         throw UITestFixtureError.missingFixture
     }
 
+    func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem {
+        guard workID == Self.kobzarWorkID else { throw UITestFixtureError.unsupported }
+        return try decode(Self.quickAddedItem)
+    }
+
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,

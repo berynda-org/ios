@@ -192,6 +192,56 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// The reader's own lists from the loaded snapshot; empty until it loads.
+    var lists: [BibliographyList] {
+        guard case let .loaded(_, lists, _) = state else { return [] }
+        return lists
+    }
+
+    /// Files a work into one list the reader picked. Quick add cannot: the
+    /// server always puts its items into a default list.
+    func addWork(_ workID: UUID, toList listID: UUID) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        isMutating = true
+        defer { isMutating = false }
+        let list = lists.first { $0.id == listID }
+        if list?.items.contains(where: { $0.work == workID && $0.file == nil }) == true {
+            return .alreadySaved
+        }
+        do {
+            _ = try await repository.addWork(workID, toList: listID)
+            await reload()
+            return .saved
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
+
+    /// Creates a list and files the work into it in one step, for the
+    /// "new list" entry of a work page's list menu.
+    func addWork(_ workID: UUID, toNewListTitled title: String) async -> SaveResult {
+        guard account.state == .authenticated else { return .signInRequired }
+        guard !isMutating else { return .inProgress }
+        guard let clean = Self.validListTitle(title) else {
+            return .failed(
+                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+            )
+        }
+        isMutating = true
+        defer { isMutating = false }
+        do {
+            let list = try await repository.createList(title: clean)
+            _ = try await repository.addWork(workID, toList: list.id)
+            await reload()
+            return .saved
+        } catch {
+            // The list may exist even if adding the work to it failed.
+            await reload()
+            return .failed(error.localizedDescription)
+        }
+    }
+
     /// A failure stays in the sheet that asked for it. It used to replace the
     /// whole library with an error screen, although the lists already shown
     /// were still valid.

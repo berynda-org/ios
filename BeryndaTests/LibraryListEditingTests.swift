@@ -16,6 +16,38 @@ final class LibraryListEditingTests: XCTestCase {
     private let forestSongID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
     private let fileID = UUID(uuidString: "44444444-4444-4444-4444-444444444444")!
 
+    func testAddingAWorkFilesItIntoTheChosenListOnly() async throws {
+        let repository = ListEditingRepositoryStub(lists: [
+            ListFixture(id: listID, title: "Курсова", items: []),
+            ListFixture(id: otherListID, title: "Прочитати", items: []),
+        ])
+        let model = await makeLibraryModel(repository: repository)
+        await model.load()
+
+        let result = await model.addWork(kobzarID, toList: otherListID)
+
+        XCTAssertEqual(result, .saved)
+        let calls = await repository.addWorkCalls
+        XCTAssertEqual(calls, [RemoveCall(listID: otherListID, itemID: kobzarID)])
+        XCTAssertEqual(model.lists.first { $0.id == listID }?.items.count, 0)
+        XCTAssertEqual(model.lists.first { $0.id == otherListID }?.items.map(\.work), [kobzarID])
+        XCTAssertFalse(model.isMutating)
+    }
+
+    func testAddingAWorkAlreadyInThatListSendsNothing() async throws {
+        let repository = ListEditingRepositoryStub(lists: [
+            ListFixture(id: listID, title: "Курсова", items: [ItemFixture(id: itemID, work: kobzarID)]),
+        ])
+        let model = await makeLibraryModel(repository: repository)
+        await model.load()
+
+        let result = await model.addWork(kobzarID, toList: listID)
+
+        XCTAssertEqual(result, .alreadySaved)
+        let calls = await repository.addWorkCalls
+        XCTAssertTrue(calls.isEmpty)
+    }
+
     func testRenamingSendsTheTrimmedTitleOnceAndTheReloadShowsIt() async throws {
         let repository = ListEditingRepositoryStub(lists: [
             ListFixture(id: listID, title: "Курсова", items: []),
@@ -303,6 +335,7 @@ private actor ListEditingRepositoryStub: LibraryRepository {
     private(set) var deleteCalls: [UUID] = []
     private(set) var removeCalls: [RemoveCall] = []
     private(set) var quickAddCalls: [QuickAddCall] = []
+    private(set) var addWorkCalls: [RemoveCall] = []
 
     private var holdsNextListsFetch = false
     private var heldListsFetch: CheckedContinuation<Void, Never>?
@@ -378,6 +411,17 @@ private actor ListEditingRepositoryStub: LibraryRepository {
               lists[index].items.contains(where: { $0.id == itemID })
         else { throw StubError.missingList }
         lists[index].items.removeAll { $0.id == itemID }
+    }
+
+    func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem {
+        // Recorded as (list, work) in the remove-call shape.
+        addWorkCalls.append(RemoveCall(listID: listID, itemID: workID))
+        guard let index = lists.firstIndex(where: { $0.id == listID }) else {
+            throw StubError.missingList
+        }
+        let item = ItemFixture(id: UUID(), work: workID)
+        lists[index].items.append(item)
+        return try LibraryFixtures.item(item)
     }
 
     func quickAdd(

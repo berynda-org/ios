@@ -13,6 +13,9 @@ public protocol LibraryRepository: Sendable {
     /// server renumbers the remaining items and recounts the list, so callers
     /// reload rather than patch their copy.
     func removeItem(listID: UUID, itemID: UUID) async throws
+    /// `POST lists/<id>/items/` with the work only. Quick add, by contrast,
+    /// always files into the server's default list.
+    func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,
@@ -69,6 +72,14 @@ public struct LiveLibraryRepository: LibraryRepository {
         )
     }
 
+    public func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem {
+        try await client.request(
+            .bibliographyListItems(listID: listID),
+            method: .post,
+            body: AddWorkBody(work: workID)
+        )
+    }
+
     public func quickAdd(
         workID: UUID?,
         fileID: UUID?,
@@ -104,6 +115,10 @@ public struct LiveLibraryRepository: LibraryRepository {
 
 private struct CreateListBody: Encodable, Sendable {
     let title: String
+}
+
+private struct AddWorkBody: Encodable, Sendable {
+    let work: UUID
 }
 
 private struct RenameListBody: Encodable, Sendable {

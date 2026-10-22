@@ -14,6 +14,7 @@ public enum APIEndpoint: Sendable, Equatable {
     case bibliographyQuickAdd
     case bibliographyList(id: UUID)
     case bibliographyListItem(listID: UUID, itemID: UUID)
+    case bibliographyListItems(listID: UUID)
     case publicCollections
     case savedCollections
     case collectionSave(slug: String)
@@ -81,6 +82,8 @@ public enum APIEndpoint: Sendable, Equatable {
             path = "lists/\(id.uuidString.lowercased())/"
         case let .bibliographyListItem(listID, itemID):
             path = "lists/\(listID.uuidString.lowercased())/items/\(itemID.uuidString.lowercased())/"
+        case let .bibliographyListItems(listID):
+            path = "lists/\(listID.uuidString.lowercased())/items/"
         case .publicCollections:
             path = "collections/"
         case .savedCollections:

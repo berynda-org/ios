@@ -227,6 +227,10 @@ private actor LibraryRepositoryStub: LibraryRepository {
         throw StubError.unsupported
     }
 
+    func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem {
+        throw StubError.unsupported
+    }
+
     func quickAdd(
         workID: UUID?,
         fileID: UUID?,

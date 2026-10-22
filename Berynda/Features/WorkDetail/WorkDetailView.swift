@@ -36,20 +36,16 @@ struct WorkDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("До списку", systemImage: "bookmark") {
-                    Task {
-                        let result = await environment.library.quickAdd(workID: work.id)
-                        if result == .signInRequired {
-                            environment.requireAuthentication(for: .addWork(work.id))
-                        } else {
-                            saveMessage = result.message
-                        }
+                AddToListControl(library: environment.library, workID: work.id) { result in
+                    if result == .signInRequired {
+                        environment.requireAuthentication(for: .addWork(work.id))
+                    } else {
+                        saveMessage = result.message
                     }
                 }
-                .disabled(environment.library.isMutating)
-                .accessibilityIdentifier("work.quick-add")
             }
         }
+        .task { await environment.library.loadIfNeeded() }
         .alert("Бібліотека", isPresented: Binding(
             get: { saveMessage != nil },
             set: { if !$0 { saveMessage = nil } }
@@ -427,5 +423,56 @@ private struct EditionRow: View {
 private extension String {
     var nilIfBlank: String? {
         trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
+    }
+}
+
+/// "До списку" on a work page. With lists loaded it is a menu of them plus a
+/// new list; without any (signed out, or no list yet) it quick-adds, which
+/// signs the reader in or creates the server's default list.
+private struct AddToListControl: View {
+    @ObservedObject var library: LibraryViewModel
+    let workID: UUID
+    let onResult: (LibraryViewModel.SaveResult) -> Void
+    @State private var asksNewListTitle = false
+    @State private var newListTitle = ""
+
+    var body: some View {
+        Group {
+            if library.lists.isEmpty {
+                Button("До списку", systemImage: "bookmark") {
+                    run { await library.quickAdd(workID: workID) }
+                }
+            } else {
+                Menu {
+                    Section("Додати до списку") {
+                        ForEach(library.lists) { list in
+                            Button(list.title) {
+                                run { await library.addWork(workID, toList: list.id) }
+                            }
+                        }
+                    }
+                    Button("Новий список…", systemImage: "plus") {
+                        newListTitle = ""
+                        asksNewListTitle = true
+                    }
+                } label: {
+                    Label("До списку", systemImage: "bookmark")
+                }
+            }
+        }
+        .disabled(library.isMutating)
+        .accessibilityIdentifier("work.quick-add")
+        .alert("Новий список", isPresented: $asksNewListTitle) {
+            TextField("Назва списку", text: $newListTitle)
+            Button("Створити") {
+                let title = newListTitle
+                run { await library.addWork(workID, toNewListTitled: title) }
+            }
+            Button("Скасувати", role: .cancel) {}
+        }
+    }
+
+    private func run(_ action: @escaping () async -> LibraryViewModel.SaveResult) {
+        Task { onResult(await action()) }
     }
 }
