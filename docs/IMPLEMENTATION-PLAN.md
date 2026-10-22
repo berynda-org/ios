@@ -712,7 +712,7 @@ by the API rather than guessing from file extensions.
 | `server_pages` | Display server-rendered page images with native zoom/pan and bounded prefetch |
 | EPUB | Use one audited EPUB renderer, isolated behind `DocumentRenderer`; do not expose the word EPUB in catalog UI |
 | TXT/Markdown | Native attributed-text renderer with paged and scrolling modes |
-| DJVU | Unsupported on mobile; the edition summary must not select it |
+| DJVU | Only as `server_pages` (server-rendered page images, same path as `server_pages` PDF; no text features); any other DjVu delivery is unsupported |
 
 ### 7.2 Reader behavior
 

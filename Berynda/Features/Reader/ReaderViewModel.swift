@@ -103,10 +103,6 @@ final class ReaderViewModel: ObservableObject {
                     readerInfo.rights.restrictionReason ?? "Це видання зараз недоступне для читання."
                 )
             }
-            guard readerInfo.renderingMode != .djvu else {
-                throw ReaderFailure.unsupported
-            }
-
             info = readerInfo
             let local = await localPositions.position(for: fileID)
             currentPage = restoredPage(from: readerInfo, local: local)
@@ -135,7 +131,7 @@ final class ReaderViewModel: ObservableObject {
         currentPage = bounded
         schedulePositionSave()
 
-        guard info.renderingMode == .pdf, info.resource != .fullPDF else { return }
+        guard info.isPagedDocument, info.resource != .fullPDF else { return }
         pageTask?.cancel()
         // `bounded`, not `page`: a request past the last page used to leave
         // `pageIsLoading` true forever, because the completion guard compares
@@ -150,7 +146,7 @@ final class ReaderViewModel: ObservableObject {
     /// a facing page to show.
     var supportsSpread: Bool {
         guard let info else { return false }
-        return info.renderingMode == .pdf && (info.resource == .pagePDF || info.resource == .pageImage)
+        return info.resource == .pagePDF || info.resource == .pageImage
     }
 
     /// Pages advance two at a time once a spread is on screen, so the reader
@@ -307,7 +303,7 @@ final class ReaderViewModel: ObservableObject {
     }
 
     var contents: [ReaderContentsItem] {
-        guard let info, info.renderingMode == .pdf else { return [] }
+        guard let info, info.isPagedDocument else { return [] }
         return ReaderNavigation.contents(
             from: info.toc,
             workID: info.workID,

@@ -186,7 +186,9 @@ public extension ReaderInfo {
         case .epub:
             return .epub
         case .djvu:
-            return .unsupported
+            // DjVu has no client renderer: it is readable only as the JPEG
+            // pages the server splits it into, and has no text layer.
+            return pageDelivery == .serverPages ? .pageImage : .unsupported
         case .pdf:
             switch pageDelivery {
             case .clientFull:
@@ -196,6 +198,15 @@ public extension ReaderInfo {
             case .serverPages:
                 return .pageImage
             }
+        }
+    }
+
+    /// Read page by page from a document (PDF, or DjVu page images), as
+    /// opposed to reflowed text or a publication.
+    var isPagedDocument: Bool {
+        switch resource {
+        case .fullPDF, .pagePDF, .pageImage: true
+        case .structuredText, .epub, .unsupported: false
         }
     }
 }

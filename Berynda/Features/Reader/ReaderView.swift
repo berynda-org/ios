@@ -319,7 +319,7 @@ struct ReaderView: View {
     private var showsPageControls: Bool {
         if model.isTextPaged, model.supportsTextPaging { return true }
         guard let info = model.info else { return false }
-        return info.renderingMode == .pdf && (info.totalPages ?? 0) > 1
+        return info.isPagedDocument && (info.totalPages ?? 0) > 1
     }
 
     private var isTextReader: Bool {
@@ -406,7 +406,7 @@ struct ReaderView: View {
         components.scheme = "https"
         components.host = "berynda.org"
         components.path = "/read/\(model.fileID.uuidString.lowercased())"
-        if model.info?.renderingMode == .pdf {
+        if model.info?.isPagedDocument == true {
             components.queryItems = [URLQueryItem(name: "p", value: String(model.currentPage))]
         }
         return components.url!

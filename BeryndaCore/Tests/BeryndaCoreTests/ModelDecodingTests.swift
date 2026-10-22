@@ -38,6 +38,37 @@ final class ModelDecodingTests: XCTestCase {
         XCTAssertEqual(info.resource, .pageImage)
     }
 
+    func testDjVuServedAsServerPagesReadsAsPageImages() throws {
+        let info = try readerInfo(renderingMode: "djvu", pageDelivery: "server_pages")
+
+        XCTAssertEqual(info.renderingMode, .djvu)
+        XCTAssertEqual(info.resource, .pageImage)
+        XCTAssertTrue(info.isPagedDocument)
+    }
+
+    func testDjVuWithAnyOtherDeliveryStaysUnsupported() throws {
+        for delivery in ["client_full", "client_per_page"] {
+            let info = try readerInfo(renderingMode: "djvu", pageDelivery: delivery)
+
+            XCTAssertEqual(info.resource, .unsupported, "djvu + \(delivery)")
+            XCTAssertFalse(info.isPagedDocument, "djvu + \(delivery)")
+        }
+    }
+
+    func testOnlyDocumentsReadPageByPage() throws {
+        XCTAssertFalse(try readerInfo(renderingMode: "txt", pageDelivery: "client_full").isPagedDocument)
+        XCTAssertFalse(try readerInfo(renderingMode: "epub", pageDelivery: "client_full").isPagedDocument)
+        XCTAssertTrue(try readerInfo(renderingMode: "pdf", pageDelivery: "client_per_page").isPagedDocument)
+    }
+
+    private func readerInfo(renderingMode: String, pageDelivery: String) throws -> ReaderInfo {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "reader-info-text", withExtension: "json"))
+        var json = try String(contentsOf: url, encoding: .utf8)
+        json = json.replacingOccurrences(of: "\"rendering_mode\": \"txt\"", with: "\"rendering_mode\": \"\(renderingMode)\"")
+        json = json.replacingOccurrences(of: "\"page_delivery\": \"client_full\"", with: "\"page_delivery\": \"\(pageDelivery)\"")
+        return try JSONDecoder().decode(ReaderInfo.self, from: Data(json.utf8))
+    }
+
     private func decode<T: Decodable>(_ name: String) throws -> T {
         let url = try XCTUnwrap(Bundle.module.url(forResource: name, withExtension: "json"))
         return try JSONDecoder().decode(T.self, from: Data(contentsOf: url))
