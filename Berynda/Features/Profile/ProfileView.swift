@@ -39,7 +39,6 @@ private struct ProfileContent: View {
                     LabeledContent("Електронна адреса", value: profile.email)
                     Button("Редагувати профіль") { showsEditor = true }
                 }
-                SocialSignInButtons(account: account, linking: true)
             } else {
                 Section {
                     BeryndaEmptyState(
