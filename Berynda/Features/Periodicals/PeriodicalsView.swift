@@ -399,7 +399,6 @@ struct PublishedInPanel: View {
                 }
             }
         }
-        .accessibilityIdentifier("work.published-in")
     }
 
     private func periodicalIdentifier(_ link: WorkPeriodicalLink) -> String? {
