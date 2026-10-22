@@ -52,6 +52,8 @@ final class ReaderViewModel: ObservableObject {
     private let session: SessionController
     private let account: AccountViewModel
     private let localPositions: LocalReadingPositionStore
+    /// Where a position that could not be sent waits for the network.
+    private let offline: OfflineSync?
     private var pageTask: Task<Void, Never>?
     private var saveTask: Task<Void, Never>?
     private var prefetchTasks: [Int: Task<Void, Never>] = [:]
@@ -77,7 +79,8 @@ final class ReaderViewModel: ObservableObject {
         repository: any ReaderRepository,
         session: SessionController,
         account: AccountViewModel,
-        localPositions: LocalReadingPositionStore
+        localPositions: LocalReadingPositionStore,
+        offline: OfflineSync? = nil
     ) {
         self.fileID = fileID
         self.initialPage = initialPage
@@ -85,6 +88,7 @@ final class ReaderViewModel: ObservableObject {
         self.session = session
         self.account = account
         self.localPositions = localPositions
+        self.offline = offline
     }
 
     deinit {
@@ -528,15 +532,14 @@ final class ReaderViewModel: ObservableObject {
                   locator.isRestorable,
                   let value = locator.encoded()
             else { return }
-            let recordedLocator = (try? await repository.savePosition(
-                fileID: fileID,
+            let recordedLocator = await sendPosition(ReadingPositionUpdate(
                 positionType: "locator",
                 positionValue: value,
                 progressPercent: locator.totalProgression.map {
                     min(max(Int(($0 * 100).rounded()), 0), 100)
                 },
                 totalPages: nil
-            )) ?? true
+            ))
             if !recordedLocator {
                 serverDeclinedToRecord = true
                 await localPositions.clearAll()
@@ -546,19 +549,46 @@ final class ReaderViewModel: ObservableObject {
         let progress = total.map { min(max(Int((Double(page) / Double(max($0, 1)) * 100).rounded()), 0), 100) }
         // A thrown error is a transient failure and says nothing about policy,
         // so only an explicit `recorded: false` counts as a refusal.
-        let recorded = (try? await repository.savePosition(
-            fileID: fileID,
+        let recorded = await sendPosition(ReadingPositionUpdate(
             positionType: "page",
             positionValue: String(page),
             progressPercent: progress,
             totalPages: total
-        )) ?? true
+        ))
         guard !recorded else { return }
         // The server keeps no history for this reader, so neither do we: the
         // local resume copy is dropped and nothing further is sent this
         // session. Same treatment the locally-known disabled policy gets.
         serverDeclinedToRecord = true
         await localPositions.clearAll()
+    }
+}
+
+extension ReaderViewModel {
+    /// Sends a position; `false` only for an explicit `recorded: false`.
+    /// One that could not be sent — offline, or a server hiccup — is queued
+    /// with the time it was reached, so a newer position saved elsewhere in
+    /// the meantime still wins when the queue is flushed.
+    fileprivate func sendPosition(_ update: ReadingPositionUpdate) async -> Bool {
+        do {
+            return try await repository.savePosition(
+                fileID: fileID,
+                positionType: update.positionType,
+                positionValue: update.positionValue,
+                progressPercent: update.progressPercent,
+                totalPages: update.totalPages
+            )
+        } catch is CancellationError {
+            return true
+        } catch {
+            if let offline, MutationOutbox.isTransient(error) {
+                await offline.enqueue(
+                    .readingPosition(fileID: fileID, update: update, clientUpdatedAt: Date()),
+                    ownerID: account.profile?.id
+                )
+            }
+            return true
+        }
     }
 }
 

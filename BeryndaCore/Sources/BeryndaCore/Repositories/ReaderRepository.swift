@@ -16,22 +16,43 @@ public protocol ReaderRepository: Sendable {
     ) async throws -> Bool
 }
 
-public struct ReadingPositionUpdate: Encodable, Sendable, Equatable {
+public struct ReadingPositionUpdate: Codable, Sendable, Equatable {
     public let positionType: String
     public let positionValue: String
     public let progressPercent: Int?
     public let totalPages: Int?
+    /// ISO 8601 time the reader was really at this position, sent for writes
+    /// that were queued offline so a newer position is not overwritten.
+    public let clientUpdatedAt: String?
 
     public init(
         positionType: String,
         positionValue: String,
         progressPercent: Int?,
-        totalPages: Int?
+        totalPages: Int?,
+        clientUpdatedAt: String? = nil
     ) {
         self.positionType = positionType
         self.positionValue = positionValue
         self.progressPercent = progressPercent
         self.totalPages = totalPages
+        self.clientUpdatedAt = clientUpdatedAt
+    }
+
+    func stamped(_ date: Date) -> ReadingPositionUpdate {
+        ReadingPositionUpdate(
+            positionType: positionType,
+            positionValue: positionValue,
+            progressPercent: progressPercent,
+            totalPages: totalPages,
+            clientUpdatedAt: Self.timestamp(date)
+        )
+    }
+
+    static func timestamp(_ date: Date) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.string(from: date)
     }
 
     enum CodingKeys: String, CodingKey {
@@ -39,6 +60,7 @@ public struct ReadingPositionUpdate: Encodable, Sendable, Equatable {
         case positionValue = "position_value"
         case progressPercent = "progress_percent"
         case totalPages = "total_pages"
+        case clientUpdatedAt = "client_updated_at"
     }
 }
 

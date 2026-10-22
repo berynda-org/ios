@@ -67,6 +67,7 @@ public actor BeryndaAPIClient {
         _ endpoint: APIEndpoint,
         method: APIRequestMethod,
         body: Body,
+        headers: [String: String] = [:],
         as type: Response.Type = Response.self
     ) async throws -> Response {
         let encoded: Data
@@ -82,6 +83,7 @@ public actor BeryndaAPIClient {
             endpoint,
             method: method,
             body: encoded,
+            headers: headers,
             accept: "application/json",
             maximumBytes: 5 * 1_024 * 1_024
         )
@@ -100,12 +102,14 @@ public actor BeryndaAPIClient {
     @discardableResult
     public func send(
         _ endpoint: APIEndpoint,
-        method: APIRequestMethod
+        method: APIRequestMethod,
+        headers: [String: String] = [:]
     ) async throws -> HTTPPayload {
         try await performData(
             endpoint,
             method: method,
             body: nil,
+            headers: headers,
             accept: "application/json",
             maximumBytes: 1 * 1_024 * 1_024
         )
@@ -135,6 +139,7 @@ public actor BeryndaAPIClient {
         _ endpoint: APIEndpoint,
         method: APIRequestMethod,
         body: Data?,
+        headers: [String: String] = [:],
         accept: String,
         maximumBytes: Int
     ) async throws -> HTTPPayload {
@@ -153,6 +158,13 @@ public actor BeryndaAPIClient {
         }
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        for (name, value) in headers {
+            request.setValue(value, forHTTPHeaderField: name)
+        }
+        // A request carrying an idempotency key replays rather than repeats,
+        // so even a POST may be retried after a server error.
+        let isIdempotent = method == .get || method == .put || method == .delete
+            || headers.keys.contains { $0.caseInsensitiveCompare(IdempotencyKey.headerName) == .orderedSame }
 
         var bearerToken = await authorizationSession?.accessToken()
         if let token = bearerToken, AuthTokens.isValidJWT(token) {
@@ -190,7 +202,7 @@ public actor BeryndaAPIClient {
             }
 
             if (response.statusCode == 429 || Self.retryableServerStatuses.contains(response.statusCode)),
-               method == .get || method == .put || method == .delete,
+               isIdempotent,
                attempt < retryPolicy.maximumAttempts {
                 let retryAfter = response.statusCode == 429 ? parseRetryAfter(response) : nil
                 let delay = retryPolicy.delay(

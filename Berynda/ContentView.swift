@@ -4,6 +4,7 @@ struct ContentView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @EnvironmentObject private var networkMonitor: NetworkMonitor
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appearance.mode") private var appearanceMode = "system"
 
     var body: some View {
@@ -44,6 +45,11 @@ struct ContentView: View {
             environment.consumePendingRoute()
         }
         .task { await environment.account.restore() }
+        // Back in the foreground: send what was queued, look after the
+        // offline shelf.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await environment.syncNow() } }
+        }
         .sheet(isPresented: showsRootAuthentication, onDismiss: {
             environment.authenticationDismissed()
         }) {

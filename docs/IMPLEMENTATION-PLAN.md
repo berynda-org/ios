@@ -204,7 +204,8 @@ poor connectivity.
    print, exact resume interoperability, and iPad landscape spread mode.
 3. Add a versioned, locale-isolated recently-viewed/document cache with
    corruption recovery, rights revalidation, and safe eviction. Permanent
-   offline downloads are deferred to v1.1; v1.0 provides only bounded cache.
+   offline downloads are deferred to v1.1; v1.0 keeps rights-gated, expiring
+   in-app copies (slice 14).
 4. Move all user-facing strings into Ukrainian/English String Catalogs and pass
    pseudolocalization, VoiceOver order, 44-point targets, Dynamic Type, Reduce
    Motion, increased contrast, keyboard navigation, and narrow-screen audits.
@@ -400,9 +401,29 @@ Review.
     sign-out (no change-password entry, no deletion, no sign-out-everywhere);
     and no unit test targets `AccountViewModel` or `ProfileView` directly
     beyond the three privacy tests.
-14. **Offline document policy:** background-safe cache, schema/version/locale
-    metadata, corruption recovery, rights revalidation and eviction, plus the
-    v1.0 versus v1.1 decision for permanent downloads.
+14. **Offline reading and write queue — implemented (2026-10-22), pending the
+    server deploy of app@82e2333:** decision: in-app offline reading ships in
+    v1.0 (gap plan §9.3), gated by `can_save_offline`. «Зберегти для читання
+    офлайн» on an edition keeps what reader-info's `offline` allows (reader
+    content for txt/md/epub, page images at 1200 px for PDF/DjVu) in
+    protected, non-backed-up Application Support storage (`OfflineLibrary`),
+    staged and moved into place so a failed save leaves nothing; a 1.5 GiB
+    cap. The reader opens saved copies when the network cannot be reached and
+    uses saved pages/content even online. Copies are revalidated through
+    `POST files/offline-status/` on foreground/connectivity (removed when no
+    longer allowed, re-downloaded when `updated_at` moves) and evicted after
+    `max_age_days` without opening or revalidation. Profile «Сховище» lists
+    them with sizes and removal. Writes: `MutationOutbox` persists queued
+    reading positions (coalesced per file, sent with `client_updated_at`; an
+    `applied:false` answer is adopted locally) and list mutations, each with a
+    stable `Idempotency-Key`; flushed on connectivity, foreground and
+    sign-in, only for the owning account, and cleared on sign-out/deletion.
+    Every list mutation now carries an idempotency key, so keyed POSTs are
+    also retried after 5xx. **Gaps:** saving runs in the app (a short
+    background-task extension), not a background `URLSession`, because pages
+    come through the signed API client one by one; there is no save button
+    inside the reader yet; a list created offline is not shown until the
+    queue is sent.
 15. **Localization/accessibility:** String Catalog for Ukrainian and English,
     pseudolocalization, VoiceOver order, 44-point targets, Reduce Motion,
     keyboard/iPad navigation, narrow-screen and accessibility-size audits.
@@ -437,9 +458,8 @@ bookmark sign-in prompt (`a4b62e4`). Next, in this order:
 Library list editing (rename, delete, remove item), the duplicate-check test,
 and the mutation race fix are done and CI-verified (run 34619988762 on `ab675ee`).
 
-4. Slice 14, offline document policy, per §5.3 — versioned, locale-isolated
-   cache with corruption recovery and rights revalidation; permanent downloads
-   stay deferred to v1.1.
+4. Slice 14 — done (see item 14 above); verify against production once the
+   server's offline endpoints are deployed.
 5. Slice 15, localization and accessibility — the String Catalog is what makes
    the profile's language picker honest; do it before any further copy is
    added.

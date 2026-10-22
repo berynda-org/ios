@@ -377,6 +377,21 @@ final class BeryndaUITests: XCTestCase {
         )
     }
 
+    func testReadableEditionCanBeSavedForOfflineReading() {
+        openWork(named: "Кобзар")
+        let save = app.buttons["edition.save-offline.\(EditionID.readable)"]
+        reveal(save)
+        save.tap()
+
+        let saved = app.descendants(matching: .any)["edition.saved-offline.\(EditionID.readable)"]
+        XCTAssertTrue(saved.waitForExistence(timeout: 10), app.debugDescription)
+
+        app.tabBars.buttons["Профіль"].tap()
+        let fileID = UUID(uuidString: "44444444-4444-4444-4444-444444444444")!
+        let copy = app.descendants(matching: .any)["profile.offline.\(fileID)"]
+        reveal(copy)
+    }
+
     func testSignedInReaderChangesPassword() {
         signInFromProfile()
         let link = app.buttons["profile.security.password"]

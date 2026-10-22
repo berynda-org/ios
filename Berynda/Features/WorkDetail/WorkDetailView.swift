@@ -156,6 +156,7 @@ extension LibraryViewModel.SaveResult {
         case .alreadySaved: "Цей твір уже є у вашому списку."
         case .inProgress: "Збереження вже виконується."
         case .signInRequired: "Увійдіть у профілі, щоб зберігати твори."
+        case .queued: Self.queuedMessage
         case let .failed(message): message
         }
     }
@@ -386,6 +387,7 @@ private struct RightsPanel: View {
 // MARK: - Editions
 
 private struct EditionRow: View {
+    @EnvironmentObject private var environment: AppEnvironment
     let edition: EditionSummary
     let onRead: (UUID) -> Void
 
@@ -416,6 +418,9 @@ private struct EditionRow: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("edition.read.\(edition.id)")
+                    if edition.canSaveOffline == true {
+                        OfflineSaveControl(fileID: fileID, editionID: edition.id, offline: environment.offline)
+                    }
                 } else if edition.isAwaitingPages {
                     Label(
                         edition.restrictionReason ?? "Сторінки ще готуються. Спробуйте трохи згодом.",

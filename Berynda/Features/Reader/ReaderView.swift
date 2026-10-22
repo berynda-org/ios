@@ -42,7 +42,8 @@ struct ReaderView: View {
                 repository: repository,
                 session: session,
                 account: account,
-                localPositions: localPositions
+                localPositions: localPositions,
+                offline: library.offlineSync
             )
         )
     }

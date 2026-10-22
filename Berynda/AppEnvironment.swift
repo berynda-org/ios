@@ -13,6 +13,9 @@ final class AppEnvironment: ObservableObject {
     let localReadingPositions: LocalReadingPositionStore
     let recentlyViewed: RecentlyViewedStore
     let localStorage: LocalStorageSummary
+    /// Queued writes and the offline shelf.
+    let offline: OfflineSync
+    private var cancellables: Set<AnyCancellable> = []
     @Published var selectedTab: RootTab = .catalog
     @Published var pendingRoute: AppRoute?
     @Published var catalogPath: [CatalogDestination] = []
@@ -37,10 +40,19 @@ final class AppEnvironment: ObservableObject {
         authentication: any AuthenticationServing,
         accountRepository: any AccountRepository,
         libraryRepository: any LibraryRepository,
-        networkMonitor: NetworkMonitor? = nil
+        networkMonitor: NetworkMonitor? = nil,
+        mutationSender: (any MutationSending)? = nil,
+        offlineStatusChecker: (any OfflineStatusChecking)? = nil,
+        outboxURL: URL? = nil,
+        offlineDirectory: URL? = nil
     ) {
         self.catalogRepository = catalogRepository
-        self.readerRepository = readerRepository
+        let offlineLibrary = OfflineLibrary(
+            directory: offlineDirectory ?? FileManager.default.temporaryDirectory
+                .appendingPathComponent("BeryndaOffline-\(UUID().uuidString)", isDirectory: true)
+        )
+        // Saved copies are read first; saving itself always fetches live.
+        self.readerRepository = OfflineAwareReaderRepository(live: readerRepository, library: offlineLibrary)
         self.session = session
         let localReadingPositions = LocalReadingPositionStore()
         self.localReadingPositions = localReadingPositions
@@ -58,11 +70,62 @@ final class AppEnvironment: ObservableObject {
             recentlyViewed: recentlyViewed
         )
         self.account = account
+        let offline = OfflineSync(
+            outbox: MutationOutbox(fileURL: outboxURL),
+            library: offlineLibrary,
+            sender: mutationSender,
+            statusChecker: offlineStatusChecker,
+            source: readerRepository,
+            localPositions: localReadingPositions
+        )
+        self.offline = offline
         self.library = LibraryViewModel(
             repository: libraryRepository,
-            account: account
+            account: account,
+            offline: offline
         )
         self.networkMonitor = networkMonitor ?? NetworkMonitor()
+        observeSyncTriggers()
+    }
+
+    /// Queued writes go out when the network returns and after sign-in, and
+    /// are forgotten the moment the account they belong to signs out (which
+    /// includes deletion).
+    private func observeSyncTriggers() {
+        // The launch value is `.anonymous` until the stored session is
+        // restored, so only a real sign-out (a move to anonymous) clears the
+        // queue. An expired session keeps it: the owner check in the outbox
+        // stops it reaching a different account that signs in next.
+        account.$state
+            .removeDuplicates()
+            .dropFirst()
+            .sink { [weak self] state in
+                guard let self else { return }
+                Task { @MainActor in
+                    switch state {
+                    case .authenticated:
+                        await self.syncNow()
+                    case .anonymous:
+                        await self.offline.forgetQueuedWrites()
+                    case .expired:
+                        break
+                    }
+                }
+            }
+            .store(in: &cancellables)
+        networkMonitor.$status
+            .removeDuplicates()
+            .filter { $0 == .online }
+            .sink { [weak self] _ in
+                Task { @MainActor in await self?.syncNow() }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Also called when the app comes back to the foreground.
+    func syncNow() async {
+        let owner = account.state == .authenticated ? account.profile?.id : nil
+        await offline.sync(ownerID: owner)
     }
 
     static func live(baseURL: URL = AppConfiguration.apiBaseURL) -> AppEnvironment {
@@ -85,7 +148,11 @@ final class AppEnvironment: ObservableObject {
             session: session,
             authentication: authentication,
             accountRepository: LiveAccountRepository(client: client),
-            libraryRepository: LiveLibraryRepository(client: client)
+            libraryRepository: LiveLibraryRepository(client: client),
+            mutationSender: LiveMutationSender(client: client),
+            offlineStatusChecker: LiveOfflineStatusChecker(client: client),
+            outboxURL: MutationOutbox.defaultFileURL(),
+            offlineDirectory: OfflineLibrary.defaultDirectory()
         )
     }
 
@@ -199,6 +266,8 @@ final class AppEnvironment: ObservableObject {
             authenticatedActionMessage = "Інше збереження вже виконується. Спробуйте ще раз."
         case .signInRequired:
             authenticatedActionMessage = "Сеанс завершився. Увійдіть і повторіть дію."
+        case .queued:
+            authenticatedActionMessage = LibraryViewModel.SaveResult.queuedMessage
         case let .failed(message):
             authenticatedActionMessage = message
         }

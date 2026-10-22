@@ -12,6 +12,7 @@ struct ProfileView: View {
         ProfileContent(
             account: environment.account,
             localStorage: environment.localStorage,
+            offline: environment.offline,
             appearanceMode: $appearanceMode,
             interfaceLanguage: $interfaceLanguage,
             showsAuthentication: $showsAuthentication,
@@ -23,6 +24,7 @@ struct ProfileView: View {
 private struct ProfileContent: View {
     @ObservedObject var account: AccountViewModel
     let localStorage: LocalStorageSummary
+    let offline: OfflineSync
     @Binding var appearanceMode: String
     @Binding var interfaceLanguage: String
     @Binding var showsAuthentication: Bool
@@ -139,6 +141,8 @@ private struct ProfileContent: View {
                         )
                     }
             }
+
+            OfflineStorageSection(offline: offline)
 
             if account.state == .authenticated, account.profile != nil {
                 Section {

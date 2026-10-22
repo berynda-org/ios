@@ -68,7 +68,7 @@ extension LibraryViewModel.SaveResult {
         case .saved: "Колекцію додано до бібліотеки."
         case .removed: "Колекцію прибрано з бібліотеки."
         case .alreadySaved: "Ця колекція вже є у вашій бібліотеці."
-        case .inProgress, .signInRequired, .failed: message
+        case .inProgress, .signInRequired, .queued, .failed: message
         }
     }
 }

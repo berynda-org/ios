@@ -21,6 +21,8 @@ final class LibraryViewModel: ObservableObject {
         case alreadySaved
         case inProgress
         case signInRequired
+        /// No connection: kept on the device and sent when it returns.
+        case queued
         case failed(String)
     }
 
@@ -36,11 +38,26 @@ final class LibraryViewModel: ObservableObject {
     @Published private(set) var discoveryError: String?
     private let repository: any LibraryRepository
     private let account: AccountViewModel
+    private let offline: OfflineSync?
     var accountForObservation: AccountViewModel { account }
+    /// Shared with the reader, which queues positions the same way.
+    var offlineSync: OfflineSync? { offline }
 
-    init(repository: any LibraryRepository, account: AccountViewModel) {
+    init(repository: any LibraryRepository, account: AccountViewModel, offline: OfflineSync? = nil) {
         self.repository = repository
         self.account = account
+        self.offline = offline
+    }
+
+    /// A change that failed only for want of a connection is queued for the
+    /// signed-in account instead of lost; anything else is a real failure.
+    private func queueIfOffline(_ error: Error, _ mutation: PendingMutation) async -> SaveResult? {
+        guard let offline,
+              (error as? APIError) == .transport,
+              let owner = account.profile?.id
+        else { return nil }
+        await offline.enqueue(mutation, ownerID: owner)
+        return .queued
     }
 
     func load() async {
@@ -188,6 +205,14 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .saved
         } catch {
+            let request = QuickAddRequest(
+                workID: workID,
+                fileID: fileID,
+                positionType: page == nil ? nil : "page",
+                positionValue: page.map(String.init),
+                pageNumber: page
+            )
+            if let queued = await queueIfOffline(error, .quickAdd(request)) { return queued }
             return .failed(error.localizedDescription)
         }
     }
@@ -214,6 +239,7 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .saved
         } catch {
+            if let queued = await queueIfOffline(error, .addWork(listID: listID, workID: workID)) { return queued }
             return .failed(error.localizedDescription)
         }
     }
@@ -260,6 +286,7 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .saved
         } catch {
+            if let queued = await queueIfOffline(error, .createList(title: clean)) { return queued }
             // The list may exist even though the response could not be read.
             await reload()
             return .failed(error.localizedDescription)
@@ -291,6 +318,7 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .saved
         } catch {
+            if let queued = await queueIfOffline(error, .renameList(id: id, title: clean)) { return queued }
             return .failed(error.localizedDescription)
         }
     }
@@ -305,6 +333,7 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .removed
         } catch {
+            if let queued = await queueIfOffline(error, .deleteList(id: id)) { return queued }
             return .failed(error.localizedDescription)
         }
     }
@@ -319,6 +348,7 @@ final class LibraryViewModel: ObservableObject {
             await reload()
             return .removed
         } catch {
+            if let queued = await queueIfOffline(error, .removeItem(listID: listID, itemID: itemID)) { return queued }
             return .failed(error.localizedDescription)
         }
     }
@@ -333,4 +363,8 @@ final class LibraryViewModel: ObservableObject {
             return false
         }
     }
+}
+
+extension LibraryViewModel.SaveResult {
+    static let queuedMessage = "Немає з’єднання. Зміну збережено на пристрої й буде надіслано, щойно з’явиться мережа."
 }

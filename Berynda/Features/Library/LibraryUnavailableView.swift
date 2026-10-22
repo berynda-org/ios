@@ -283,6 +283,8 @@ private extension LibraryViewModel.SaveResult {
             return "Інша зміна бібліотеки ще виконується. Спробуйте ще раз."
         case .signInRequired:
             return "Сеанс завершився. Увійдіть у профілі й повторіть дію."
+        case .queued:
+            return LibraryViewModel.SaveResult.queuedMessage
         case let .failed(message):
             return message
         }

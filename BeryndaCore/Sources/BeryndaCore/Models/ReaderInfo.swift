@@ -50,6 +50,21 @@ public struct ReaderRights: Codable, Sendable, Equatable {
     public let canPrint: Bool
     public let canShare: Bool
     public let restrictionReason: String?
+    /// May be kept on the device for offline reading. Absent on servers that
+    /// predate offline reading, which is the same as no.
+    public let canSaveOffline: Bool
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        canRead = try container.decode(Bool.self, forKey: .canRead)
+        canDownloadFile = try container.decode(Bool.self, forKey: .canDownloadFile)
+        canDownloadPage = try container.decode(Bool.self, forKey: .canDownloadPage)
+        canCopyText = try container.decode(Bool.self, forKey: .canCopyText)
+        canPrint = try container.decode(Bool.self, forKey: .canPrint)
+        canShare = try container.decode(Bool.self, forKey: .canShare)
+        restrictionReason = try container.decodeIfPresent(String.self, forKey: .restrictionReason)
+        canSaveOffline = (try? container.decodeIfPresent(Bool.self, forKey: .canSaveOffline)) ?? false
+    }
 
     enum CodingKeys: String, CodingKey {
         case canRead = "can_read"
@@ -59,6 +74,48 @@ public struct ReaderRights: Codable, Sendable, Equatable {
         case canPrint = "can_print"
         case canShare = "can_share"
         case restrictionReason = "restriction_reason"
+        case canSaveOffline = "can_save_offline"
+    }
+}
+
+/// What reader-info allows the app to keep for offline reading.
+public struct OfflinePolicy: Codable, Sendable, Equatable {
+    public enum Kind: String, Codable, Sendable {
+        /// txt/md/epub: the reader-content bytes.
+        case content
+        /// PDF/DjVu: every page image.
+        case pages
+        /// A kind this build does not know; nothing is saved for it, but the
+        /// rest of reader-info still decodes.
+        case unsupported
+
+        public init(from decoder: any Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Kind(rawValue: raw) ?? .unsupported
+        }
+    }
+
+    public let kind: Kind
+    public let totalPages: Int?
+    public let maxAgeDays: Int
+
+    public init(kind: Kind, totalPages: Int?, maxAgeDays: Int) {
+        self.kind = kind
+        self.totalPages = totalPages
+        self.maxAgeDays = maxAgeDays
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        kind = try container.decode(Kind.self, forKey: .kind)
+        totalPages = try? container.decodeIfPresent(Int.self, forKey: .totalPages)
+        maxAgeDays = max((try? container.decodeIfPresent(Int.self, forKey: .maxAgeDays)) ?? 30, 1)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case kind
+        case totalPages = "total_pages"
+        case maxAgeDays = "max_age_days"
     }
 }
 
@@ -146,9 +203,12 @@ public struct ReaderInfo: Codable, Sendable, Equatable {
     public let readingPosition: ReadingPosition?
     public let rights: ReaderRights
     public let pageLabels: [ReaderPageLabel]
+    /// `nil` when nothing may be kept now (or the server predates offline
+    /// reading).
+    public let offline: OfflinePolicy?
 
     enum CodingKeys: String, CodingKey {
-        case book, toc, rights
+        case book, toc, rights, offline
         case fileID = "file_id"
         case editionID = "edition_id"
         case seriesID = "series_id"

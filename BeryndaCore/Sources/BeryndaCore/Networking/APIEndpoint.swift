@@ -40,6 +40,8 @@ public enum APIEndpoint: Sendable, Equatable {
     case pagePDF(fileID: UUID, page: Int)
     case pageImage(fileID: UUID, page: Int, width: Int)
     case readingPosition(fileID: UUID)
+    /// POST: whether saved offline copies may still be kept.
+    case offlineStatus
     case continueReading(limit: Int)
 
     func url(relativeTo baseURL: URL) -> URL? {
@@ -160,6 +162,8 @@ public enum APIEndpoint: Sendable, Equatable {
         case let .pageImage(fileID, page, width):
             path = "files/\(fileID.uuidString.lowercased())/pages/\(max(page, 1))/"
             queryItems.append(.init(name: "width", value: String(min(max(width, 180), 2_000))))
+        case .offlineStatus:
+            path = "files/offline-status/"
         case let .readingPosition(fileID):
             path = "files/\(fileID.uuidString.lowercased())/reading-position/"
         case let .continueReading(limit):

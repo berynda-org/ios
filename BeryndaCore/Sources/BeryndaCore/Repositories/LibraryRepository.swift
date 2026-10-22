@@ -43,40 +43,72 @@ public struct LiveLibraryRepository: LibraryRepository {
         try await client.request(.bibliographyLists)
     }
 
+    // Every list mutation carries an idempotency key, so the client's own
+    // retry after a lost response replays the first result instead of
+    // writing twice. The keyed variants are what the outbox replays.
+
     public func createList(title: String) async throws -> BibliographyList {
+        try await createList(title: title, idempotencyKey: IdempotencyKey.make())
+    }
+
+    public func createList(title: String, idempotencyKey: String) async throws -> BibliographyList {
         try await client.request(
             .bibliographyLists,
             method: .post,
-            body: CreateListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines))
+            body: CreateListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines)),
+            headers: IdempotencyKey.headers(idempotencyKey)
         )
     }
 
     public func renameList(id: UUID, title: String) async throws -> BibliographyList {
+        try await renameList(id: id, title: title, idempotencyKey: IdempotencyKey.make())
+    }
+
+    public func renameList(id: UUID, title: String, idempotencyKey: String) async throws -> BibliographyList {
         try await client.request(
             .bibliographyList(id: id),
             method: .patch,
             // Only the title: the endpoint is a partial update, and resending
             // the other fields would overwrite changes made elsewhere.
-            body: RenameListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines))
+            body: RenameListBody(title: title.trimmingCharacters(in: .whitespacesAndNewlines)),
+            headers: IdempotencyKey.headers(idempotencyKey)
         )
     }
 
     public func deleteList(id: UUID) async throws {
-        _ = try await client.send(.bibliographyList(id: id), method: .delete)
+        try await deleteList(id: id, idempotencyKey: IdempotencyKey.make())
+    }
+
+    public func deleteList(id: UUID, idempotencyKey: String) async throws {
+        _ = try await client.send(
+            .bibliographyList(id: id),
+            method: .delete,
+            headers: IdempotencyKey.headers(idempotencyKey)
+        )
     }
 
     public func removeItem(listID: UUID, itemID: UUID) async throws {
+        try await removeItem(listID: listID, itemID: itemID, idempotencyKey: IdempotencyKey.make())
+    }
+
+    public func removeItem(listID: UUID, itemID: UUID, idempotencyKey: String) async throws {
         _ = try await client.send(
             .bibliographyListItem(listID: listID, itemID: itemID),
-            method: .delete
+            method: .delete,
+            headers: IdempotencyKey.headers(idempotencyKey)
         )
     }
 
     public func addWork(_ workID: UUID, toList listID: UUID) async throws -> BibliographyItem {
+        try await addWork(workID, toList: listID, idempotencyKey: IdempotencyKey.make())
+    }
+
+    public func addWork(_ workID: UUID, toList listID: UUID, idempotencyKey: String) async throws -> BibliographyItem {
         try await client.request(
             .bibliographyListItems(listID: listID),
             method: .post,
-            body: AddWorkBody(work: workID)
+            body: AddWorkBody(work: workID),
+            headers: IdempotencyKey.headers(idempotencyKey)
         )
     }
 
@@ -87,16 +119,30 @@ public struct LiveLibraryRepository: LibraryRepository {
         positionValue: String?,
         pageNumber: Int?
     ) async throws -> BibliographyItem {
+        try await quickAdd(
+            QuickAddRequest(
+                workID: workID,
+                fileID: fileID,
+                positionType: positionType,
+                positionValue: positionValue,
+                pageNumber: pageNumber
+            ),
+            idempotencyKey: IdempotencyKey.make()
+        )
+    }
+
+    public func quickAdd(_ request: QuickAddRequest, idempotencyKey: String) async throws -> BibliographyItem {
         try await client.request(
             .bibliographyQuickAdd,
             method: .post,
             body: QuickAddBody(
-                work: workID,
-                file: fileID,
-                positionType: positionType,
-                positionValue: positionValue,
-                pageNumber: pageNumber
-            )
+                work: request.workID,
+                file: request.fileID,
+                positionType: request.positionType,
+                positionValue: request.positionValue,
+                pageNumber: request.pageNumber
+            ),
+            headers: IdempotencyKey.headers(idempotencyKey)
         )
     }
 

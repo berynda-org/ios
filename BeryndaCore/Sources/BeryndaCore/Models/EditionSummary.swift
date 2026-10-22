@@ -16,6 +16,9 @@ public struct EditionSummary: Codable, Hashable, Sendable, Identifiable {
     /// Machine-readable reason, alongside the display text. The one value so
     /// far is `pages_not_ready`: a DjVu whose pages are still being split.
     public let restrictionCode: String?
+    /// The readable file may be kept for offline reading. Optional so a
+    /// server without offline reading still decodes.
+    public let canSaveOffline: Bool?
 
     /// Readable soon rather than restricted: the reader opens once the
     /// server has rendered the pages.
@@ -32,5 +35,6 @@ public struct EditionSummary: Codable, Hashable, Sendable, Identifiable {
         case canDownload = "can_download"
         case restrictionReason = "restriction_reason"
         case restrictionCode = "restriction_code"
+        case canSaveOffline = "can_save_offline"
     }
 }
