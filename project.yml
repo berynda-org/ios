@@ -94,6 +94,7 @@ targets:
       properties:
         com.apple.developer.associated-domains:
           - applinks:berynda.org
+          - applinks:www.berynda.org
         com.apple.developer.applesignin:
           - Default
 
