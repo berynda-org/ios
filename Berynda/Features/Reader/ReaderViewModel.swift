@@ -104,7 +104,7 @@ final class ReaderViewModel: ObservableObject {
             let readerInfo = try await repository.info(fileID: fileID)
             guard readerInfo.rights.canRead else {
                 throw ReaderFailure.restricted(
-                    readerInfo.rights.restrictionReason ?? "Це видання зараз недоступне для читання."
+                    readerInfo.rights.restrictionReason ?? L("Це видання зараз недоступне для читання.")
                 )
             }
             info = readerInfo
@@ -239,7 +239,7 @@ final class ReaderViewModel: ObservableObject {
     }
 
     var exportFileName: String {
-        let title = info?.book.title ?? "Видання"
+        let title = info?.book.title ?? L("Без назви")
         return "\(title).\(exportPathExtension)"
     }
 
@@ -278,7 +278,7 @@ final class ReaderViewModel: ObservableObject {
         let controller = UIPrintInteractionController.shared
         let printInfo = UIPrintInfo.printInfo()
         printInfo.outputType = .general
-        printInfo.jobName = info?.book.title ?? "Беринда"
+        printInfo.jobName = info?.book.title ?? L("Беринда")
         controller.printInfo = printInfo
         controller.printingItem = data
         controller.present(animated: true, completionHandler: nil)
@@ -606,7 +606,7 @@ private enum ReaderFailure: LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .restricted(reason): reason
-        case .unsupported: "Цей матеріал не підтримується в мобільному читачі."
+        case .unsupported: L("Цей матеріал не підтримується в мобільному читачі.")
         }
     }
 }

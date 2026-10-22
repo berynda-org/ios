@@ -168,18 +168,18 @@ public struct WorkFacets: Decodable, Sendable, Equatable {
     }
 }
 
-/// Ukrainian names for the codes the API returns, matching the web catalog's
+/// Ukrainian names (translated through `CoreLocalization`) for the codes the API returns, matching the web catalog's
 /// wording. An unknown code is shown as itself rather than hidden, so a new
 /// value from the server is still selectable.
 public enum CatalogVocabulary {
     public static func languageName(_ code: String) -> String {
         let key = code.trimmed.lowercased()
-        return languageNames[key] ?? key.uppercased()
+        return languageNames[key].map(CoreLocalization.string) ?? key.uppercased()
     }
 
     public static func workTypeName(_ value: String) -> String {
         let key = value.trimmed.lowercased()
-        if let name = workTypeNames[key] { return name }
+        if let name = workTypeNames[key] { return CoreLocalization.string(name) }
         let readable = key.replacingOccurrences(of: "_", with: " ")
         return readable.prefix(1).uppercased() + readable.dropFirst()
     }

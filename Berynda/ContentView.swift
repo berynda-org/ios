@@ -28,6 +28,10 @@ struct ContentView: View {
                     .accessibilityIdentifier("network.offline-banner")
                 }
         }
+        // The banner appears without moving focus, so VoiceOver says it.
+        .onChange(of: networkMonitor.status) { _, status in
+            if status == .offline { VoiceOver.announce(L("Немає з’єднання з мережею")) }
+        }
         .fullScreenCover(item: $environment.presentedReader) { presentation in
             ReaderView(
                 fileID: presentation.fileID,
@@ -194,7 +198,7 @@ private struct TabletRootView: View {
         }
     }
 
-    private func sidebarButton(_ title: String, systemImage: String, tab: RootTab) -> some View {
+    private func sidebarButton(_ title: LocalizedStringKey, systemImage: String, tab: RootTab) -> some View {
         Button {
             environment.selectedTab = tab
         } label: {
@@ -203,6 +207,7 @@ private struct TabletRootView: View {
         }
         .buttonStyle(.plain)
         .listRowBackground(environment.selectedTab == tab ? BeryndaColor.surface : Color.clear)
+        .accessibilityAddTraits(environment.selectedTab == tab ? .isSelected : [])
     }
 }
 

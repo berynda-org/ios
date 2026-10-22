@@ -106,10 +106,10 @@ public enum OfflineSaveError: Error, Equatable, Sendable {
 extension OfflineSaveError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .notAllowed: "Це видання не можна зберегти для читання офлайн."
-        case .notReady: "Сторінки ще готуються. Спробуйте зберегти трохи згодом."
-        case .storageFull: "Для збереження бракує місця, відведеного для офлайн-читання. Видаліть щось у «Сховищі»."
-        case .inProgress: "Це видання вже зберігається."
+        case .notAllowed: CoreLocalization.string("Це видання не можна зберегти для читання офлайн.")
+        case .notReady: CoreLocalization.string("Сторінки ще готуються. Спробуйте зберегти трохи згодом.")
+        case .storageFull: CoreLocalization.string("Для збереження бракує місця, відведеного для офлайн-читання. Видаліть щось у «Сховищі».")
+        case .inProgress: CoreLocalization.string("Це видання вже зберігається.")
         }
     }
 }

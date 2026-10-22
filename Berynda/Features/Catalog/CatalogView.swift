@@ -221,6 +221,15 @@ private struct WorkList: View {
         .background(BeryndaColor.paper)
         .refreshable { await model.load() }
         .accessibilityLabel("Каталог, показано \(works.count) із \(totalCount)")
+        // A search or filter swaps the list without moving focus, so the
+        // new result count is spoken. The unfiltered catalog stays quiet.
+        .onAppear(perform: announceResults)
+        .onChange(of: totalCount) { _, _ in announceResults() }
+    }
+
+    private func announceResults() {
+        guard !model.query.isEmpty || !model.filters.isUnfiltered else { return }
+        VoiceOver.announce(L("Знайдено творів: \(totalCount)"))
     }
 
     @ViewBuilder
@@ -259,12 +268,14 @@ private struct CollectionShelf: View {
     @EnvironmentObject private var environment: AppEnvironment
     let collection: PublicCollectionSummary
     @State private var saveMessage: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(collection.name).font(.headline)
+                        .accessibilityAddTraits(.isHeader)
                     if !collection.description.isEmpty {
                         Text(collection.description)
                             .font(.caption)
@@ -296,8 +307,9 @@ private struct CollectionShelf: View {
                                 Text(work.title)
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(BeryndaColor.ink)
-                                    .lineLimit(2)
-                                    .frame(width: 96, alignment: .leading)
+                                    // Large text needs more lines in the narrow column.
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 6 : 2)
+                                    .frame(width: dynamicTypeSize.isAccessibilitySize ? 160 : 96, alignment: .leading)
                             }
                         }
                         .buttonStyle(.plain)
@@ -378,6 +390,10 @@ private struct RecentlyViewedList: View {
 /// every reader the same shelf and reveals nothing about what anyone has read.
 private struct RecommendedShelf: View {
     let works: [WorkSummary]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// The column widens and allows more lines at the accessibility sizes.
+    private var columnWidth: CGFloat { dynamicTypeSize.isAccessibilitySize ? 160 : 96 }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -395,14 +411,14 @@ private struct RecommendedShelf: View {
                             Text(work.title)
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(BeryndaColor.ink)
-                                .lineLimit(2)
-                                .frame(width: 96, alignment: .leading)
+                                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 6 : 2)
+                                .frame(width: columnWidth, alignment: .leading)
                             if let author = work.authors.first?.displayName {
                                 Text(author)
                                     .font(.caption2)
                                     .foregroundStyle(BeryndaColor.mutedInk)
-                                    .lineLimit(1)
-                                    .frame(width: 96, alignment: .leading)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                                    .frame(width: columnWidth, alignment: .leading)
                             }
                         }
                     }
@@ -449,14 +465,28 @@ struct WorkRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 6)
+        // One VoiceOver stop per work: "title, authors, year, editions,
+        // rights" instead of four separate texts.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: accessibilitySummary))
     }
 
     private var editionsLabel: String {
         switch work.editionsCount {
-        case 0: "Бібліографічний запис"
-        case 1: "1 видання"
-        default: "\(work.editionsCount) видань"
+        case 0: L("Бібліографічний запис")
+        default: L("\(work.editionsCount) видань")
         }
+    }
+
+    private var accessibilitySummary: String {
+        var parts = [work.title]
+        if !work.authors.isEmpty {
+            parts.append(work.authors.map(\.displayName).joined(separator: ", "))
+        }
+        if let year = work.firstPublishedYear { parts.append(String(year)) }
+        parts.append(editionsLabel)
+        if let rights = work.rightsClaim { parts.append(rights.title) }
+        return parts.joined(separator: ", ")
     }
 }
 
@@ -487,6 +517,7 @@ private struct EntityHitStrip: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
                             .background(BeryndaColor.surface, in: Capsule())
+                            .minimumHitTarget()
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("catalog.\(kind).\(hit.id)")
@@ -521,7 +552,7 @@ private struct EntityHitLabel: View {
 
 /// A way into browsing (topics, periodicals) above the catalog's own list.
 private struct BrowseEntry: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemImage: String
 
     var body: some View {

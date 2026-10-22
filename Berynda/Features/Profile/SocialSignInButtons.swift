@@ -26,7 +26,7 @@ struct SocialSignInButtons: View {
                 }
             }
             if configuration.appleEnabled || googleAvailable {
-                Section(linking ? "Під’єднати спосіб входу" : "Швидкий вхід") {
+                Section(linking ? L("Під’єднати спосіб входу") : L("Швидкий вхід")) {
                     if configuration.appleEnabled {
                         AppleSignInButton { begin(.apple) }
                             .frame(maxWidth: .infinity)

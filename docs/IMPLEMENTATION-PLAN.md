@@ -394,10 +394,9 @@ Review.
     privacy-off / forced expiry are in code (the recently-viewed store is now
     cleared alongside positions, commit `d4a1b0f`). The storage section now
     measures reading positions, recently viewed works, and leftover reader
-    files, and clears them behind a confirmation (`ab53c88`). **Gaps:** the
-    language picker stores a preference but changes
-    no strings — there is no String Catalog yet (slice 15), and it must not be
-    presented as working until there is; session/account actions stop at
+    files, and clears them behind a confirmation (`ab53c88`). The language
+    picker now switches the interface (slice 15). **Gaps:** session/account
+    actions stop at
     sign-out (no change-password entry, no deletion, no sign-out-everywhere);
     and no unit test targets `AccountViewModel` or `ProfileView` directly
     beyond the three privacy tests.
@@ -424,9 +423,44 @@ Review.
     come through the signed API client one by one; there is no save button
     inside the reader yet; a list created offline is not shown until the
     queue is sent.
-15. **Localization/accessibility:** String Catalog for Ukrainian and English,
-    pseudolocalization, VoiceOver order, 44-point targets, Reduce Motion,
-    keyboard/iPad navigation, narrow-screen and accessibility-size audits.
+15. **Localization/accessibility — implemented (2026-10-22), pending a
+    device VoiceOver pass:** `Berynda/Resources/Localizable.xcstrings`
+    (source language Ukrainian, every key translated to English, plurals for
+    counts) covers all app copy and the core package's errors and vocabulary
+    (routed through `CoreLocalization`). Profile «Мова» switches the language
+    at runtime: SwiftUI literals follow `.environment(\.locale)` set at the
+    window root, `String` copy goes through `L()`, which reads the chosen
+    language's compiled `.lproj` directly (so it does not depend on the
+    launch-time `Bundle.main` language), and the window is rebuilt on change.
+    API and sign-in requests send `Accept-Language` in the chosen language.
+    The app keeps Ukrainian as the default rather than following the device
+    language. CI runs `.github/scripts/check_strings_catalog.py` (every key has
+    English; every Ukrainian literal in the app and core is a key), and
+    `LocalizationTests` check the compiled catalog, plurals and the core
+    translator; a UI journey runs in English (`-ui.language en`).
+    VoiceOver: catalog cards and edition summaries are single stops
+    («назва, автори, рік, видання, права»); work, author, topic, periodical
+    and issue titles, panel headings and edition titles are headers; icon-only
+    buttons have names; selected topics and the current contents entry carry
+    the selected trait; the reader speaks «Сторінка 3 з 120» on the position
+    text and the slider, the slider is adjustable page by page, page turns are
+    announced, and scanned pages are named images; errors, search result
+    counts, sign-in, saves and offline state are announced. Custom small
+    controls (filter chips, cross-search chips, page buttons, EPUB toolbar,
+    list actions) have 44-point targets; the cover fade honours Reduce Motion
+    (page zoom already did); the work page and shelves re-flow at the
+    accessibility text sizes. UI tests assert the card label, work title,
+    add-to-list control, reader position and 44-point page buttons.
+    **Still needs a real device:** the full DEVICE-ACCEPTANCE §2 VoiceOver
+    journey (reading order on each screen, focus after sheets/alerts and after
+    sign-in, whether the announcements are spoken or cut off by a focus
+    change, the adjustable slider replacing default slider adjustment); the
+    header trait (not visible to XCUITest); the EPUB (Readium) navigator's own
+    VoiceOver behaviour and page-turn animation under Reduce Motion; text
+    truncation at the largest accessibility size on every screen;
+    pseudolocalization, keyboard/iPad navigation and narrow-screen audits are
+    not done. System-provided strings (search Cancel, swipe-action chrome)
+    follow the device language, not the in-app choice.
 16. **Automated quality gates — partial:** core package tests, an unsigned app
     build, and the app unit-test target run in CI. Meaningful URLProtocol
     integration coverage, stable identifier alignment, full XCUITest journeys,
@@ -460,9 +494,9 @@ and the mutation race fix are done and CI-verified (run 34619988762 on `ab675ee`
 
 4. Slice 14 — done (see item 14 above); verify against production once the
    server's offline endpoints are deployed.
-5. Slice 15, localization and accessibility — the String Catalog is what makes
-   the profile's language picker honest; do it before any further copy is
-   added.
+5. Slice 15 — done in code (see item 15); run the device VoiceOver pass from
+   `DEVICE-ACCEPTANCE.md` §2 and file what it finds. New copy goes into
+   `Localizable.xcstrings` with an English translation (CI enforces it).
 6. Slice 16 quality gates, then 17 product configuration. Item reordering and
    the library's offline write queue can be picked up alongside slice 14.
 

@@ -40,13 +40,13 @@ final class AccountSecurityViewModel: ObservableObject {
     var passwordFormProblem: String? {
         guard !newPassword.isEmpty else { return nil }
         if newPassword.count < Self.minimumPasswordLength {
-            return "Новий пароль має містити щонайменше \(Self.minimumPasswordLength) символів."
+            return L("Новий пароль має містити щонайменше \(Self.minimumPasswordLength) символів.")
         }
         if !repeatedPassword.isEmpty, repeatedPassword != newPassword {
-            return "Паролі не збігаються."
+            return L("Паролі не збігаються.")
         }
         if !currentPassword.isEmpty, currentPassword == newPassword {
-            return "Новий пароль має відрізнятися від поточного."
+            return L("Новий пароль має відрізнятися від поточного.")
         }
         return nil
     }
@@ -83,7 +83,7 @@ final class AccountSecurityViewModel: ObservableObject {
         if await account.requestPasswordReset(email: email) {
             setupEmailSentTo = email
         } else {
-            errorMessage = account.errorMessage ?? "Не вдалося надіслати лист. Спробуйте ще раз."
+            errorMessage = account.errorMessage ?? L("Не вдалося надіслати лист. Спробуйте ще раз.")
         }
     }
 

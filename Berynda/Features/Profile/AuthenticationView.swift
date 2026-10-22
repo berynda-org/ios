@@ -6,7 +6,7 @@ struct AuthenticationView: View {
         case register
 
         var id: Self { self }
-        var title: String { self == .signIn ? "Увійти" : "Реєстрація" }
+        var title: String { self == .signIn ? L("Увійти") : L("Реєстрація") }
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -52,7 +52,7 @@ struct AuthenticationView: View {
                     }
                 }
 
-                Section(mode == .signIn ? "Обліковий запис" : "Новий обліковий запис") {
+                Section(mode == .signIn ? L("Обліковий запис") : L("Новий обліковий запис")) {
                     if mode == .register {
                         TextField("Ім’я", text: $displayName)
                             .textContentType(.name)
@@ -94,6 +94,12 @@ struct AuthenticationView: View {
                 }
             }
             .navigationTitle(mode.title)
+            // Errors and the confirmation e-mail appear below the fields
+            // without moving focus, so VoiceOver reads them out.
+            .announcesChanges(of: localError ?? account.errorMessage)
+            .onChange(of: account.registrationEmail) { _, email in
+                if email != nil { VoiceOver.announce(L("Перевірте пошту")) }
+            }
             .task { await account.loadSocialProviders() }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -127,18 +133,19 @@ struct AuthenticationView: View {
             if succeeded, mode == .signIn {
                 await onAuthenticated()
                 dismiss()
+                VoiceOver.announce(L("Ви увійшли до облікового запису."))
             }
         }
     }
 
     private var validationError: String? {
-        guard email.contains("@") else { return "Введіть коректну електронну адресу." }
-        guard password.count >= 8 else { return "Пароль має містити щонайменше 8 символів." }
+        guard email.contains("@") else { return L("Введіть коректну електронну адресу.") }
+        guard password.count >= 8 else { return L("Пароль має містити щонайменше 8 символів.") }
         if mode == .register {
             guard !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                return "Введіть ім’я."
+                return L("Введіть ім’я.")
             }
-            guard password == passwordConfirmation else { return "Паролі не збігаються." }
+            guard password == passwordConfirmation else { return L("Паролі не збігаються.") }
         }
         return nil
     }
@@ -171,6 +178,11 @@ private struct PasswordResetView: View {
                 }
             }
             .navigationTitle("Відновлення пароля")
+            .onChange(of: account.passwordResetEmail) { _, sent in
+                if sent != nil {
+                    VoiceOver.announce(L("Якщо адреса зареєстрована, лист з інструкціями вже надіслано."))
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -156,23 +156,23 @@ extension SessionError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidCredentials:
-            "Неправильна електронна адреса або пароль."
+            CoreLocalization.string("Неправильна електронна адреса або пароль.")
         case .invalidInput:
-            "Перевірте введені дані й спробуйте ще раз."
+            CoreLocalization.string("Перевірте введені дані й спробуйте ще раз.")
         case .invalidToken, .expired:
-            "Сеанс завершився. Увійдіть знову."
+            CoreLocalization.string("Сеанс завершився. Увійдіть знову.")
         case .invalidResponse:
-            "Сервіс повернув неочікувану відповідь."
+            CoreLocalization.string("Сервіс повернув неочікувану відповідь.")
         case .unavailable:
-            "Не вдалося з’єднатися із сервісом."
+            CoreLocalization.string("Не вдалося з’єднатися із сервісом.")
         case .socialAccountExists:
-            "Ця адреса вже зареєстрована. Увійдіть звичним способом, а потім під’єднайте Apple чи Google у профілі."
+            CoreLocalization.string("Ця адреса вже зареєстрована. Увійдіть звичним способом, а потім під’єднайте Apple чи Google у профілі.")
         case .socialIdentityAlreadyLinked:
-            "Цей спосіб входу вже під’єднано до іншого облікового запису."
+            CoreLocalization.string("Цей спосіб входу вже під’єднано до іншого облікового запису.")
         case .socialVerificationFailed:
-            "Не вдалося підтвердити вхід. Спробуйте ще раз."
+            CoreLocalization.string("Не вдалося підтвердити вхід. Спробуйте ще раз.")
         case .storage:
-            "Не вдалося безпечно зберегти сеанс."
+            CoreLocalization.string("Не вдалося безпечно зберегти сеанс.")
         }
     }
 }

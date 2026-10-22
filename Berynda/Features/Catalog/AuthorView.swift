@@ -27,6 +27,7 @@ struct AuthorView: View {
                             Text(model.author?.displayName ?? fallbackName)
                                 .font(.system(.largeTitle, design: .serif, weight: .bold))
                                 .accessibilityIdentifier("author.name")
+                                .accessibilityAddTraits(.isHeader)
                             if let dates = model.author?.lifeDates {
                                 Text(dates).foregroundStyle(BeryndaColor.mutedInk)
                             }
@@ -42,9 +43,9 @@ struct AuthorView: View {
                     }
                     Section("Твори · \(model.totalCount)") {
                         if model.works.isEmpty {
-                            Text(model.readableOnly
-                                 ? "Наразі немає творів, доступних для читання."
-                                 : "Твори цього автора ще не додано.")
+                            (model.readableOnly
+                                 ? Text("Наразі немає творів, доступних для читання.")
+                                 : Text("Твори цього автора ще не додано."))
                                 .foregroundStyle(BeryndaColor.mutedInk)
                         }
                         ForEach(model.works) { work in

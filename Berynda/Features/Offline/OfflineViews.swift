@@ -42,6 +42,10 @@ struct OfflineSaveControl: View {
                 .accessibilityIdentifier("edition.save-offline.\(editionID)")
             }
         }
+        // Saving finishes in the background; say so without moving focus.
+        .onChange(of: offline.isSaved(fileID)) { _, saved in
+            if saved { VoiceOver.announce(L("Збережено для читання офлайн")) }
+        }
         .alert("Офлайн-читання", isPresented: Binding(
             get: { offline.saveError != nil },
             set: { if !$0 { offline.saveError = nil } }

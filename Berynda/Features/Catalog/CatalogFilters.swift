@@ -35,7 +35,7 @@ struct CatalogFiltering: ViewModifier {
                     }
                     .accessibilityIdentifier("catalog.filters")
                     .accessibilityValue(
-                        model.filters.hasRefinements ? "Активних: \(model.filters.refinementCount)" : ""
+                        model.filters.hasRefinements ? L("Активних: \(model.filters.refinementCount)") : ""
                     )
                 }
             }
@@ -74,8 +74,10 @@ struct ActiveFilterChips: View {
                 if let topic = filters.topic {
                     chip(topic.name, key: "topic") { filters.topic = nil }
                 }
-                Button("Скинути все") {
+                Button {
                     filters = filters.clearingRefinements()
+                } label: {
+                    Text("Скинути все").minimumHitTarget()
                 }
                 .font(.footnote.weight(.semibold))
                 .tint(BeryndaColor.accent)
@@ -91,8 +93,8 @@ struct ActiveFilterChips: View {
     private var yearsLabel: String? {
         switch filters.normalizedYears {
         case let (from?, to?): from == to ? "\(from)" : "\(from)–\(to)"
-        case let (from?, nil): "від \(from)"
-        case let (nil, to?): "до \(to)"
+        case let (from?, nil): L("від \(from)")
+        case let (nil, to?): L("до \(to)")
         default: nil
         }
     }
@@ -104,12 +106,15 @@ struct ActiveFilterChips: View {
                     .lineLimit(1)
                 Image(systemName: "xmark")
                     .font(.caption2.weight(.bold))
+                    .accessibilityHidden(true)
             }
             .font(.footnote)
             .foregroundStyle(BeryndaColor.ink)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(BeryndaColor.surface, in: Capsule())
+            // Visually a small capsule, but a 44-point target.
+            .minimumHitTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Прибрати фільтр: \(title)")
@@ -185,8 +190,10 @@ struct CatalogFilterSheet: View {
                                 .buttonStyle(.borderless)
                         }
                     }
-                    NavigationLink(draft.topic == nil ? "Обрати тему" : "Змінити тему") {
+                    NavigationLink {
                         TopicPickerView(selection: $draft.topic)
+                    } label: {
+                        draft.topic == nil ? Text("Обрати тему") : Text("Змінити тему")
                     }
                     .accessibilityIdentifier("catalog.filters.topic")
                 }
@@ -298,7 +305,7 @@ private struct TopicPickerList: View {
                                 row(topic.reference, subtitle: model.isSearching ? topic.parentName : nil)
                             } else {
                                 DisclosureGroup {
-                                    row(topic.reference, title: "Уся тема")
+                                    row(topic.reference, title: L("Уся тема"))
                                     ForEach(topic.children) { child in
                                         row(child.reference)
                                     }
@@ -341,10 +348,12 @@ private struct TopicPickerList: View {
                 if selection?.slug == topic.slug {
                     Image(systemName: "checkmark")
                         .foregroundStyle(BeryndaColor.accent)
-                        .accessibilityLabel("Обрано")
+                        .accessibilityHidden(true)
                 }
             }
         }
+        // The checkmark is drawn; VoiceOver hears "selected" instead.
+        .accessibilityAddTraits(selection?.slug == topic.slug ? .isSelected : [])
         .accessibilityIdentifier("topic.pick.\(topic.slug)")
     }
 }

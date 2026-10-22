@@ -38,9 +38,13 @@ final class ReaderPageScrollView: UIScrollView, UIScrollViewDelegate {
         accessibilityIdentifier = "reader.page-image"
 
         pageImageView.contentMode = .scaleAspectFit
+        // A scanned page has no text for VoiceOver; it is at least named,
+        // so swiping lands on "Page 3, image" rather than nothing.
+        pageImageView.isAccessibilityElement = true
+        pageImageView.accessibilityTraits = .image
         addSubview(pageImageView)
 
-        errorLabel.text = "Сторінку пошкоджено"
+        errorLabel.text = L("Сторінку пошкоджено")
         errorLabel.textAlignment = .center
         errorLabel.numberOfLines = 0
         errorLabel.isHidden = true
@@ -59,6 +63,7 @@ final class ReaderPageScrollView: UIScrollView, UIScrollViewDelegate {
         if loadedData != data { pageImageView.image = UIImage(data: data) }
         loadedData = data
         loadedPage = page
+        pageImageView.accessibilityLabel = L("Сторінка \(page)")
         needsPageLayout = true
         errorLabel.isHidden = pageImageView.image != nil
         setNeedsLayout()

@@ -49,4 +49,23 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(AppLanguage.current.acceptLanguage, "uk")
         XCTAssertEqual(L("Каталог"), "Каталог")
     }
+
+    func testPluralsFollowEachLanguagesRules() {
+        let one = 1, few = 3, many = 5
+        UserDefaults.standard.set("uk", forKey: AppLanguage.storageKey)
+        XCTAssertEqual(L("\(one) видань"), "1 видання")
+        XCTAssertEqual(L("\(few) видань"), "3 видання")
+        XCTAssertEqual(L("\(many) видань"), "5 видань")
+        UserDefaults.standard.set("en", forKey: AppLanguage.storageKey)
+        XCTAssertEqual(L("\(one) видань"), "1 edition")
+        XCTAssertEqual(L("\(many) видань"), "5 editions")
+    }
+
+    func testCorePackageCopyFollowsTheChoice() {
+        UserDefaults.standard.set("en", forKey: AppLanguage.storageKey)
+        XCTAssertEqual(CoreLocalization.string("Матеріал не знайдено."), "Not found.")
+        XCTAssertEqual(CatalogVocabulary.workTypeName("novel"), "Novel")
+        UserDefaults.standard.set("uk", forKey: AppLanguage.storageKey)
+        XCTAssertEqual(CatalogVocabulary.workTypeName("novel"), "Роман")
+    }
 }

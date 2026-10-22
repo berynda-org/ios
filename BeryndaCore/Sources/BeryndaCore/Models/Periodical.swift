@@ -38,8 +38,8 @@ public struct PeriodicalSummary: Decodable, Hashable, Sendable, Identifiable {
     public var yearsLabel: String? {
         switch (foundedYear, ceasedYear) {
         case let (from?, to?): from == to ? String(from) : "\(String(from))–\(String(to))"
-        case let (from?, nil): "з \(String(from))"
-        case let (nil, to?): "до \(String(to))"
+        case let (from?, nil): CoreLocalization.format("з %@", String(from))
+        case let (nil, to?): CoreLocalization.format("до %@", String(to))
         default: nil
         }
     }
@@ -120,9 +120,9 @@ public struct PeriodicalIssue: Decodable, Hashable, Sendable, Identifiable {
             return title
         }
         var parts: [String] = []
-        if let volume, !volume.isEmpty { parts.append("Т. \(volume)") }
+        if let volume, !volume.isEmpty { parts.append(CoreLocalization.format("Т. %@", volume)) }
         if let issue, !issue.isEmpty { parts.append("№ \(issue)") }
-        var label = parts.isEmpty ? "Випуск" : parts.joined(separator: ", ")
+        var label = parts.isEmpty ? CoreLocalization.string("Випуск") : parts.joined(separator: ", ")
         if let year { label += " (\(String(year)))" }
         return label
     }

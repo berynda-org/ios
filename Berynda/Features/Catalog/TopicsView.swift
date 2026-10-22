@@ -87,11 +87,11 @@ private struct TopicListContent: View {
     }
 
     static func worksLabel(_ count: Int) -> String {
-        "\(count.formatted()) \(UkrainianPlural.form(count, one: "твір", few: "твори", many: "творів"))"
+        L("\(count) творів")
     }
 
     private static func subtopicsLabel(_ count: Int) -> String {
-        "\(count) \(UkrainianPlural.form(count, one: "підтема", few: "підтеми", many: "підтем"))"
+        L("\(count) підтем")
     }
 }
 
@@ -124,6 +124,7 @@ struct TopicView: View {
                                 .font(.system(.title, design: .serif, weight: .bold))
                                 .foregroundStyle(BeryndaColor.ink)
                                 .accessibilityIdentifier("topic.name")
+                                .accessibilityAddTraits(.isHeader)
                             if let parent = model.topic?.parentName, !parent.isEmpty {
                                 Text(parent)
                                     .font(.subheadline)
@@ -161,9 +162,9 @@ struct TopicView: View {
 
                     Section("Твори · \(model.totalCount.formatted())") {
                         if model.works.isEmpty {
-                            Text(model.readableOnly
-                                 ? "Наразі немає творів, доступних для читання."
-                                 : "У цій темі ще немає творів.")
+                            (model.readableOnly
+                                 ? Text("Наразі немає творів, доступних для читання.")
+                                 : Text("У цій темі ще немає творів."))
                                 .foregroundStyle(BeryndaColor.mutedInk)
                         }
                         ForEach(model.works) { work in

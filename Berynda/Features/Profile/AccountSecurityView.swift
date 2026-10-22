@@ -8,8 +8,10 @@ struct AccountSecuritySection: View {
 
     var body: some View {
         Section("Безпека") {
-            NavigationLink(profile.hasPassword ? "Змінити пароль" : "Встановити пароль") {
+            NavigationLink {
                 PasswordChangeView(account: account)
+            } label: {
+                profile.hasPassword ? Text("Змінити пароль") : Text("Встановити пароль")
             }
             .accessibilityIdentifier("profile.security.password")
             NavigationLink {
@@ -47,8 +49,12 @@ struct PasswordChangeView: View {
         }
         .scrollContentBackground(.hidden)
         .background(BeryndaColor.paper)
-        .navigationTitle(model.needsPasswordSetup ? "Встановити пароль" : "Змінити пароль")
+        .navigationTitle(model.needsPasswordSetup ? Text("Встановити пароль") : Text("Змінити пароль"))
         .navigationBarTitleDisplayMode(.inline)
+        .announcesChanges(of: model.errorMessage)
+        .onChange(of: model.passwordChanged) { _, changed in
+            if changed { VoiceOver.announce(L("Пароль змінено.")) }
+        }
     }
 
     @ViewBuilder
@@ -176,6 +182,7 @@ struct AccountDeletionView: View {
         .background(BeryndaColor.paper)
         .navigationTitle("Видалення облікового запису")
         .navigationBarTitleDisplayMode(.inline)
+        .announcesChanges(of: model.errorMessage)
         .task { await account.loadSocialProviders() }
         .alert(
             "Видалити обліковий запис?",

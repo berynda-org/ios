@@ -41,21 +41,28 @@ struct EPUBReaderView: View {
         VStack(spacing: 0) {
             if case .ready = controller.phase {
                 HStack(spacing: 18) {
+                    // Icon-only, so the 44-point target is drawn into the
+                    // label and the name is given to VoiceOver explicitly.
                     if !controller.tableOfContents.isEmpty {
-                        Button("Зміст", systemImage: "list.bullet") {
+                        Button {
                             showsContents = true
+                        } label: {
+                            Image(systemName: "list.bullet").minimumHitTarget()
                         }
+                        .accessibilityLabel("Зміст")
                         .accessibilityIdentifier("reader.publication-contents")
                     }
                     Spacer()
-                    Button("Розмір тексту", systemImage: "textformat.size") {
+                    Button {
                         showsAppearance = true
+                    } label: {
+                        Image(systemName: "textformat.size").minimumHitTarget()
                     }
+                    .accessibilityLabel("Розмір тексту")
                     .accessibilityIdentifier("reader.publication-appearance")
                 }
-                .labelStyle(.iconOnly)
                 .padding(.horizontal, 20)
-                .frame(height: 40)
+                .frame(minHeight: 44)
             }
 
             Group {
@@ -160,7 +167,7 @@ private struct PublicationAppearanceSheet: View {
                     Slider(value: $fontSizeScale, in: 0.7...2.0, step: 0.1) {
                         Text("Розмір тексту")
                     }
-                    .accessibilityValue("\(Int((fontSizeScale * 100).rounded())) відсотків")
+                    .accessibilityValue(L("\(Int((fontSizeScale * 100).rounded())) відсотків"))
                     .accessibilityIdentifier("publication.font-size")
                     Button("Скинути") { fontSizeScale = 1.0 }
                 }
@@ -368,12 +375,12 @@ final class EPUBReaderController: NSObject, ObservableObject, EPUBNavigatorDeleg
     }
 
     func navigator(_ navigator: Navigator, presentError error: NavigatorError) {
-        notice = "Ця дія недоступна для цього видання."
+        notice = L("Ця дія недоступна для цього видання.")
     }
 
     func navigator(_ navigator: Navigator, presentExternalURL url: URL) {
         guard url.scheme?.lowercased() == "https" else {
-            notice = "Посилання має непідтримувану адресу."
+            notice = L("Посилання має непідтримувану адресу.")
             return
         }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -384,7 +391,7 @@ final class EPUBReaderController: NSObject, ObservableObject, EPUBNavigatorDeleg
         didFailToLoadResourceAt href: RelativeURL,
         withError error: ReadError
     ) {
-        notice = "Не вдалося завантажити частину видання."
+        notice = L("Не вдалося завантажити частину видання.")
     }
 
     func navigator(
@@ -425,7 +432,7 @@ final class EPUBReaderController: NSObject, ObservableObject, EPUBNavigatorDeleg
         guard case let .ready(navigator) = phase else { return }
         let moved = await navigator.go(to: entry.link)
         if !moved {
-            notice = "Не вдалося відкрити цей розділ."
+            notice = L("Не вдалося відкрити цей розділ.")
         }
     }
 
@@ -498,9 +505,9 @@ private enum EPUBReaderFailure: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidFile:
-            "Файл видання пошкоджений або має непідтримувану структуру."
+            L("Файл видання пошкоджений або має непідтримувану структуру.")
         case .contentRules:
-            "Не вдалося безпечно підготувати читач."
+            L("Не вдалося безпечно підготувати читач.")
         }
     }
 }

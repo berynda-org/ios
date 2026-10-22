@@ -197,7 +197,7 @@ final class AppEnvironment: ObservableObject {
             selectedTab = .catalog
             presentedReader = ReaderPresentation(
                 fileID: fileID,
-                fallbackTitle: "Беринда",
+                fallbackTitle: L("Беринда"),
                 initialPage: page
             )
         case .confirmEmail, .resetPassword:
@@ -228,7 +228,7 @@ final class AppEnvironment: ObservableObject {
         tabletCatalogSelection = nil
         selectedTab = .catalog
         await library.loadIfNeeded()
-        accountNotice = "Обліковий запис видалено."
+        accountNotice = L("Обліковий запис видалено.")
     }
 
     func authenticationDismissed() {
@@ -247,15 +247,15 @@ final class AppEnvironment: ObservableObject {
         switch action {
         case let .addWork(workID):
             result = await library.quickAdd(workID: workID)
-            successMessage = "Твір додано до бібліографічного списку."
+            successMessage = L("Твір додано до бібліографічного списку.")
         case let .saveCollection(collection):
             result = await library.setCollectionSaved(collection, saved: true)
-            successMessage = "Колекцію додано до бібліотеки."
+            successMessage = L("Колекцію додано до бібліотеки.")
         case let .bookmark(fileID, page):
             // The page is the one captured when the reader tapped, not
             // wherever the reader has scrolled to by the time sign-in ends.
             result = await library.quickAdd(fileID: fileID, page: page)
-            successMessage = "Закладку додано до бібліографічного списку."
+            successMessage = L("Закладку додано до бібліографічного списку.")
         }
 
         switch result {
@@ -263,13 +263,13 @@ final class AppEnvironment: ObservableObject {
             authenticatedActionMessage = successMessage
         case .removed:
             // Pending actions only ever save; kept for exhaustiveness.
-            authenticatedActionMessage = "Колекцію прибрано з бібліотеки."
+            authenticatedActionMessage = L("Колекцію прибрано з бібліотеки.")
         case .alreadySaved:
-            authenticatedActionMessage = "Цей запис уже є у вашій бібліотеці."
+            authenticatedActionMessage = L("Цей запис уже є у вашій бібліотеці.")
         case .inProgress:
-            authenticatedActionMessage = "Інше збереження вже виконується. Спробуйте ще раз."
+            authenticatedActionMessage = L("Інше збереження вже виконується. Спробуйте ще раз.")
         case .signInRequired:
-            authenticatedActionMessage = "Сеанс завершився. Увійдіть і повторіть дію."
+            authenticatedActionMessage = L("Сеанс завершився. Увійдіть і повторіть дію.")
         case .queued:
             authenticatedActionMessage = LibraryViewModel.SaveResult.queuedMessage
         case let .failed(message):

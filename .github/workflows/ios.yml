@@ -22,6 +22,10 @@ jobs:
 
       - name: Test upload result handling
         run: python3 -m unittest discover -s .github/scripts -p test_upload_testflight.py
+      # Every key has an English translation, and every Ukrainian literal in
+      # the app and the core package is a key in the catalog.
+      - name: Check the String Catalog
+        run: python3 .github/scripts/check_strings_catalog.py
       # App Store Connect rejects uploads built with anything older than
       # Xcode 26 and the iOS 26 SDK (Apple requirement since 2026-04-28).
       # Pinned rather than "latest": this macos-15 image ships Xcode 26.3

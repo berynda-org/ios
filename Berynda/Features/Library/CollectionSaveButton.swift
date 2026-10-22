@@ -65,9 +65,9 @@ extension LibraryViewModel.SaveResult {
     /// `message` speaks of works and lists; collections need their own copy.
     var collectionMessage: String {
         switch self {
-        case .saved: "Колекцію додано до бібліотеки."
-        case .removed: "Колекцію прибрано з бібліотеки."
-        case .alreadySaved: "Ця колекція вже є у вашій бібліотеці."
+        case .saved: L("Колекцію додано до бібліотеки.")
+        case .removed: L("Колекцію прибрано з бібліотеки.")
+        case .alreadySaved: L("Ця колекція вже є у вашій бібліотеці.")
         case .inProgress, .signInRequired, .queued, .failed: message
         }
     }

@@ -5,6 +5,7 @@ struct WorkDetailView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @StateObject private var model: WorkDetailViewModel
     @State private var saveMessage: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(work: WorkSummary, repository: any CatalogRepository) {
         _model = StateObject(
@@ -30,6 +31,7 @@ struct WorkDetailView: View {
 
                 Text("Видання")
                     .font(.title2.bold())
+                    .accessibilityAddTraits(.isHeader)
 
                 editionsSection
             }
@@ -74,8 +76,16 @@ struct WorkDetailView: View {
         return work.authors.filter { seen.insert($0.id).inserted }
     }
 
+    /// Side by side normally; at the accessibility text sizes the title gets
+    /// the full width under the cover instead of a narrow column beside it.
+    private var headerLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: BeryndaSpacing.standard))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: BeryndaSpacing.standard))
+    }
+
     private var header: some View {
-        HStack(alignment: .top, spacing: BeryndaSpacing.standard) {
+        headerLayout {
             BeryndaBookCover(
                 title: work.title,
                 imageURL: work.coverImageURL,
@@ -88,6 +98,8 @@ struct WorkDetailView: View {
                 Text(work.title)
                     .font(.system(.largeTitle, design: .serif, weight: .bold))
                     .foregroundStyle(BeryndaColor.ink)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("work.title")
                 if let subtitle = work.subtitle {
                     Text(subtitle).font(.title3).foregroundStyle(BeryndaColor.mutedInk)
                 }
@@ -151,11 +163,11 @@ struct WorkDetailView: View {
 extension LibraryViewModel.SaveResult {
     var message: String {
         switch self {
-        case .saved: "Додано до бібліографічного списку."
-        case .removed: "Прибрано з бібліотеки."
-        case .alreadySaved: "Цей твір уже є у вашому списку."
-        case .inProgress: "Збереження вже виконується."
-        case .signInRequired: "Увійдіть у профілі, щоб зберігати твори."
+        case .saved: L("Додано до бібліографічного списку.")
+        case .removed: L("Прибрано з бібліотеки.")
+        case .alreadySaved: L("Цей твір уже є у вашому списку.")
+        case .inProgress: L("Збереження вже виконується.")
+        case .signInRequired: L("Увійдіть у профілі, щоб зберігати твори.")
         case .queued: Self.queuedMessage
         case let .failed(message): message
         }
@@ -167,6 +179,17 @@ extension LibraryViewModel.SaveResult {
 private struct BibliographyPanel: View {
     let work: WorkSummary
     let isEnriching: Bool
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Label and value side by side, or stacked at the accessibility text
+    /// sizes, where two columns would leave a word per line.
+    private var rowLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
+    }
+
+    private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
         BeryndaPanel {
@@ -174,6 +197,7 @@ private struct BibliographyPanel: View {
                 HStack {
                     Label("Бібліографічні відомості", systemImage: "text.book.closed")
                         .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
                     Spacer()
                     if isEnriching {
                         ProgressView()
@@ -190,18 +214,18 @@ private struct BibliographyPanel: View {
                     )
                 }
 
-                detailRow("Оригінальна назва", key: "original-title", value: originalTitle)
-                detailRow("Вид", key: "kind", value: kindLabel)
-                detailRow("Мова", key: "language", value: languageLabel)
+                detailRow(L("Оригінальна назва"), key: "original-title", value: originalTitle)
+                detailRow(L("Вид"), key: "kind", value: kindLabel)
+                detailRow(L("Мова"), key: "language", value: languageLabel)
                 detailRow(
-                    "Перша публікація",
+                    L("Перша публікація"),
                     key: "first-published",
                     value: work.firstPublishedYear.map(String.init)
                 )
-                detailRow("Обсяг", key: "extent", value: work.pages.map { "\($0) с." })
+                detailRow(L("Обсяг"), key: "extent", value: work.pages.map { L("\($0) с.") })
                 topicsRow
                 detailRow(
-                    "Жанри",
+                    L("Жанри"),
                     key: "genres",
                     value: work.genres.map { $0.name }.joined(separator: ", ")
                 )
@@ -216,13 +240,13 @@ private struct BibliographyPanel: View {
     @ViewBuilder
     private func detailRow(_ label: String, key: String, value: String?) -> some View {
         if let value, !value.isEmpty {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            rowLayout {
                 Text(label)
                     .foregroundStyle(BeryndaColor.mutedInk)
-                Spacer(minLength: 12)
+                if !isStacked { Spacer(minLength: 12) }
                 Text(value)
                     .foregroundStyle(BeryndaColor.ink)
-                    .multilineTextAlignment(.trailing)
+                    .multilineTextAlignment(isStacked ? .leading : .trailing)
                     .accessibilityIdentifier("work.bibliography.\(key)")
             }
             .font(.subheadline)
@@ -234,11 +258,11 @@ private struct BibliographyPanel: View {
     @ViewBuilder
     private var topicsRow: some View {
         if !work.topics.isEmpty {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            rowLayout {
                 Text("Тематика")
                     .foregroundStyle(BeryndaColor.mutedInk)
-                Spacer(minLength: 12)
-                VStack(alignment: .trailing, spacing: 6) {
+                if !isStacked { Spacer(minLength: 12) }
+                VStack(alignment: isStacked ? .leading : .trailing, spacing: 6) {
                     ForEach(work.topics) { topic in
                         if let slug = topic.slug {
                             TopicLink(reference: TopicReference(slug: slug, name: topic.name))
@@ -267,7 +291,7 @@ private struct BibliographyPanel: View {
     private var kindLabel: String? {
         var parts: [String] = []
         if let form = work.literaryForm?.name { parts.append(form) }
-        if work.isCollection { parts.append("збірка") }
+        if work.isCollection { parts.append(L("збірка")) }
         if parts.isEmpty, let workType = work.workType?.nilIfBlank {
             parts.append(workType)
         }
@@ -285,11 +309,11 @@ private struct BibliographyPanel: View {
 
     static func roleLabel(_ role: String, count: Int) -> String {
         switch role {
-        case "author": count == 1 ? "Автор" : "Автори"
-        case "translator": count == 1 ? "Переклад" : "Переклад"
-        case "compiler": count == 1 ? "Упорядник" : "Упорядники"
-        case "editor": count == 1 ? "Редактор" : "Редактори"
-        case "illustrator": count == 1 ? "Ілюстрації" : "Ілюстрації"
+        case "author": count == 1 ? L("Автор") : L("Автори")
+        case "translator": L("Переклад")
+        case "compiler": count == 1 ? L("Упорядник") : L("Упорядники")
+        case "editor": count == 1 ? L("Редактор") : L("Редактори")
+        case "illustrator": L("Ілюстрації")
         default: role
         }
     }
@@ -313,6 +337,7 @@ private struct CollectionsPanel: View {
             VStack(alignment: .leading, spacing: 10) {
                 Label("У колекціях", systemImage: "square.stack")
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                     .foregroundStyle(BeryndaColor.ink)
 
                 ForEach(collections) { collection in
@@ -366,6 +391,7 @@ private struct RightsPanel: View {
                         Image(systemName: summary.symbol)
                             .accessibilityHidden(true)
                         Text(summary.title)
+                            .accessibilityAddTraits(.isHeader)
                             .accessibilityIdentifier("work.rights.title")
                     }
                     .font(.headline)
@@ -394,20 +420,26 @@ private struct EditionRow: View {
     var body: some View {
         BeryndaPanel {
             VStack(alignment: .leading, spacing: 8) {
-                Text(edition.displayTitle)
-                    .font(.headline)
-                    .foregroundStyle(BeryndaColor.ink)
-                    .accessibilityIdentifier("work.edition.\(edition.id)")
-                if !metadata.isEmpty {
-                    Text(metadata)
-                        .font(.subheadline)
-                        .foregroundStyle(BeryndaColor.mutedInk)
+                // One VoiceOver stop for the edition ("title, year · publisher,
+                // pages"), then its read or restriction line on its own.
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(edition.displayTitle)
+                        .font(.headline)
+                        .foregroundStyle(BeryndaColor.ink)
+                    if !metadata.isEmpty {
+                        Text(metadata)
+                            .font(.subheadline)
+                            .foregroundStyle(BeryndaColor.mutedInk)
+                    }
+                    if let extent {
+                        Text(extent)
+                            .font(.caption)
+                            .foregroundStyle(BeryndaColor.mutedInk)
+                    }
                 }
-                if let extent {
-                    Text(extent)
-                        .font(.caption)
-                        .foregroundStyle(BeryndaColor.mutedInk)
-                }
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("work.edition.\(edition.id)")
 
                 if let fileID = edition.readableFileID, edition.canRead {
                     Button {
@@ -423,7 +455,7 @@ private struct EditionRow: View {
                     }
                 } else if edition.isAwaitingPages {
                     Label(
-                        edition.restrictionReason ?? "Сторінки ще готуються. Спробуйте трохи згодом.",
+                        edition.restrictionReason ?? L("Сторінки ще готуються. Спробуйте трохи згодом."),
                         systemImage: "hourglass"
                     )
                     .font(.footnote)
@@ -431,7 +463,7 @@ private struct EditionRow: View {
                     .accessibilityIdentifier("edition.pages-not-ready.\(edition.id)")
                 } else {
                     Label(
-                        edition.restrictionReason ?? "Файл для читання недоступний",
+                        edition.restrictionReason ?? L("Файл для читання недоступний"),
                         systemImage: "lock"
                     )
                     .font(.footnote)
@@ -450,7 +482,7 @@ private struct EditionRow: View {
 
     private var extent: String? {
         let parts = [
-            edition.pageCount.map { "\($0) сторінок" },
+            edition.pageCount.map { L("\($0) сторінок") },
             edition.language.nilIfBlank.map { $0.uppercased() },
         ].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
@@ -498,6 +530,7 @@ private struct AddToListControl: View {
             }
         }
         .disabled(library.isMutating)
+        .accessibilityHint("Додає твір до бібліографічного списку")
         .accessibilityIdentifier("work.quick-add")
         .alert("Новий список", isPresented: $asksNewListTitle) {
             TextField("Назва списку", text: $newListTitle)

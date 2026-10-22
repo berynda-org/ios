@@ -66,7 +66,7 @@ private struct LibraryContent: View {
         // An alert rather than a confirmation dialog: iOS presents the dialog
         // as a popover beside the row that asked, not in the middle.
         .alert(
-            deletingList.map { "Видалити список «\($0.title)»?" } ?? "Видалити список?",
+            deletingList.map { L("Видалити список «\($0.title)»?") } ?? L("Видалити список?"),
             isPresented: Binding(
                 get: { deletingList != nil },
                 set: { if !$0 { deletingList = nil } }
@@ -114,12 +114,12 @@ private struct LibraryContent: View {
                         Button {
                             environment.presentReader(
                                 fileID: item.fileID,
-                                fallbackTitle: item.workTitle ?? "Видання",
+                                fallbackTitle: item.workTitle ?? L("Без назви"),
                                 initialPage: item.positionType == "page" ? Int(item.positionValue) : nil
                             )
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(item.workTitle ?? "Видання").foregroundStyle(BeryndaColor.ink)
+                                Text(item.workTitle ?? L("Без назви")).foregroundStyle(BeryndaColor.ink)
                                 if let progress = item.progressPercent {
                                     ProgressView(value: Double(progress), total: 100)
                                         .accessibilityLabel("Прочитано \(progress) відсотків")
@@ -152,7 +152,7 @@ private struct LibraryContent: View {
                                     environment.catalogPath = [.linkedWork(identifier: slug)]
                                 }
                             } label: {
-                                Text(item.workTitle ?? item.editionTitle ?? "Запис")
+                                Text(item.workTitle ?? item.editionTitle ?? L("Запис"))
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 removeItemButton(item, from: list)
@@ -166,6 +166,7 @@ private struct LibraryContent: View {
                             Text(list.title)
                             Spacer()
                             Text("\(list.workCount)").foregroundStyle(BeryndaColor.mutedInk)
+                                .accessibilityLabel(L("\(list.workCount) творів"))
                             // A visible way in: a long press alone is easy to
                             // miss.
                             Menu {
@@ -173,6 +174,7 @@ private struct LibraryContent: View {
                             } label: {
                                 Image(systemName: "ellipsis.circle")
                                     .foregroundStyle(BeryndaColor.accent)
+                                    .minimumHitTarget()
                             }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Дії зі списком «\(list.title)»")
@@ -231,7 +233,7 @@ private struct LibraryContent: View {
         Button("Прибрати", systemImage: "minus.circle", role: .destructive) {
             Task {
                 let result = await model.removeItem(listID: list.id, itemID: item.id)
-                report(result, title: "Бібліографічний список")
+                report(result, title: L("Бібліографічний список"))
             }
         }
         .disabled(model.isMutating)
@@ -243,7 +245,7 @@ private struct LibraryContent: View {
             Task {
                 let result = await model.setCollectionSaved(collection, saved: false)
                 if case let .failed(message) = result {
-                    failure = LibraryFailure(title: "Колекція", message: message)
+                    failure = LibraryFailure(title: L("Колекція"), message: message)
                 }
             }
         }
@@ -253,7 +255,7 @@ private struct LibraryContent: View {
 
     private func delete(_ list: BibliographyList) async {
         let result = await model.deleteList(id: list.id)
-        report(result, title: "Бібліографічний список")
+        report(result, title: L("Бібліографічний список"))
     }
 
     private func report(_ result: LibraryViewModel.SaveResult, title: String) {
@@ -280,9 +282,9 @@ private extension LibraryViewModel.SaveResult {
         case .saved, .removed, .alreadySaved:
             return nil
         case .inProgress:
-            return "Інша зміна бібліотеки ще виконується. Спробуйте ще раз."
+            return L("Інша зміна бібліотеки ще виконується. Спробуйте ще раз.")
         case .signInRequired:
-            return "Сеанс завершився. Увійдіть у профілі й повторіть дію."
+            return L("Сеанс завершився. Увійдіть у профілі й повторіть дію.")
         case .queued:
             return LibraryViewModel.SaveResult.queuedMessage
         case let .failed(message):
@@ -306,6 +308,7 @@ private struct NewListView: View {
                     if let error { Text(error).foregroundStyle(.red) }
                 }
             }
+                .announcesChanges(of: error)
                 .navigationTitle("Новий список")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -360,6 +363,7 @@ private struct RenameListView: View {
                 } footer: {
                     if let error {
                         Text(error).foregroundStyle(.red)
+                            .onAppear { VoiceOver.announce(error) }
                     } else if isTooLong {
                         Text("Назва не може бути довшою за \(LibraryViewModel.maximumListTitleLength) символів.")
                             .foregroundStyle(.red)

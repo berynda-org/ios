@@ -22,21 +22,21 @@ final class BeryndaUITests: XCTestCase {
     }
 
     func testReadingFilterHidesUnavailableWorksAndCanBeCleared() {
-        XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
+        XCTAssertTrue(card("Лісова пісня").waitForExistence(timeout: 5))
         let toggle = app.switches["catalog.readable-only"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
         flip(toggle, to: "1")
         let gone = NSPredicate(format: "exists == false")
-        expectation(for: gone, evaluatedWith: app.staticTexts["Лісова пісня"])
+        expectation(for: gone, evaluatedWith: card("Лісова пісня"))
         waitForExpectations(timeout: 5)
-        XCTAssertTrue(app.staticTexts["Кобзар"].exists)
-        XCTAssertFalse(app.staticTexts["Слово о полку Ігоревім"].exists)
+        XCTAssertTrue(card("Кобзар").exists)
+        XCTAssertFalse(card("Слово о полку Ігоревім").exists)
         flip(toggle, to: "0")
-        XCTAssertTrue(app.staticTexts["Лісова пісня"].waitForExistence(timeout: 5))
+        XCTAssertTrue(card("Лісова пісня").waitForExistence(timeout: 5))
     }
 
     func testYearFilterIsShownAsAChipAndCanBeCleared() {
-        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        XCTAssertTrue(card("Кобзар").waitForExistence(timeout: 5))
         let filters = app.buttons["catalog.filters"]
         XCTAssertTrue(filters.waitForExistence(timeout: 5), app.debugDescription)
         filters.tap()
@@ -48,13 +48,13 @@ final class BeryndaUITests: XCTestCase {
         app.buttons["catalog.filters.apply"].tap()
 
         let gone = NSPredicate(format: "exists == false")
-        expectation(for: gone, evaluatedWith: app.staticTexts["Кобзар"])
+        expectation(for: gone, evaluatedWith: card("Кобзар"))
         waitForExpectations(timeout: 5)
-        XCTAssertTrue(app.staticTexts["Лісова пісня"].exists)
+        XCTAssertTrue(card("Лісова пісня").exists)
         XCTAssertTrue(app.buttons["catalog.filter.years"].exists)
 
         app.buttons["catalog.filters.clear"].tap()
-        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        XCTAssertTrue(card("Кобзар").waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["catalog.filter.years"].exists)
     }
 
@@ -73,7 +73,7 @@ final class BeryndaUITests: XCTestCase {
         let read = app.buttons["edition.read.\(EditionID.readable)"]
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         read.tap()
-        XCTAssertTrue(app.staticTexts["I · с. 1 з 3"].waitForExistence(timeout: 5))
+        assertPagePosition("Сторінка 1 з 3, I")
     }
 
     /// `-ui.language en` sets the same preference as Profile → «Мова» (the
@@ -87,10 +87,66 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Catalog"].exists)
         XCTAssertTrue(app.tabBars.buttons["Library"].exists)
         XCTAssertTrue(app.tabBars.buttons["Profile"].exists)
+        let readable = app.switches["catalog.readable-only"]
+        XCTAssertTrue(readable.waitForExistence(timeout: 5))
+        XCTAssertTrue(readable.label.contains("Readable only"), readable.label)
+
+        // Copy assembled as a String in code (the card's VoiceOver label, with
+        // a plural) follows the choice as well as SwiftUI literals do.
+        let kobzar = card("Кобзар")
+        XCTAssertTrue(kobzar.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(kobzar.label.contains("1840, 1 edition, Public domain"), kobzar.label)
+        kobzar.tap()
+        XCTAssertTrue(app.staticTexts["Editions"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["work.quick-add"].label.contains("Add to List"), app.buttons["work.quick-add"].label)
+        XCTAssertEqual(app.staticTexts["work.rights.title"].label, "Public domain")
+        XCTAssertTrue(
+            app.buttons["edition.read.\(EditionID.readable)"].label.contains("Read Edition"),
+            app.buttons["edition.read.\(EditionID.readable)"].label
+        )
+        app.buttons["edition.read.\(EditionID.readable)"].tap()
+        assertPagePosition("Page 1 of 3, I")
+    }
+
+    /// The VoiceOver journey of DEVICE-ACCEPTANCE.md §2, steps 1, 3 and 4, as
+    /// far as XCUITest can see it: one labelled stop per work card, the work
+    /// title and add-to-list control named, the reader's position spelled out
+    /// on both the slider and the position text, and 44-point page buttons.
+    func testMainJourneyIsLabelledForVoiceOver() {
+        let kobzar = card("Кобзар")
+        XCTAssertTrue(kobzar.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(kobzar.label.hasPrefix("Кобзар, Тарас Шевченко, 1840"), kobzar.label)
+        XCTAssertTrue(kobzar.label.contains("Суспільне надбання"), kobzar.label)
+        kobzar.tap()
+
+        let title = app.staticTexts["work.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(title.label, "Кобзар")
+        let addToList = app.buttons["work.quick-add"]
+        XCTAssertTrue(addToList.exists)
+        XCTAssertTrue(addToList.label.contains("До списку"), addToList.label)
+        let edition = app.descendants(matching: .any)["work.edition.\(EditionID.readable)"]
+        XCTAssertTrue(edition.waitForExistence(timeout: 5))
+        XCTAssertTrue(edition.label.hasPrefix("Кобзар. Видання 1840 року"), edition.label)
+
+        app.buttons["edition.read.\(EditionID.readable)"].tap()
+        assertPagePosition("Сторінка 1 з 3, I")
+        let slider = app.sliders["reader.page-slider"]
+        XCTAssertTrue(slider.waitForExistence(timeout: 5))
+        XCTAssertEqual(slider.value as? String, "Сторінка 1 з 3, I")
+        let next = app.buttons["reader.next-page"]
+        let previous = app.buttons["reader.previous-page"]
+        XCTAssertEqual(next.label, "Наступна")
+        XCTAssertEqual(previous.label, "Попередня")
+        XCTAssertGreaterThanOrEqual(next.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(next.frame.height, 44)
+        next.tap()
+        assertPagePosition("Сторінка 2 з 3, II")
+        XCTAssertEqual(slider.value as? String, "Сторінка 2 з 3, II")
     }
 
     func testLaunchShowsAnonymousCatalog() {
-        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
+        XCTAssertTrue(card("Кобзар").waitForExistence(timeout: 5))
         XCTAssertTrue(app.tabBars.buttons["Каталог"].isSelected)
     }
 
@@ -101,8 +157,8 @@ final class BeryndaUITests: XCTestCase {
         searchField.tap()
         searchField.typeText("Кобзар")
 
-        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["Лісова пісня"].exists)
+        XCTAssertTrue(card("Кобзар").waitForExistence(timeout: 5))
+        XCTAssertFalse(card("Лісова пісня").exists)
     }
 
     func testSearchShowsMatchingAuthorsAndOpensOne() {
@@ -168,7 +224,7 @@ final class BeryndaUITests: XCTestCase {
     }
 
     func testWorkPublishedInOpensItsIssue() {
-        let work = app.staticTexts["Слово о полку Ігоревім"]
+        let work = card("Слово о полку Ігоревім")
         if !work.waitForExistence(timeout: 2) {
             app.swipeUp()
         }
@@ -185,7 +241,7 @@ final class BeryndaUITests: XCTestCase {
     }
 
     func testCatalogLoadsTheNextPage() {
-        let finalWork = app.staticTexts["Слово о полку Ігоревім"]
+        let finalWork = card("Слово о полку Ігоревім")
         if !finalWork.waitForExistence(timeout: 2) {
             app.swipeUp()
         }
@@ -196,18 +252,18 @@ final class BeryndaUITests: XCTestCase {
         openWork(named: "Кобзар")
 
         XCTAssertTrue(
-            app.staticTexts["work.edition.\(EditionID.readable)"]
+            app.descendants(matching: .any)["work.edition.\(EditionID.readable)"]
                 .waitForExistence(timeout: 5)
         )
         let readButton = app.buttons["edition.read.\(EditionID.readable)"]
         XCTAssertTrue(readButton.waitForExistence(timeout: 5))
         readButton.tap()
 
-        XCTAssertTrue(app.staticTexts["I · с. 1 з 3"].waitForExistence(timeout: 5))
+        assertPagePosition("Сторінка 1 з 3, I")
         let nextButton = app.buttons["reader.next-page"]
         XCTAssertTrue(nextButton.waitForExistence(timeout: 5))
         nextButton.tap()
-        XCTAssertTrue(app.staticTexts["II · с. 2 з 3"].waitForExistence(timeout: 5))
+        assertPagePosition("Сторінка 2 з 3, II")
     }
 
     func testWorkDetailShowsTheEnrichedBibliographyAndRights() {
@@ -267,11 +323,14 @@ final class BeryndaUITests: XCTestCase {
     }
 
     func testUnconfirmedPublicDomainClaimIsAbsentFromCatalogAndDetail() {
-        let confirmedID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
-        let unconfirmedID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
-        XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.descendants(matching: .any)["catalog.rights.\(confirmedID)"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["catalog.rights.\(unconfirmedID)"].exists)
+        // A card is one VoiceOver element, so its rights badge is part of
+        // the card's label rather than an element of its own.
+        let confirmed = card("Кобзар")
+        XCTAssertTrue(confirmed.waitForExistence(timeout: 5))
+        XCTAssertTrue(confirmed.label.contains("Суспільне надбання"), confirmed.label)
+        let unconfirmed = card("Лісова пісня")
+        XCTAssertTrue(unconfirmed.waitForExistence(timeout: 5))
+        XCTAssertFalse(unconfirmed.label.contains("Суспільне надбання"), unconfirmed.label)
 
         openWork(named: "Лісова пісня")
         XCTAssertTrue(app.staticTexts["edition.restricted.\(EditionID.restricted)"].waitForExistence(timeout: 5))
@@ -291,7 +350,7 @@ final class BeryndaUITests: XCTestCase {
     }
 
     func testEditionWithoutAFileDegradesSafely() {
-        let work = app.staticTexts["Слово о полку Ігоревім"]
+        let work = card("Слово о полку Ігоревім")
         if !work.waitForExistence(timeout: 2) {
             app.swipeUp()
         }
@@ -498,8 +557,26 @@ final class BeryndaUITests: XCTestCase {
         waitForExpectations(timeout: 5)
     }
 
+    /// A catalog card. Each card is a single accessibility element labelled
+    /// "title, authors, year, editions, rights", so it is found by the start
+    /// of its label.
+    private func card(_ title: String) -> XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@", title + ","))
+            .firstMatch
+    }
+
+    /// The reader's position as VoiceOver reads it.
+    private func assertPagePosition(_ spoken: String, file: StaticString = #filePath, line: UInt = #line) {
+        let position = app.staticTexts["reader.page-position"]
+        XCTAssertTrue(position.waitForExistence(timeout: 5), app.debugDescription, file: file, line: line)
+        let matches = NSPredicate(format: "label == %@", spoken)
+        expectation(for: matches, evaluatedWith: position)
+        waitForExpectations(timeout: 5)
+    }
+
     private func openWork(named title: String) {
-        let work = app.staticTexts[title]
+        let work = card(title)
         XCTAssertTrue(work.waitForExistence(timeout: 5))
         work.tap()
         XCTAssertTrue(app.staticTexts["Видання"].waitForExistence(timeout: 5))

@@ -33,6 +33,7 @@ struct AuthenticationLinkView: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
+            .announcesChanges(of: localError ?? account.errorMessage)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Закрити") { dismiss() }
@@ -56,7 +57,7 @@ struct AuthenticationLinkView: View {
             )
         } else {
             failureSection(
-                account.errorMessage ?? "Посилання недійсне або вже прострочене."
+                account.errorMessage ?? L("Посилання недійсне або вже прострочене.")
             )
         }
     }
@@ -87,7 +88,7 @@ struct AuthenticationLinkView: View {
     }
 
     @ViewBuilder
-    private func successSection(title: String, message: String) -> some View {
+    private func successSection(title: LocalizedStringKey, message: LocalizedStringKey) -> some View {
         Section {
             Label(title, systemImage: "checkmark.seal.fill")
                 .font(.headline)
@@ -108,9 +109,9 @@ struct AuthenticationLinkView: View {
 
     private var title: String {
         switch route {
-        case .confirmEmail: "Підтвердження пошти"
-        case .resetPassword: "Новий пароль"
-        case .work, .reader: "Посилання"
+        case .confirmEmail: L("Підтвердження пошти")
+        case .resetPassword: L("Новий пароль")
+        case .work, .reader: L("Посилання")
         }
     }
 
@@ -140,9 +141,9 @@ struct AuthenticationLinkView: View {
 
     private var passwordValidationError: String? {
         guard password.count >= 8 else {
-            return "Пароль має містити щонайменше 8 символів."
+            return L("Пароль має містити щонайменше 8 символів.")
         }
-        guard password == passwordConfirmation else { return "Паролі не збігаються." }
+        guard password == passwordConfirmation else { return L("Паролі не збігаються.") }
         return nil
     }
 }

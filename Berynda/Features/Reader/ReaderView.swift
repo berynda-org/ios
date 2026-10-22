@@ -93,7 +93,7 @@ struct ReaderView: View {
                 if model.supportsTextPaging {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(
-                            model.isTextPaged ? "Суцільний текст" : "Посторінково",
+                            model.isTextPaged ? L("Суцільний текст") : L("Посторінково"),
                             systemImage: model.isTextPaged ? "scroll" : "book.pages"
                         ) {
                             model.setTextPaged(!model.isTextPaged)
@@ -195,6 +195,9 @@ struct ReaderView: View {
         .onChange(of: model.currentPage) { _, page in
             guard !isScrubbing else { return }
             draftPage = Double(page)
+            // A turn made with the buttons or the adjustable control does not
+            // move VoiceOver focus, so the new position is spoken.
+            if showsPageControls { VoiceOver.announce(spokenPageLabel(for: page)) }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -342,14 +345,31 @@ struct ReaderView: View {
             }
             .disabled(model.pageIsLoading)
             .accessibilityLabel("Перейти до сторінки")
-            .accessibilityValue(pageLabel(for: displayedPage))
+            .accessibilityValue(spokenPageLabel(for: displayedPage))
+            // Swiping up or down with VoiceOver turns one page (or spread),
+            // the same as the buttons, instead of nudging the slider without
+            // ever committing the move.
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment:
+                    if model.canGoForward { model.selectPage(model.currentPage + model.pageStep) }
+                case .decrement:
+                    if model.canGoBackward { model.selectPage(model.currentPage - model.pageStep) }
+                @unknown default:
+                    break
+                }
+            }
             .accessibilityIdentifier("reader.page-slider")
 
             HStack(spacing: 18) {
-                Button("Попередня", systemImage: "chevron.left") {
+                // Icon-only: the 44-point target is part of the label, the
+                // name is VoiceOver's.
+                Button {
                     model.selectPage(model.currentPage - model.pageStep)
+                } label: {
+                    Image(systemName: "chevron.left").minimumHitTarget()
                 }
-                .labelStyle(.iconOnly)
+                .accessibilityLabel("Попередня")
                 .disabled(!model.canGoBackward)
                 .accessibilityIdentifier("reader.previous-page")
 
@@ -359,12 +379,16 @@ struct ReaderView: View {
                     Text(pageLabel(for: displayedPage))
                         .font(.footnote.monospacedDigit())
                         .foregroundStyle(BeryndaColor.mutedInk)
+                        .accessibilityLabel(spokenPageLabel(for: displayedPage))
+                        .accessibilityIdentifier("reader.page-position")
                 }
 
-                Button("Наступна", systemImage: "chevron.right") {
+                Button {
                     model.selectPage(model.currentPage + model.pageStep)
+                } label: {
+                    Image(systemName: "chevron.right").minimumHitTarget()
                 }
-                .labelStyle(.iconOnly)
+                .accessibilityLabel("Наступна")
                 .disabled(!model.canGoForward)
                 .accessibilityIdentifier("reader.next-page")
             }
@@ -379,10 +403,19 @@ struct ReaderView: View {
         isScrubbing ? Int(draftPage.rounded()) : model.currentPage
     }
 
+    /// The compact position under the page: «I · с. 3 з 120».
     private func pageLabel(for page: Int) -> String {
         let prefix = model.pageLabel(for: page).map { "\($0) · " } ?? ""
-        guard let total = model.info?.totalPages else { return "\(prefix)с. \(page)" }
-        return "\(prefix)с. \(page) з \(total)"
+        guard let total = model.info?.totalPages else { return prefix + L("с. \(page)") }
+        return prefix + L("с. \(page) з \(total)")
+    }
+
+    /// What VoiceOver says for the position: «Сторінка 3 з 120», then the
+    /// printed page label when the book has one («Сторінка 3 з 120, I»).
+    private func spokenPageLabel(for page: Int) -> String {
+        let position = model.info?.totalPages.map { L("Сторінка \(page) з \($0)") } ?? L("Сторінка \(page)")
+        guard let printed = model.pageLabel(for: page), !printed.isEmpty else { return position }
+        return "\(position), \(printed)"
     }
 
     private var textScale: CGFloat { CGFloat(storedTextScale) }
@@ -430,13 +463,13 @@ private struct ReaderAppearanceSheet: View {
                     } maximumValueLabel: {
                         Image(systemName: "textformat.size.larger")
                     }
-                    .accessibilityValue("\(Int((textScale * 100).rounded())) відсотків")
+                    .accessibilityValue(L("\(Int((textScale * 100).rounded())) відсотків"))
                 }
 
                 Section("Міжрядковий інтервал") {
                     Slider(value: $lineSpacingScale, in: 0.8...1.8, step: 0.1)
                         .accessibilityLabel("Міжрядковий інтервал")
-                        .accessibilityValue("\(Int((lineSpacingScale * 100).rounded())) відсотків")
+                        .accessibilityValue(L("\(Int((lineSpacingScale * 100).rounded())) відсотків"))
                 }
 
                 Button("Відновити стандартний вигляд") {
@@ -479,12 +512,14 @@ private struct ReaderContentsSheet: View {
                         if item.page == currentPage {
                             Image(systemName: "checkmark")
                                 .foregroundStyle(BeryndaColor.accent)
+                                .accessibilityHidden(true)
                         }
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("\(item.title), сторінка \(item.page)")
+                .accessibilityLabel(L("\(item.title), сторінка \(item.page)"))
+                .accessibilityAddTraits(item.page == currentPage ? .isSelected : [])
             }
             .navigationTitle("Зміст")
             .navigationBarTitleDisplayMode(.inline)

@@ -42,25 +42,25 @@ extension APIError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidConfiguration, .invalidResponse:
-            return "Некоректна конфігурація сервісу."
+            return CoreLocalization.string("Некоректна конфігурація сервісу.")
         case .unauthorized:
-            return "Потрібно увійти в обліковий запис."
+            return CoreLocalization.string("Потрібно увійти в обліковий запис.")
         case .forbidden:
-            return "Немає дозволу на цю дію."
+            return CoreLocalization.string("Немає дозволу на цю дію.")
         case .notFound:
-            return "Матеріал не знайдено."
+            return CoreLocalization.string("Матеріал не знайдено.")
         case .rateLimited:
-            return "Забагато запитів. Спробуйте трохи пізніше."
+            return CoreLocalization.string("Забагато запитів. Спробуйте трохи пізніше.")
         case .server:
-            return "Сервіс тимчасово недоступний."
+            return CoreLocalization.string("Сервіс тимчасово недоступний.")
         case .decoding:
-            return "Сервіс повернув неочікувану відповідь."
+            return CoreLocalization.string("Сервіс повернув неочікувану відповідь.")
         case .transport:
-            return "Не вдалося з’єднатися з мережею."
+            return CoreLocalization.string("Не вдалося з’єднатися з мережею.")
         case .unsupportedContentType:
-            return "Сервіс повернув непідтримуваний тип матеріалу."
+            return CoreLocalization.string("Сервіс повернув непідтримуваний тип матеріалу.")
         case .responseTooLarge:
-            return "Матеріал завеликий для безпечного відкриття."
+            return CoreLocalization.string("Матеріал завеликий для безпечного відкриття.")
         }
     }
 }

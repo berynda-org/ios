@@ -1,6 +1,665 @@
 {
   "sourceLanguage": "uk",
   "strings": {
+    "%@, сторінка %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, page %2$lld"
+          }
+        }
+      }
+    },
+    "%lld видань": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld видання"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld видання"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld видань"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld видання"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld edition"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld editions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld випусків": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld випуск"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld випуски"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld випусків"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld випуску"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld issue"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld issues"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld відсотків": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld відсоток"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld відсотки"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld відсотків"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld відсотка"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld percent"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld percent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld підтем": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld підтема"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld підтеми"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld підтем"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld підтеми"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtopic"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtopics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld с.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pp."
+          }
+        }
+      }
+    },
+    "%lld сторінок": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld сторінка"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld сторінки"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld сторінок"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld сторінки"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld page"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld творів": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld твір"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld твори"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld творів"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld твору"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld work"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld works"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Іврит": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hebrew"
+          }
+        }
+      }
+    },
+    "Ілюстрації": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrations"
+          }
+        }
+      }
+    },
+    "Ім’я": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Інша зміна бібліотеки ще виконується. Спробуйте ще раз.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another library change is in progress. Please try again."
+          }
+        }
+      }
+    },
+    "Інше": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        }
+      }
+    },
+    "Інше збереження вже виконується. Спробуйте ще раз.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another save is in progress. Please try again."
+          }
+        }
+      }
+    },
+    "Іспанська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spanish"
+          }
+        }
+      }
+    },
+    "Історію читання вимкнено в профілі": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading history is turned off in Profile"
+          }
+        }
+      }
+    },
+    "Італійська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Italian"
+          }
+        }
+      }
+    },
+    "Їдиш": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yiddish"
+          }
+        }
+      }
+    },
+    "Їх можна буде зберегти знову, коли буде мережа.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can save them again when you’re online."
+          }
+        }
+      }
+    },
+    "Автор": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author"
+          }
+        }
+      }
+    },
+    "Автореферат": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thesis abstract"
+          }
+        }
+      }
+    },
+    "Автори": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authors"
+          }
+        }
+      }
+    },
+    "Адресу підтверджено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email confirmed"
+          }
+        }
+      }
+    },
+    "Активних: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active: %lld"
+          }
+        }
+      }
+    },
+    "Альманах": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almanac"
+          }
+        }
+      }
+    },
+    "Англійська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        }
+      }
+    },
+    "Арабська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arabic"
+          }
+        }
+      }
+    },
+    "Без назви": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled"
+          }
+        }
+      }
+    },
+    "Безпека": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        }
+      }
+    },
+    "Беринда": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berynda"
+          }
+        }
+      }
+    },
+    "Болгарська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulgarian"
+          }
+        }
+      }
+    },
+    "Буде видалено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Will be deleted"
+          }
+        }
+      }
+    },
+    "Буде видалено збережені на цьому пристрої позиції читання, історію переглянутих творів і залишки тимчасових файлів. Вхід і налаштування збережуться.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading positions, viewing history and leftover temporary files stored on this device will be deleted. Your sign-in and settings stay."
+          }
+        }
+      }
+    },
+    "Бібліографічний запис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalog record"
+          }
+        }
+      }
+    },
+    "Бібліографічний список": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading list"
+          }
+        }
+      }
+    },
+    "Бібліографічні відомості": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bibliographic details"
+          }
+        }
+      }
+    },
+    "Бібліографічні списки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading lists"
+          }
+        }
+      }
+    },
     "Бібліотека": {
       "extractionState": "manual",
       "localizations": {
@@ -8,6 +667,1129 @@
           "stringUnit": {
             "state": "translated",
             "value": "Library"
+          }
+        }
+      }
+    },
+    "Білоруська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belarusian"
+          }
+        }
+      }
+    },
+    "Ваші списки й закладки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your lists and bookmarks"
+          }
+        }
+      }
+    },
+    "Введіть коректну електронну адресу.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid email address."
+          }
+        }
+      }
+    },
+    "Введіть ім’я.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your name."
+          }
+        }
+      }
+    },
+    "Ви входите через Apple або Google, тож пароля в цього облікового запису ще немає. Надішлемо лист із посиланням, за яким його можна встановити.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You sign in with Apple or Google, so this account has no password yet. We’ll email you a link to set one."
+          }
+        }
+      }
+    },
+    "Ви увійшли до облікового запису.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re signed in."
+          }
+        }
+      }
+    },
+    "Ви ще не зберегли жодної колекції Беринди.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You haven’t saved any Berynda collections yet."
+          }
+        }
+      }
+    },
+    "Вибрані колекції": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Featured collections"
+          }
+        }
+      }
+    },
+    "Вигляд": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        }
+      }
+    },
+    "Вигляд тексту": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text Appearance"
+          }
+        }
+      }
+    },
+    "Вид": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        }
+      }
+    },
+    "Видалення облікового запису": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account"
+          }
+        }
+      }
+    },
+    "Видалити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Видалити всі збережені видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete All Saved Editions"
+          }
+        }
+      }
+    },
+    "Видалити всі збережені видання?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all saved editions?"
+          }
+        }
+      }
+    },
+    "Видалити обліковий запис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account"
+          }
+        }
+      }
+    },
+    "Видалити обліковий запис?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account?"
+          }
+        }
+      }
+    },
+    "Видалити список": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete List"
+          }
+        }
+      }
+    },
+    "Видалити список «%@»?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the list “%@”?"
+          }
+        }
+      }
+    },
+    "Видалити список?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the list?"
+          }
+        }
+      }
+    },
+    "Видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editions"
+          }
+        }
+      }
+    },
+    "Видання цього твору зараз недоступні.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This work’s editions aren’t available right now."
+          }
+        }
+      }
+    },
+    "Видань ще немає": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No editions yet"
+          }
+        }
+      }
+    },
+    "Вийти": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out"
+          }
+        }
+      }
+    },
+    "Вимірюємо…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measuring…"
+          }
+        }
+      }
+    },
+    "Випуск": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issue"
+          }
+        }
+      }
+    },
+    "Випусків ще не додано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No issues have been added yet."
+          }
+        }
+      }
+    },
+    "Встановити пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a Password"
+          }
+        }
+      }
+    },
+    "Відкриваємо видання…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening the edition…"
+          }
+        }
+      }
+    },
+    "Відкриваємо твір…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening the work…"
+          }
+        }
+      }
+    },
+    "Відкрийте видання — воно з’явиться тут.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open an edition and it will appear here."
+          }
+        }
+      }
+    },
+    "Відкрита ліцензія": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open license"
+          }
+        }
+      }
+    },
+    "Відкрити сайт": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the Website"
+          }
+        }
+      }
+    },
+    "Відновити стандартний вигляд": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Default Appearance"
+          }
+        }
+      }
+    },
+    "Відновлення пароля": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Password"
+          }
+        }
+      }
+    },
+    "Відомості про твір і його видання відкриються тут.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details of the work and its editions will open here."
+          }
+        }
+      }
+    },
+    "Газетна стаття": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Newspaper article"
+          }
+        }
+      }
+    },
+    "Гаразд": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Готово": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Готуємо видання…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing the edition…"
+          }
+        }
+      }
+    },
+    "Грецька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Greek"
+          }
+        }
+      }
+    },
+    "Давньогрецька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancient Greek"
+          }
+        }
+      }
+    },
+    "Дисертація": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dissertation"
+          }
+        }
+      }
+    },
+    "Дитяча книга": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Children’s book"
+          }
+        }
+      }
+    },
+    "Для збереження бракує місця, відведеного для офлайн-читання. Видаліть щось у «Сховищі».": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There isn’t enough offline reading space for this. Delete something in Storage."
+          }
+        }
+      }
+    },
+    "Для цього облікового запису пароль ще не встановлено.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account doesn’t have a password yet."
+          }
+        }
+      }
+    },
+    "Для цього твору поки немає окремого видання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This work has no separate edition yet."
+          }
+        }
+      }
+    },
+    "До списку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to List"
+          }
+        }
+      }
+    },
+    "Довідник": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reference"
+          }
+        }
+      }
+    },
+    "Додано до бібліографічного списку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added to your reading list."
+          }
+        }
+      }
+    },
+    "Додати до списку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to list"
+          }
+        }
+      }
+    },
+    "Додає твір до бібліографічного списку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds the work to a reading list"
+          }
+        }
+      }
+    },
+    "Дозволено правовласником": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitted by the rights holder"
+          }
+        }
+      }
+    },
+    "Доповідь": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conference paper"
+          }
+        }
+      }
+    },
+    "Доступність окремих файлів визначається для кожного видання окремо.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether a file can be read is decided separately for each edition."
+          }
+        }
+      }
+    },
+    "Друк": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print"
+          }
+        }
+      }
+    },
+    "Дію не виконано": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action not completed"
+          }
+        }
+      }
+    },
+    "Дія": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action"
+          }
+        }
+      }
+    },
+    "Дії зі списком «%@»": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actions for the list “%@”"
+          }
+        }
+      }
+    },
+    "Електронна адреса": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email"
+          }
+        }
+      }
+    },
+    "Есей": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essay"
+          }
+        }
+      }
+    },
+    "Естонська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estonian"
+          }
+        }
+      }
+    },
+    "Жанри": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genres"
+          }
+        }
+      }
+    },
+    "Забагато запитів. Спробуйте трохи пізніше.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests. Please try again a little later."
+          }
+        }
+      }
+    },
+    "Забагато спроб. Зачекайте трохи й спробуйте знову.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many attempts. Wait a little and try again."
+          }
+        }
+      }
+    },
+    "Забули пароль?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forgot Password?"
+          }
+        }
+      }
+    },
+    "Завантажуємо автора…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading author…"
+          }
+        }
+      }
+    },
+    "Завантажуємо бібліотеку…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading your library…"
+          }
+        }
+      }
+    },
+    "Завантажуємо видання…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading editions…"
+          }
+        }
+      }
+    },
+    "Завантажуємо випуск…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading issue…"
+          }
+        }
+      }
+    },
+    "Завантажуємо відомості": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading details"
+          }
+        }
+      }
+    },
+    "Завантажуємо каталог…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading the catalog…"
+          }
+        }
+      }
+    },
+    "Завантажуємо періодику…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading periodicals…"
+          }
+        }
+      }
+    },
+    "Завантажуємо періодичне видання…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading the periodical…"
+          }
+        }
+      }
+    },
+    "Завантажуємо способи входу…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading sign-in options…"
+          }
+        }
+      }
+    },
+    "Завантажуємо теми…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading topics…"
+          }
+        }
+      }
+    },
+    "Завантажуємо тему…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading topic…"
+          }
+        }
+      }
+    },
+    "Завантажуємо ще…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading more…"
+          }
+        }
+      }
+    },
+    "Закладка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bookmark"
+          }
+        }
+      }
+    },
+    "Закладку додано до бібліографічного списку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bookmark added to your reading list."
+          }
+        }
+      }
+    },
+    "Закрити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Залишиться": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Will remain"
+          }
+        }
+      }
+    },
+    "Залишки файлів читача": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leftover reader files"
+          }
+        }
+      }
+    },
+    "Запис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entry"
+          }
+        }
+      }
+    },
+    "Зберегти": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Зберегти для читання офлайн": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save for Offline Reading"
+          }
+        }
+      }
+    },
+    "Зберегти файл": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save File"
+          }
+        }
+      }
+    },
+    "Збережене зберігається лише в застосунку. Його перевіряємо, коли є мережа, і прибираємо через %lld днів без відкриття.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved editions stay inside the app. They are checked when you’re online and removed after %lld days without being opened."
+          }
+        }
+      }
+    },
+    "Збережених для офлайн-читання видань немає. Зберегти можна видання суспільного надбання та відкриті ліцензії — кнопкою на сторінці твору.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No editions are saved for offline reading. Public-domain and openly licensed editions can be saved with the button on the work page."
+          }
+        }
+      }
+    },
+    "Збереження вже виконується.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already saving."
+          }
+        }
+      }
+    },
+    "Збережено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        }
+      }
+    },
+    "Збережено для читання офлайн": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved for offline reading"
+          }
+        }
+      }
+    },
+    "Збережені колекції": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved collections"
+          }
+        }
+      }
+    },
+    "Зберігати історію читання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep reading history"
+          }
+        }
+      }
+    },
+    "Зберігаємо для читання офлайн": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving for offline reading"
+          }
+        }
+      }
+    },
+    "Звіт": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        }
+      }
+    },
+    "Згорнуто": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collapsed"
+          }
+        }
+      }
+    },
+    "Змінити пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Password"
+          }
+        }
+      }
+    },
+    "Змінити тему": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change topic"
+          }
+        }
+      }
+    },
+    "Зміст": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contents"
+          }
+        }
+      }
+    },
+    "Знайдено творів: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld work found"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld works found"
+                }
+              }
+            }
           }
         }
       }
@@ -23,6 +1805,1590 @@
         }
       }
     },
+    "Каталог містить підтвердження статусу суспільного надбання для цього твору. Умови використання конкретного видання та його файлів можуть відрізнятися.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The catalog has confirmation that this work is in the public domain. Terms of use for a particular edition and its files may differ."
+          }
+        }
+      }
+    },
+    "Каталог, показано %lld із %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalog, showing %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Книга": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Book"
+          }
+        }
+      }
+    },
+    "Колекцію додано до бібліотеки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection added to your library."
+          }
+        }
+      }
+    },
+    "Колекцію прибрано з бібліотеки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection removed from your library."
+          }
+        }
+      }
+    },
+    "Колекція": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection"
+          }
+        }
+      }
+    },
+    "Колекції Беринди": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berynda collections"
+          }
+        }
+      }
+    },
+    "Конфіденційність": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
+          }
+        }
+      }
+    },
+    "Латвійська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latvian"
+          }
+        }
+      }
+    },
+    "Латина": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latin"
+          }
+        }
+      }
+    },
+    "Летючка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaflet"
+          }
+        }
+      }
+    },
+    "Лист": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letter"
+          }
+        }
+      }
+    },
+    "Лист надіслано на %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email sent to %@."
+          }
+        }
+      }
+    },
+    "Литовська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lithuanian"
+          }
+        }
+      }
+    },
+    "Лише доступні для читання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Readable only"
+          }
+        }
+      }
+    },
+    "Мапа": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Map"
+          }
+        }
+      }
+    },
+    "Матеріал завеликий для безпечного відкриття.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The material is too large to open safely."
+          }
+        }
+      }
+    },
+    "Матеріал не знайдено.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not found."
+          }
+        }
+      }
+    },
+    "Матеріали опубліковано з дозволу правовласника; умови можуть відрізнятися для окремих видань.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Published with the rights holder’s permission; terms may differ between editions."
+          }
+        }
+      }
+    },
+    "Матеріали опубліковано на умовах відкритої ліцензії. Умови використання наведено для конкретного видання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Published under an open license. Terms of use are given for each edition."
+          }
+        }
+      }
+    },
+    "Матеріали опубліковано самостійно. Це не означає, що твір є суспільним надбанням або дозволений для вільного використання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Self-published. This does not mean the work is in the public domain or free to use."
+          }
+        }
+      }
+    },
+    "Мемуари": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoirs"
+          }
+        }
+      }
+    },
+    "Ми надіслали посилання для підтвердження на %@. Після підтвердження поверніться сюди та увійдіть.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We sent a confirmation link to %@. Once you’ve confirmed, come back here and sign in."
+          }
+        }
+      }
+    },
+    "Мова": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        }
+      }
+    },
+    "Міжрядковий інтервал": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line Spacing"
+          }
+        }
+      }
+    },
+    "Набір даних": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dataset"
+          }
+        }
+      }
+    },
+    "Надіслати лист": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send Email"
+          }
+        }
+      }
+    },
+    "Надіслати інструкції": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send Instructions"
+          }
+        }
+      }
+    },
+    "Назва або ISSN": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title or ISSN"
+          }
+        }
+      }
+    },
+    "Назва або автор": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title or author"
+          }
+        }
+      }
+    },
+    "Назва не може бути довшою за %lld символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The name can’t be longer than %lld characters."
+          }
+        }
+      }
+    },
+    "Назва списку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List name"
+          }
+        }
+      }
+    },
+    "Назва списку не може бути порожньою чи довшою за %lld символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A list name can’t be empty or longer than %lld characters."
+          }
+        }
+      }
+    },
+    "Назва теми": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Topic name"
+          }
+        }
+      }
+    },
+    "Наразі немає творів, доступних для читання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No readable works yet."
+          }
+        }
+      }
+    },
+    "Народна пісня": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folk song"
+          }
+        }
+      }
+    },
+    "Наступна": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "Не вдалося безпечно зберегти сеанс.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t store the session securely."
+          }
+        }
+      }
+    },
+    "Не вдалося безпечно підготувати читач.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t prepare the reader safely."
+          }
+        }
+      }
+    },
+    "Не вдалося відкрити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t open"
+          }
+        }
+      }
+    },
+    "Не вдалося відкрити цей розділ.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t open this section."
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити автора": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load the author"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити бібліотеку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load your library"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load editions"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити випуск": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load the issue"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити вхід через Apple та Google.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load sign-in with Apple and Google."
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити наступні твори": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load more works"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити періодику": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load periodicals"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити періодичне видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load the periodical"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити теми": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load topics"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити тему": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load the topic"
+          }
+        }
+      }
+    },
+    "Не вдалося завантажити частину видання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load part of the edition."
+          }
+        }
+      }
+    },
+    "Не вдалося з’єднатися з мережею.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t connect to the network."
+          }
+        }
+      }
+    },
+    "Не вдалося з’єднатися із сервісом.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t connect to the service."
+          }
+        }
+      }
+    },
+    "Не вдалося надіслати лист. Спробуйте ще раз.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t send the email. Please try again."
+          }
+        }
+      }
+    },
+    "Не вдалося перевірити бібліотечний список.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t check your reading list."
+          }
+        }
+      }
+    },
+    "Не вдалося перевірити збережені колекції.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t check your saved collections."
+          }
+        }
+      }
+    },
+    "Не вдалося підтвердити вхід. Спробуйте ще раз.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t verify the sign-in. Please try again."
+          }
+        }
+      }
+    },
+    "Некоректна конфігурація сервісу.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The service is misconfigured."
+          }
+        }
+      }
+    },
+    "Немає дозволу на цю дію.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You don’t have permission to do this."
+          }
+        }
+      }
+    },
+    "Немає з’єднання з мережею": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No network connection"
+          }
+        }
+      }
+    },
+    "Немає з’єднання — показано нещодавно переглянуті": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No connection — showing recently viewed"
+          }
+        }
+      }
+    },
+    "Немає з’єднання. Зміну збережено на пристрої й буде надіслано, щойно з’явиться мережа.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No connection. The change is saved on this device and will be sent once you’re back online."
+          }
+        }
+      }
+    },
+    "Неправильна електронна адреса або пароль.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incorrect email or password."
+          }
+        }
+      }
+    },
+    "Нещодавно переглянуті": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recently viewed"
+          }
+        }
+      }
+    },
+    "Новий обліковий запис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New account"
+          }
+        }
+      }
+    },
+    "Новий пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New password"
+          }
+        }
+      }
+    },
+    "Новий пароль має відрізнятися від поточного.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The new password must differ from the current one."
+          }
+        }
+      }
+    },
+    "Новий пароль має містити щонайменше %lld символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The new password must be at least %lld characters long."
+          }
+        }
+      }
+    },
+    "Новий пароль не підходить. Оберіть інший.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The new password isn’t accepted. Choose another one."
+          }
+        }
+      }
+    },
+    "Новий список": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New List"
+          }
+        }
+      }
+    },
+    "Новий список…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New List…"
+          }
+        }
+      }
+    },
+    "Номер журналу": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal issue"
+          }
+        }
+      }
+    },
+    "Нідерландська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dutch"
+          }
+        }
+      }
+    },
+    "Німецька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "German"
+          }
+        }
+      }
+    },
+    "Нічого не знайдено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing found"
+          }
+        }
+      }
+    },
+    "Оберіть твір": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a work"
+          }
+        }
+      }
+    },
+    "Обліковий запис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        }
+      }
+    },
+    "Обліковий запис видалено.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account deleted."
+          }
+        }
+      }
+    },
+    "Обліковий запис пов’язано з Apple, тому видалення підтверджується лише через Apple.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account is linked to Apple, so deletion can only be confirmed with Apple."
+          }
+        }
+      }
+    },
+    "Обліковий запис працівника не можна видалити із застосунку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A staff account can’t be deleted from the app."
+          }
+        }
+      }
+    },
+    "Обліковий запис синхронізує списки та місце читання між пристроями.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An account syncs your lists and reading position across devices."
+          }
+        }
+      }
+    },
+    "Обрати тему": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a topic"
+          }
+        }
+      }
+    },
+    "Обсяг": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length"
+          }
+        }
+      }
+    },
+    "Оновити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh"
+          }
+        }
+      }
+    },
+    "Оновити пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Password"
+          }
+        }
+      }
+    },
+    "Оновлюємо пароль…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating your password…"
+          }
+        }
+      }
+    },
+    "Оповідання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short story"
+          }
+        }
+      }
+    },
+    "Опубліковане залишається доступним читачам, але більше не пов’язане з вашим обліковим записом. Видалення не можна скасувати.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Published material stays available to readers but is no longer linked to your account. Deletion can’t be undone."
+          }
+        }
+      }
+    },
+    "Опубліковано в": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Published in"
+          }
+        }
+      }
+    },
+    "Оригінальна назва": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Original title"
+          }
+        }
+      }
+    },
+    "Офлайн-читання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline reading"
+          }
+        }
+      }
+    },
+    "Оформлення": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
+          }
+        }
+      }
+    },
+    "Очистити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "Очистити локальні дані": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Local Data"
+          }
+        }
+      }
+    },
+    "Очистити локальні дані?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear local data?"
+          }
+        }
+      }
+    },
+    "Пʼєса": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play"
+          }
+        }
+      }
+    },
+    "Пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
+          }
+        }
+      }
+    },
+    "Пароль змінено.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password changed."
+          }
+        }
+      }
+    },
+    "Пароль має містити щонайменше 8 символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The password must be at least 8 characters long."
+          }
+        }
+      }
+    },
+    "Пароль оновлено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password updated"
+          }
+        }
+      }
+    },
+    "Паролі не збігаються.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The passwords don’t match."
+          }
+        }
+      }
+    },
+    "Патент": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Patent"
+          }
+        }
+      }
+    },
+    "Перевірте введені дані й спробуйте ще раз.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check what you entered and try again."
+          }
+        }
+      }
+    },
+    "Перевірте пошту": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your email"
+          }
+        }
+      }
+    },
+    "Перейменувати": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
+    },
+    "Перейменувати список": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename List"
+          }
+        }
+      }
+    },
+    "Перейти до профілю": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to Profile"
+          }
+        }
+      }
+    },
+    "Перейти до сторінки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to page"
+          }
+        }
+      }
+    },
+    "Переклад": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translation"
+          }
+        }
+      }
+    },
+    "Перська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Persian"
+          }
+        }
+      }
+    },
+    "Перша публікація": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First published"
+          }
+        }
+      }
+    },
+    "Періодика": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periodicals"
+          }
+        }
+      }
+    },
+    "Періодику ще не додано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No periodicals have been added yet."
+          }
+        }
+      }
+    },
+    "Періодичне видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periodical"
+          }
+        }
+      }
+    },
+    "Повторити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        }
+      }
+    },
+    "Повторіть новий пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat new password"
+          }
+        }
+      }
+    },
+    "Повторіть пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat password"
+          }
+        }
+      }
+    },
+    "Повість": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novella"
+          }
+        }
+      }
+    },
+    "Поділитися": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        }
+      }
+    },
+    "Поезія": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poetry"
+          }
+        }
+      }
+    },
+    "Позиції читання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading positions"
+          }
+        }
+      }
+    },
+    "Позиції читання та історія переглядів": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading positions and viewing history"
+          }
+        }
+      }
+    },
+    "Показано %lld із %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Показати": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
+          }
+        }
+      }
+    },
+    "Польська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        }
+      }
+    },
+    "Попередня": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous"
+          }
+        }
+      }
+    },
+    "Португальська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portuguese"
+          }
+        }
+      }
+    },
+    "Посилання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link"
+          }
+        }
+      }
+    },
+    "Посилання має непідтримувану адресу.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The link has an unsupported address."
+          }
+        }
+      }
+    },
+    "Посилання недоступне": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link unavailable"
+          }
+        }
+      }
+    },
+    "Посилання недійсне або вже прострочене.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The link is invalid or has expired."
+          }
+        }
+      }
+    },
+    "Посторінково": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page by Page"
+          }
+        }
+      }
+    },
+    "Поточний пароль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current password"
+          }
+        }
+      }
+    },
+    "Поточний пароль неправильний.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current password is incorrect."
+          }
+        }
+      }
+    },
+    "Потрібно увійти в обліковий запис.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to sign in."
+          }
+        }
+      }
+    },
+    "Препринт": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preprint"
+          }
+        }
+      }
+    },
+    "Прибрано з бібліотеки.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed from your library."
+          }
+        }
+      }
+    },
+    "Прибрати": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        }
+      }
+    },
+    "Прибрати фільтр: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove filter: %@"
+          }
+        }
+      }
+    },
+    "Про себе": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About you"
+          }
+        }
+      }
+    },
+    "Продовжити читання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue reading"
+          }
+        }
+      }
+    },
+    "Промова": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech"
+          }
+        }
+      }
+    },
     "Профіль": {
       "extractionState": "manual",
       "localizations": {
@@ -30,6 +3396,1698 @@
           "stringUnit": {
             "state": "translated",
             "value": "Profile"
+          }
+        }
+      }
+    },
+    "Прочитано %lld відсотків": {
+      "extractionState": "manual",
+      "localizations": {
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Прочитано %lld відсоток"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Прочитано %lld відсотки"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Прочитано %lld відсотків"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Прочитано %lld відсотка"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld percent read"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld percent read"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Підручник": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Textbook"
+          }
+        }
+      }
+    },
+    "Підтвердження пошти": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email Confirmation"
+          }
+        }
+      }
+    },
+    "Підтверджуємо адресу…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirming your email…"
+          }
+        }
+      }
+    },
+    "Підтвердити через Google": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm with Google"
+          }
+        }
+      }
+    },
+    "Підтвердьте, що це ви": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm it’s you"
+          }
+        }
+      }
+    },
+    "Підтвердьте, що це ви, щоб продовжити.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm it’s you to continue."
+          }
+        }
+      }
+    },
+    "Підтеми": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtopics"
+          }
+        }
+      }
+    },
+    "Під’єднати спосіб входу": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link a sign-in method"
+          }
+        }
+      }
+    },
+    "Після вимкнення сервер видаляє збережені позиції читання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When this is off, the server deletes your saved reading positions."
+          }
+        }
+      }
+    },
+    "Після входу тут з’являться продовження читання, ваші списки та колекції Беринди.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once you sign in, your reading progress, lists and Berynda collections appear here."
+          }
+        }
+      }
+    },
+    "Після зміни пароля інші пристрої доведеться увійти знову.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After you change your password, your other devices will need to sign in again."
+          }
+        }
+      }
+    },
+    "Разом": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total"
+          }
+        }
+      }
+    },
+    "Разом офлайн": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total offline"
+          }
+        }
+      }
+    },
+    "Редагувати профіль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Profile"
+          }
+        }
+      }
+    },
+    "Редактор": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editor"
+          }
+        }
+      }
+    },
+    "Редактори": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editors"
+          }
+        }
+      }
+    },
+    "Рекомендовані": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recommended"
+          }
+        }
+      }
+    },
+    "Рецензія": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review"
+          }
+        }
+      }
+    },
+    "Реєстрація": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Up"
+          }
+        }
+      }
+    },
+    "Розгорнуто": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expanded"
+          }
+        }
+      }
+    },
+    "Розділ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter"
+          }
+        }
+      }
+    },
+    "Розмір тексту": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text Size"
+          }
+        }
+      }
+    },
+    "Роки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Years"
+          }
+        }
+      }
+    },
+    "Роман": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel"
+          }
+        }
+      }
+    },
+    "Російська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Russian"
+          }
+        }
+      }
+    },
+    "Рукопис": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuscript"
+          }
+        }
+      }
+    },
+    "Румунська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Romanian"
+          }
+        }
+      }
+    },
+    "Рік від": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year from"
+          }
+        }
+      }
+    },
+    "Рік до": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year to"
+          }
+        }
+      }
+    },
+    "Рік першої публікації": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year of first publication"
+          }
+        }
+      }
+    },
+    "С. %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pp. %@"
+          }
+        }
+      }
+    },
+    "Самостійна публікація": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Self-published"
+          }
+        }
+      }
+    },
+    "Світле": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        }
+      }
+    },
+    "Сеанс завершився": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session ended"
+          }
+        }
+      }
+    },
+    "Сеанс завершився. Увійдіть знову.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your session has ended. Please sign in again."
+          }
+        }
+      }
+    },
+    "Сеанс завершився. Увійдіть у профілі й повторіть дію.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your session has ended. Sign in from Profile and try again."
+          }
+        }
+      }
+    },
+    "Сеанс завершився. Увійдіть і повторіть дію.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your session has ended. Sign in and try again."
+          }
+        }
+      }
+    },
+    "Сербська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serbian"
+          }
+        }
+      }
+    },
+    "Сервіс входу зараз недоступний. Спробуйте пізніше.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in service is unavailable right now. Please try later."
+          }
+        }
+      }
+    },
+    "Сервіс повернув неочікувану відповідь.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The service returned an unexpected response."
+          }
+        }
+      }
+    },
+    "Сервіс повернув непідтримуваний тип матеріалу.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The service returned an unsupported type of material."
+          }
+        }
+      }
+    },
+    "Сервіс тимчасово недоступний.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The service is temporarily unavailable."
+          }
+        }
+      }
+    },
+    "Скасувати": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Скинути": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        }
+      }
+    },
+    "Скинути все": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear All"
+          }
+        }
+      }
+    },
+    "Скинути фільтри": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Filters"
+          }
+        }
+      }
+    },
+    "Словацька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slovak"
+          }
+        }
+      }
+    },
+    "Списки, закладки й історію читання буде втрачено назавжди.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your lists, bookmarks and reading history will be lost for good."
+          }
+        }
+      }
+    },
+    "Списків ще немає.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No lists yet."
+          }
+        }
+      }
+    },
+    "Список порожній": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This list is empty"
+          }
+        }
+      }
+    },
+    "Список і всі записи в ньому буде видалено. Цю дію не можна скасувати.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The list and everything in it will be deleted. This can’t be undone."
+          }
+        }
+      }
+    },
+    "Способи входу: пароль, Apple, Google": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in methods: password, Apple, Google"
+          }
+        }
+      }
+    },
+    "Спосіб входу під’єднано": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in method linked"
+          }
+        }
+      }
+    },
+    "Спробувати завантажити ще раз": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try loading again"
+          }
+        }
+      }
+    },
+    "Спробувати ще раз": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Спробуйте змінити або скинути фільтри.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try changing or clearing the filters."
+          }
+        }
+      }
+    },
+    "Спробуйте змінити запит або фільтри.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try changing the search or filters."
+          }
+        }
+      }
+    },
+    "Спробуйте скоротити або змінити запит.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a shorter or different search."
+          }
+        }
+      }
+    },
+    "Спробуйте інший запит.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a different search."
+          }
+        }
+      }
+    },
+    "Спробуйте іншу назву або ISSN.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a different title or ISSN."
+          }
+        }
+      }
+    },
+    "Стандарт": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        }
+      }
+    },
+    "Староукраїнська / руська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Old Ukrainian / Ruthenian"
+          }
+        }
+      }
+    },
+    "Стаття": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Article"
+          }
+        }
+      }
+    },
+    "Стаття в енциклопедії": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encyclopedia entry"
+          }
+        }
+      }
+    },
+    "Створити": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "Сторінка %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page %lld"
+          }
+        }
+      }
+    },
+    "Сторінка %lld з %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Сторінки авторів, які ви підтвердили як свої": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author pages you claimed as your own"
+          }
+        }
+      }
+    },
+    "Сторінки ще готуються. Спробуйте зберегти трохи згодом.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pages are still being prepared. Try saving a little later."
+          }
+        }
+      }
+    },
+    "Сторінки ще готуються. Спробуйте трохи згодом.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pages are still being prepared. Please try again a little later."
+          }
+        }
+      }
+    },
+    "Сторінку пошкоджено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The page is damaged"
+          }
+        }
+      }
+    },
+    "Суспільне надбання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public domain"
+          }
+        }
+      }
+    },
+    "Суцільний текст": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuous Text"
+          }
+        }
+      }
+    },
+    "Сховище": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage"
+          }
+        }
+      }
+    },
+    "Т. %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vol. %@"
+          }
+        }
+      }
+    },
+    "Твори · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Works · %@"
+          }
+        }
+      }
+    },
+    "Твори · %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Works · %lld"
+          }
+        }
+      }
+    },
+    "Твори цього автора ще не додано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No works by this author have been added yet."
+          }
+        }
+      }
+    },
+    "Твір додано до бібліографічного списку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work added to your reading list."
+          }
+        }
+      }
+    },
+    "Твір недоступний": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work unavailable"
+          }
+        }
+      }
+    },
+    "Тем не знайдено": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No topics found"
+          }
+        }
+      }
+    },
+    "Тема": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Topic"
+          }
+        }
+      }
+    },
+    "Тематика": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subjects"
+          }
+        }
+      }
+    },
+    "Теми": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Topics"
+          }
+        }
+      }
+    },
+    "Теми ще не додано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No topics have been added yet."
+          }
+        }
+      }
+    },
+    "Темне": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        }
+      }
+    },
+    "Тепер ви можете увійти до Беринди.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can now sign in to Berynda."
+          }
+        }
+      }
+    },
+    "Тимчасові файли видання видаляються після закриття читача; тут показано лише те, що лишилося. Налаштування вигляду й читача займають кілька байтів і не очищаються.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporary edition files are deleted when the reader closes; only what’s left over is shown here. Appearance and reader settings take a few bytes and aren’t cleared."
+          }
+        }
+      }
+    },
+    "Тип": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
+          }
+        }
+      }
+    },
+    "Том": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume"
+          }
+        }
+      }
+    },
+    "Турецька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turkish"
+          }
+        }
+      }
+    },
+    "У каталозі поки немає доступних творів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are no works in the catalog yet."
+          }
+        }
+      }
+    },
+    "У каталозі: %@–%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the catalog: %1$@–%2$@"
+          }
+        }
+      }
+    },
+    "У колекціях": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In collections"
+          }
+        }
+      }
+    },
+    "У цьому випуску ще немає творів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This issue has no works yet."
+          }
+        }
+      }
+    },
+    "У цій темі ще немає творів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This topic has no works yet."
+          }
+        }
+      }
+    },
+    "Увійдіть до Беринди": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to Berynda"
+          }
+        }
+      }
+    },
+    "Увійдіть до бібліотеки": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to use your library"
+          }
+        }
+      }
+    },
+    "Увійдіть у профілі, щоб зберігати твори.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in from Profile to save works."
+          }
+        }
+      }
+    },
+    "Увійти": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign In"
+          }
+        }
+      }
+    },
+    "Увійти або зареєструватися": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign In or Sign Up"
+          }
+        }
+      }
+    },
+    "Угорська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hungarian"
+          }
+        }
+      }
+    },
+    "Українська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukrainian"
+          }
+        }
+      }
+    },
+    "Упорядник": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compiler"
+          }
+        }
+      }
+    },
+    "Упорядники": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compilers"
+          }
+        }
+      }
+    },
+    "Усна історія": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oral history"
+          }
+        }
+      }
+    },
+    "Установа": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Institution"
+          }
+        }
+      }
+    },
+    "Уся тема": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole topic"
+          }
+        }
+      }
+    },
+    "Усі мови": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All languages"
+          }
+        }
+      }
+    },
+    "Усі попередні сеанси завершено. Увійдіть з новим паролем.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All previous sessions have ended. Sign in with your new password."
+          }
+        }
+      }
+    },
+    "Усі типи": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All types"
+          }
+        }
+      }
+    },
+    "Файл видання пошкоджений або має непідтримувану структуру.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The edition file is damaged or has an unsupported structure."
+          }
+        }
+      }
+    },
+    "Файл для читання недоступний": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No readable file available"
+          }
+        }
+      }
+    },
+    "Файли, які ви опублікували в бібліотеці": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files you published in the library"
+          }
+        }
+      }
+    },
+    "Фольклор": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folklore"
+          }
+        }
+      }
+    },
+    "Французька": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "French"
+          }
+        }
+      }
+    },
+    "Фільтри": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filters"
+          }
+        }
+      }
+    },
+    "Хорватська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Croatian"
+          }
+        }
+      }
+    },
+    "Художня проза": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiction"
+          }
+        }
+      }
+    },
+    "Це видання вже зберігається.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This edition is already being saved."
+          }
+        }
+      }
+    },
+    "Це видання зараз недоступне для читання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This edition can’t be read right now."
+          }
+        }
+      }
+    },
+    "Це видання не можна зберегти для читання офлайн.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This edition can’t be saved for offline reading."
+          }
+        }
+      }
+    },
+    "Це посилання не належить до облікового запису.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This link isn’t an account link."
+          }
+        }
+      }
+    },
+    "Цей запис уже є у вашій бібліотеці.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is already in your library."
+          }
+        }
+      }
+    },
+    "Цей матеріал не підтримується в мобільному читачі.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This material isn’t supported in the mobile reader."
+          }
+        }
+      }
+    },
+    "Цей обліковий запис пов’язано з Apple. Підтвердьте видалення через Apple.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account is linked to Apple. Confirm the deletion with Apple."
+          }
+        }
+      }
+    },
+    "Цей спосіб входу вже під’єднано до іншого облікового запису.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This sign-in method is already linked to another account."
+          }
+        }
+      }
+    },
+    "Цей твір уже є у вашому списку.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This work is already in your list."
+          }
+        }
+      }
+    },
+    "Церковнослов’янська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Church Slavonic"
+          }
+        }
+      }
+    },
+    "Ця адреса вже зареєстрована. Увійдіть звичним способом, а потім під’єднайте Apple чи Google у профілі.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This address is already registered. Sign in the usual way, then link Apple or Google in Profile."
+          }
+        }
+      }
+    },
+    "Ця дія недоступна для цього видання.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This action isn’t available for this edition."
+          }
+        }
+      }
+    },
+    "Ця колекція вже є у вашій бібліотеці.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This collection is already in your library."
+          }
+        }
+      }
+    },
+    "Чеська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Czech"
+          }
+        }
+      }
+    },
+    "Читати видання": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read Edition"
+          }
+        }
+      }
+    },
+    "Шведська": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swedish"
+          }
+        }
+      }
+    },
+    "Швидкий вхід": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick sign-in"
+          }
+        }
+      }
+    },
+    "Як на пристрої": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match Device"
+          }
+        }
+      }
+    },
+    "Якщо адреса зареєстрована, лист з інструкціями вже надіслано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If this address is registered, we’ve sent an email with instructions."
+          }
+        }
+      }
+    },
+    "від": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from"
+          }
+        }
+      }
+    },
+    "від %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from %lld"
+          }
+        }
+      }
+    },
+    "до": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "to"
+          }
+        }
+      }
+    },
+    "до %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "until %@"
+          }
+        }
+      }
+    },
+    "до %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "to %lld"
+          }
+        }
+      }
+    },
+    "з %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from %@"
+          }
+        }
+      }
+    },
+    "збірка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "collection"
+          }
+        }
+      }
+    },
+    "рубрика «%@»": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "section “%@”"
+          }
+        }
+      }
+    },
+    "с. %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "p. %@"
+          }
+        }
+      }
+    },
+    "с. %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "p. %lld"
+          }
+        }
+      }
+    },
+    "с. %lld з %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "p. %1$lld of %2$lld"
           }
         }
       }

@@ -93,23 +93,23 @@ extension AccountSecurityError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidCurrentPassword:
-            "Поточний пароль неправильний."
+            CoreLocalization.string("Поточний пароль неправильний.")
         case let .passwordRejected(messages):
-            messages.isEmpty ? "Новий пароль не підходить. Оберіть інший." : messages.joined(separator: " ")
+            messages.isEmpty ? CoreLocalization.string("Новий пароль не підходить. Оберіть інший.") : messages.joined(separator: " ")
         case .noPassword:
-            "Для цього облікового запису пароль ще не встановлено."
+            CoreLocalization.string("Для цього облікового запису пароль ще не встановлено.")
         case .reauthenticationRequired:
-            "Підтвердьте, що це ви, щоб продовжити."
+            CoreLocalization.string("Підтвердьте, що це ви, щоб продовжити.")
         case .appleReauthenticationRequired:
-            "Цей обліковий запис пов’язано з Apple. Підтвердьте видалення через Apple."
+            CoreLocalization.string("Цей обліковий запис пов’язано з Apple. Підтвердьте видалення через Apple.")
         case .socialReauthenticationFailed:
-            "Не вдалося підтвердити вхід. Спробуйте ще раз."
+            CoreLocalization.string("Не вдалося підтвердити вхід. Спробуйте ще раз.")
         case .socialProviderUnavailable:
-            "Сервіс входу зараз недоступний. Спробуйте пізніше."
+            CoreLocalization.string("Сервіс входу зараз недоступний. Спробуйте пізніше.")
         case .permissionDenied:
-            "Обліковий запис працівника не можна видалити із застосунку."
+            CoreLocalization.string("Обліковий запис працівника не можна видалити із застосунку.")
         case .rateLimited:
-            "Забагато спроб. Зачекайте трохи й спробуйте знову."
+            CoreLocalization.string("Забагато спроб. Зачекайте трохи й спробуйте знову.")
         }
     }
 }

@@ -5,7 +5,7 @@ import UIKit
 enum BeryndaCoverFont {
     static let postScriptName = "Fedorovsk-Regular"
     static func font(for glyph: String, size: CGFloat) -> Font {
-        let fallback = Set("ЕЄЗ")
+        let fallback = Set("ЕЄЗ") // l10n-ignore: letters, not copy
         if glyph.contains(where: { fallback.contains($0) }) {
             return .system(size: size, weight: .regular, design: .serif)
         }

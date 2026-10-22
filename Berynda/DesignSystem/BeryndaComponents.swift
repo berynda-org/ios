@@ -26,8 +26,8 @@ struct BeryndaPanel<Content: View>: View {
 }
 
 struct BeryndaEmptyState: View {
-    let title: String
-    let message: String
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
     let systemImage: String
 
     var body: some View {
@@ -37,7 +37,7 @@ struct BeryndaEmptyState: View {
 }
 
 struct BeryndaLoadingState: View {
-    let message: String
+    let message: LocalizedStringKey
 
     var body: some View {
         VStack(spacing: BeryndaSpacing.standard) {
@@ -53,7 +53,8 @@ struct BeryndaLoadingState: View {
 }
 
 struct BeryndaErrorState: View {
-    let title: String
+    let title: LocalizedStringKey
+    /// Already localized (a view-model or server message).
     let message: String
     let retry: () -> Void
 
@@ -68,6 +69,8 @@ struct BeryndaErrorState: View {
                 .tint(BeryndaColor.accent)
         }
         .foregroundStyle(BeryndaColor.ink)
+        // The failure replaces the screen without moving focus.
+        .onAppear { VoiceOver.announce(message) }
     }
 }
 
@@ -79,6 +82,7 @@ struct BeryndaBookCover: View {
     let design: CoverDesign
     var width: CGFloat = 54
     var height: CGFloat = 78
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         coverContent
@@ -94,7 +98,7 @@ struct BeryndaBookCover: View {
     @ViewBuilder
     private var coverContent: some View {
         if let imageURL {
-            AsyncImage(url: imageURL, transaction: Transaction(animation: .easeInOut)) { phase in
+            AsyncImage(url: imageURL, transaction: Transaction(animation: reduceMotion ? nil : .easeInOut)) { phase in
                 switch phase {
                 case let .success(image):
                     image

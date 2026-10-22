@@ -96,16 +96,10 @@ private struct PeriodicalRow: View {
         var parts: [String] = []
         if let years = periodical.yearsLabel { parts.append(years) }
         if periodical.issuesCount > 0 {
-            parts.append(
-                "\(periodical.issuesCount.formatted()) "
-                    + UkrainianPlural.form(periodical.issuesCount, one: "випуск", few: "випуски", many: "випусків")
-            )
+            parts.append(L("\(periodical.issuesCount) випусків"))
         }
         if periodical.worksCount > 0 {
-            parts.append(
-                "\(periodical.worksCount.formatted()) "
-                    + UkrainianPlural.form(periodical.worksCount, one: "твір", few: "твори", many: "творів")
-            )
+            parts.append(L("\(periodical.worksCount) творів"))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
@@ -142,9 +136,9 @@ struct PeriodicalView: View {
     var body: some View {
         Group {
             if model.isLoading && model.years.isEmpty {
-                BeryndaLoadingState(message: "Завантажуємо видання…")
+                BeryndaLoadingState(message: "Завантажуємо періодичне видання…")
             } else if let message = model.errorMessage {
-                BeryndaErrorState(title: "Не вдалося завантажити видання", message: message) {
+                BeryndaErrorState(title: "Не вдалося завантажити періодичне видання", message: message) {
                     Task { await model.load() }
                 }
             } else {
@@ -167,7 +161,7 @@ struct PeriodicalView: View {
         }
         .accessibilityIdentifier("periodical.screen")
         .background(BeryndaColor.paper)
-        .navigationTitle("Видання")
+        .navigationTitle("Періодичне видання")
         .navigationBarTitleDisplayMode(.inline)
         .task { if model.years.isEmpty { await model.load() } }
     }
@@ -178,6 +172,7 @@ struct PeriodicalView: View {
                 .font(.system(.title, design: .serif, weight: .bold))
                 .foregroundStyle(BeryndaColor.ink)
                 .accessibilityIdentifier("periodical.name")
+                .accessibilityAddTraits(.isHeader)
             if let facts {
                 Text(facts)
                     .font(.subheadline)
@@ -216,8 +211,7 @@ struct PeriodicalView: View {
                     .font(.headline)
                     .foregroundStyle(BeryndaColor.ink)
                 Spacer()
-                Text("\(year.issuesCount) "
-                    + UkrainianPlural.form(year.issuesCount, one: "випуск", few: "випуски", many: "випусків"))
+                Text(L("\(year.issuesCount) випусків"))
                     .font(.caption)
                     .foregroundStyle(BeryndaColor.mutedInk)
                 Image(systemName: model.expandedYears.contains(year.year) ? "chevron.up" : "chevron.down")
@@ -227,7 +221,7 @@ struct PeriodicalView: View {
             }
         }
         .accessibilityIdentifier("periodical.year.\(year.year)")
-        .accessibilityValue(model.expandedYears.contains(year.year) ? "Розгорнуто" : "Згорнуто")
+        .accessibilityValue(model.expandedYears.contains(year.year) ? L("Розгорнуто") : L("Згорнуто"))
 
         if model.expandedYears.contains(year.year) {
             switch model.issuesByYear[year.year] {
@@ -303,6 +297,7 @@ struct PeriodicalIssueView: View {
                                 .font(.system(.title2, design: .serif, weight: .bold))
                                 .foregroundStyle(BeryndaColor.ink)
                                 .accessibilityIdentifier("issue.title")
+                                .accessibilityAddTraits(.isHeader)
                             if let pages = issue.pageCount {
                                 Text("\(pages) с.")
                                     .font(.caption)
@@ -313,9 +308,9 @@ struct PeriodicalIssueView: View {
                     }
                     Section("Твори · \(model.totalCount.formatted())") {
                         if model.works.isEmpty {
-                            Text(model.readableOnly
-                                 ? "Наразі немає творів, доступних для читання."
-                                 : "У цьому випуску ще немає творів.")
+                            (model.readableOnly
+                                 ? Text("Наразі немає творів, доступних для читання.")
+                                 : Text("У цьому випуску ще немає творів."))
                                 .foregroundStyle(BeryndaColor.mutedInk)
                         }
                         ForEach(model.works) { entry in
@@ -370,6 +365,7 @@ struct PublishedInPanel: View {
             VStack(alignment: .leading, spacing: 10) {
                 Label("Опубліковано в", systemImage: "newspaper")
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                 ForEach(links) { link in
                     VStack(alignment: .leading, spacing: 4) {
                         if let name = link.issue.periodicalName, let identifier = periodicalIdentifier(link) {
@@ -408,8 +404,8 @@ struct PublishedInPanel: View {
 
     private func issueLabel(_ link: WorkPeriodicalLink) -> String {
         var parts = [link.issue.displayTitle]
-        if let column = link.columnName { parts.append("рубрика «\(column)»") }
-        if let pages = link.pages { parts.append("с. \(pages)") }
+        if let column = link.columnName { parts.append(L("рубрика «\(column)»")) }
+        if let pages = link.pages { parts.append(L("с. \(pages)")) }
         return parts.joined(separator: " · ")
     }
 }

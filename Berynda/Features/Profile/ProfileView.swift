@@ -65,7 +65,7 @@ private struct ProfileContent: View {
                 // Language names are shown in their own language, so either
                 // reader can find theirs whatever the interface is in.
                 Picker("Мова", selection: languageSelection) {
-                    Text(verbatim: "Українська").tag(AppLanguage.ukrainian.rawValue)
+                    Text(verbatim: "Українська").tag(AppLanguage.ukrainian.rawValue) // l10n-ignore
                     Text(verbatim: "English").tag(AppLanguage.english.rawValue)
                 }
                 .accessibilityIdentifier("profile.language")
@@ -165,6 +165,7 @@ private struct ProfileContent: View {
         .background(BeryndaColor.paper)
         .navigationTitle("Профіль")
         .accessibilityIdentifier("profile_screen")
+        .announcesChanges(of: account.errorMessage)
         .sheet(isPresented: $showsAuthentication) {
             AuthenticationView(account: account)
         }

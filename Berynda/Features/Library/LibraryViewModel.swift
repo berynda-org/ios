@@ -158,7 +158,7 @@ final class LibraryViewModel: ObservableObject {
                 await load()
                 guard case .loaded = state else {
                     if case let .failed(message) = state { return .failed(message) }
-                    return .failed("Не вдалося перевірити збережені колекції.")
+                    return .failed(L("Не вдалося перевірити збережені колекції."))
                 }
             }
             // Re-saving would re-POST and report success over a no-op.
@@ -188,7 +188,7 @@ final class LibraryViewModel: ObservableObject {
             await load()
             guard case .loaded = state else {
                 if case let .failed(message) = state { return .failed(message) }
-                return .failed("Не вдалося перевірити бібліотечний список.")
+                return .failed(L("Не вдалося перевірити бібліотечний список."))
             }
         }
         if isDuplicate(workID: workID, fileID: fileID, page: page) {
@@ -251,7 +251,7 @@ final class LibraryViewModel: ObservableObject {
         guard !isMutating else { return .inProgress }
         guard let clean = Self.validListTitle(title) else {
             return .failed(
-                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+                L("Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів.")
             )
         }
         isMutating = true
@@ -276,7 +276,7 @@ final class LibraryViewModel: ObservableObject {
         guard !isMutating else { return .inProgress }
         guard let clean = Self.validListTitle(title) else {
             return .failed(
-                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+                L("Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів.")
             )
         }
         isMutating = true
@@ -308,7 +308,7 @@ final class LibraryViewModel: ObservableObject {
         guard !isMutating else { return .inProgress }
         guard let clean = Self.validListTitle(title) else {
             return .failed(
-                "Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів."
+                L("Назва списку не може бути порожньою чи довшою за \(Self.maximumListTitleLength) символів.")
             )
         }
         isMutating = true
@@ -366,5 +366,7 @@ final class LibraryViewModel: ObservableObject {
 }
 
 extension LibraryViewModel.SaveResult {
-    static let queuedMessage = "Немає з’єднання. Зміну збережено на пристрої й буде надіслано, щойно з’явиться мережа."
+    static var queuedMessage: String {
+        L("Немає з’єднання. Зміну збережено на пристрої й буде надіслано, щойно з’явиться мережа.")
+    }
 }
