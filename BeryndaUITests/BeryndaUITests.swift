@@ -143,6 +143,10 @@ final class BeryndaUITests: XCTestCase {
         next.tap()
         assertPagePosition("Сторінка 2 з 3, II")
         XCTAssertEqual(slider.value as? String, "Сторінка 2 з 3, II")
+        // The reading position is kept on the device across launches; leave
+        // the book on page 1 for the journeys that expect to start there.
+        previous.tap()
+        assertPagePosition("Сторінка 1 з 3, I")
     }
 
     func testLaunchShowsAnonymousCatalog() {
