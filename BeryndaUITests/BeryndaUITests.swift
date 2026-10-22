@@ -356,7 +356,7 @@ final class BeryndaUITests: XCTestCase {
         reveal(delete)
         delete.tap()
 
-        let confirm = app.alerts.buttons["Видалити"]
+        let confirm = app.alerts.firstMatch.buttons["Видалити"].firstMatch
         XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
         confirm.tap()
 

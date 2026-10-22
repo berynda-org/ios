@@ -188,7 +188,6 @@ struct AccountDeletionView: View {
             Button("Видалити", role: .destructive) {
                 Task { await delete(with: method) }
             }
-            .accessibilityIdentifier("security.delete-confirm")
             Button("Скасувати", role: .cancel) {}
         } message: { _ in
             Text("Списки, закладки й історію читання буде втрачено назавжди.")
