@@ -114,6 +114,20 @@ final class APIEndpointTests: XCTestCase {
         XCTAssertFalse(query.keys.contains("page"))
     }
 
+    func testCrossSearchAsksForPeopleAndPeriodicalsWithABoundedLimit() throws {
+        let url = try XCTUnwrap(
+            APIEndpoint.crossSearch(query: " Шевченко ", types: ["person", "periodical"], limit: 500)
+                .url(relativeTo: baseURL)
+        )
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value) })
+
+        XCTAssertEqual(components.path, "/api/v1/search/cross/")
+        XCTAssertEqual(query["q"]!, "Шевченко")
+        XCTAssertEqual(query["types"]!, "person,periodical")
+        XCTAssertEqual(query["limit"]!, "20")
+    }
+
     func testTopicsListAsksForRootsAndSearchesByName() throws {
         let roots = try XCTUnwrap(
             APIEndpoint.topics(parent: "root", search: nil, page: 2).url(relativeTo: baseURL)

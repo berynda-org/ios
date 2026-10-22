@@ -81,6 +81,24 @@ final class WorkFiltersTests: XCTestCase {
         XCTAssertTrue(topic.children.isEmpty)
     }
 
+    func testCrossSearchKeepsUsableRowsOnly() throws {
+        let json = #"""
+        {"results": [
+          {"entity_type": "person", "id": "c73af131-fe32-539b-a010-8cbb60233bd3", "label": "Тарас Шевченко",
+           "rank": 0.12, "year": null, "description": null, "birth_year": 1814, "death_year": 1861},
+          {"entity_type": "periodical", "id": "7d0c7f4e-1111-4c1c-9a55-6a3f0b8f0001", "label": "Дзвін", "rank": 0.1},
+          {"entity_type": "person", "id": "broken", "label": "Без ідентифікатора"},
+          {"entity_type": "person", "id": "7d0c7f4e-1111-4c1c-9a55-6a3f0b8f0002", "label": "  "}
+        ]}
+        """#
+        let response = try JSONDecoder().decode(CrossSearchResults.self, from: Data(json.utf8))
+
+        XCTAssertEqual(response.results.map(\.label), ["Тарас Шевченко", "Дзвін"])
+        XCTAssertTrue(response.results[0].isPerson)
+        XCTAssertEqual(response.results[0].lifeDates, "1814–1861")
+        XCTAssertTrue(response.results[1].isPeriodical)
+    }
+
     func testVocabularyNamesKnownCodesAndKeepsUnknownOnes() {
         XCTAssertEqual(CatalogVocabulary.languageName("uk"), "Українська")
         XCTAssertEqual(CatalogVocabulary.languageName("orv"), "Староукраїнська / руська")

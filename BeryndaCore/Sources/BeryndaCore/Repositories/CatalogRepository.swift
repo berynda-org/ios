@@ -13,6 +13,8 @@ public protocol CatalogRepository: Sendable {
     /// `APIEndpoint.topics` for why the result must still be checked.
     func topics(parent: String?, search: String?, page: Int) async throws -> PaginatedResponse<TopicSummary>
     func topic(slug: String) async throws -> TopicSummary
+    /// Non-work matches for a query of at least two characters.
+    func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit]
     func author(id: UUID) async throws -> AuthorSummary
     func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary>
     func work(identifier: String) async throws -> WorkSummary
@@ -30,6 +32,7 @@ public extension CatalogRepository {
         throw APIError.invalidResponse
     }
     func topic(slug: String) async throws -> TopicSummary { throw APIError.invalidResponse }
+    func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] { [] }
     func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary> {
         throw APIError.invalidResponse
     }
@@ -84,6 +87,16 @@ public struct LiveCatalogRepository: CatalogRepository {
 
     public func topic(slug: String) async throws -> TopicSummary {
         try await client.request(.topic(slug: slug))
+    }
+
+    public func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] {
+        // The server rejects a query under two characters; asking would only
+        // turn every first keystroke into an error.
+        guard query.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 else { return [] }
+        let response: CrossSearchResults = try await client.request(
+            .crossSearch(query: query, types: types, limit: limit)
+        )
+        return response.results
     }
 
     public func author(id: UUID) async throws -> AuthorSummary {

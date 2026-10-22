@@ -10,6 +10,8 @@ public enum APIEndpoint: Sendable, Equatable {
     /// ignore it, so callers must not rely on it alone.
     case topics(parent: String?, search: String?, page: Int)
     case topic(slug: String)
+    /// People, periodicals and other non-work entities matching a query.
+    case crossSearch(query: String, types: [String], limit: Int)
     case author(id: UUID)
     case authorWorks(id: UUID, page: Int, readableOnly: Bool)
     case work(slug: String)
@@ -75,6 +77,13 @@ public enum APIEndpoint: Sendable, Equatable {
             }
         case let .topic(slug):
             path = "topics/\(Self.encodePathSegment(slug))/"
+        case let .crossSearch(query, types, limit):
+            path = "search/cross/"
+            queryItems.append(.init(name: "q", value: query.trimmingCharacters(in: .whitespacesAndNewlines)))
+            queryItems.append(.init(name: "limit", value: String(min(max(limit, 1), 20))))
+            if !types.isEmpty {
+                queryItems.append(.init(name: "types", value: types.joined(separator: ",")))
+            }
         case let .author(id):
             path = "persons/\(id.uuidString.lowercased())/"
         case let .authorWorks(id, page, readableOnly):

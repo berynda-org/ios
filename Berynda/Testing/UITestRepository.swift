@@ -83,6 +83,26 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         }
     }
 
+    /// One author and one periodical for «шевч…»; the periodical must stay
+    /// hidden until the app has somewhere to open it.
+    func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] {
+        guard query.lowercased().contains("шевч") else { return [] }
+        return [
+            CrossSearchHit(
+                entityType: "person",
+                id: UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!,
+                label: "Тарас Шевченко",
+                birthYear: 1814,
+                deathYear: 1861
+            ),
+            CrossSearchHit(
+                entityType: "periodical",
+                id: UUID(uuidString: "99999999-0000-0000-0000-000000000001")!,
+                label: "Шевченківський вісник"
+            ),
+        ]
+    }
+
     func author(id: UUID) async throws -> AuthorSummary {
         let name = id.uuidString.lowercased().hasPrefix("aaaaaaaa") ? "Тарас Шевченко" : "Леся Українка"
         return try decode("{\"id\":\"\(id)\",\"display_name\":\"\(name)\",\"birth_year\":1814,\"death_year\":1861,\"bio\":\"Український письменник і художник.\"}")

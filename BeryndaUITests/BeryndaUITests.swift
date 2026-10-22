@@ -92,6 +92,24 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Лісова пісня"].exists)
     }
 
+    func testSearchShowsMatchingAuthorsAndOpensOne() {
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("Шевченко")
+
+        let tarasID = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
+        let author = app.buttons["catalog.author.\(tarasID)"]
+        XCTAssertTrue(author.waitForExistence(timeout: 5), app.debugDescription)
+        // No periodical page exists yet, so a periodical hit is not offered.
+        XCTAssertFalse(app.staticTexts["Шевченківський вісник"].exists)
+
+        author.tap()
+        let name = app.staticTexts["author.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.label, "Тарас Шевченко")
+    }
+
     func testCatalogLoadsTheNextPage() {
         let finalWork = app.staticTexts["Слово о полку Ігоревім"]
         if !finalWork.waitForExistence(timeout: 2) {

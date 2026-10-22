@@ -30,7 +30,7 @@ private struct CatalogLoadedView: View {
             switch model.state {
             case .idle, .loading:
                 BeryndaLoadingState(message: "Завантажуємо каталог…")
-            case let .loaded(works, _) where works.isEmpty:
+            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty:
                 BeryndaEmptyState(
                     title: "Нічого не знайдено",
                     message: model.filters.hasRefinements
@@ -98,7 +98,7 @@ struct TabletCatalogColumn: View {
             switch model.state {
             case .idle, .loading:
                 BeryndaLoadingState(message: "Завантажуємо каталог…")
-            case let .loaded(works, _) where works.isEmpty:
+            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty:
                 BeryndaEmptyState(
                     title: "Нічого не знайдено",
                     message: "Спробуйте змінити запит або фільтри.",
@@ -110,6 +110,15 @@ struct TabletCatalogColumn: View {
                         TopicsEntry()
                             .tag(CatalogDestination.topics(readableOnly: model.filters.readableOnly))
                             .accessibilityIdentifier("catalog.topics")
+                    }
+                    if !model.authorHits.isEmpty {
+                        Section("Автори") {
+                            ForEach(model.authorHits) { author in
+                                AuthorHitLabel(author: author)
+                                    .tag(CatalogDestination.author(id: author.id, name: author.label))
+                                    .accessibilityIdentifier("catalog.author.\(author.id)")
+                            }
+                        }
                     }
                     ForEach(works) { work in
                         WorkRow(work: work)
@@ -154,6 +163,11 @@ private struct WorkList: View {
                     TopicsEntry()
                 }
                 .accessibilityIdentifier("catalog.topics")
+            }
+            if !model.authorHits.isEmpty {
+                Section("Автори") {
+                    AuthorHitStrip(authors: model.authorHits)
+                }
             }
             if !collections.isEmpty {
                 Section("Вибрані колекції") {
@@ -421,6 +435,51 @@ struct WorkRow: View {
         case 0: "Бібліографічний запис"
         case 1: "1 видання"
         default: "\(work.editionsCount) видань"
+        }
+    }
+}
+
+/// People matching the search, as one compact row of chips above the works.
+private struct AuthorHitStrip: View {
+    let authors: [CrossSearchHit]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 10) {
+                ForEach(authors) { author in
+                    NavigationLink(value: CatalogDestination.author(id: author.id, name: author.label)) {
+                        AuthorHitLabel(author: author)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(BeryndaColor.surface, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("catalog.author.\(author.id)")
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        .accessibilityIdentifier("catalog.authors")
+    }
+}
+
+private struct AuthorHitLabel: View {
+    let author: CrossSearchHit
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "person")
+                .foregroundStyle(BeryndaColor.accent)
+                .accessibilityHidden(true)
+            Text(author.label)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(BeryndaColor.ink)
+                .lineLimit(1)
+            if let dates = author.lifeDates {
+                Text(dates)
+                    .font(.caption)
+                    .foregroundStyle(BeryndaColor.mutedInk)
+            }
         }
     }
 }

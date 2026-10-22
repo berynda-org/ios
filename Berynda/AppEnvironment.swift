@@ -201,6 +201,8 @@ enum CatalogDestination: Hashable {
     case linkedWork(identifier: String)
     /// The topic browser, opened with the catalog's readable switch.
     case topics(readableOnly: Bool)
+    /// An author found by the catalog search.
+    case author(id: UUID, name: String)
 }
 
 struct ReaderPresentation: Identifiable, Equatable {

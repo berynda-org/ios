@@ -22,12 +22,20 @@ final class CatalogViewModel: ObservableObject {
     /// Options for the filter sheet. `nil` until first asked for, and left
     /// as it was when a lookup fails: the sheet still works without counts.
     @Published private(set) var facets: WorkFacets?
+    /// People matching the search, shown above the works. Periodicals are
+    /// asked for too but held back until the app has a periodical page:
+    /// a hit that opens nothing is worse than no hit.
+    @Published private(set) var authorHits: [CrossSearchHit] = []
     /// Server-ranked shelf shown above an unfiltered catalog. Empty is normal
     /// and not an error: it simply means nothing is being suggested.
     @Published private(set) var recommended: [WorkSummary] = []
     private let repository: any CatalogRepository
     private let recentlyViewed: RecentlyViewedStore?
     private var searchTask: Task<Void, Never>?
+    private var entityTask: Task<Void, Never>?
+    /// The term `authorHits` answers, so a filter change does not repeat
+    /// a lookup the filters do not affect.
+    private var entityTerm: String?
     private var currentPage = 0
     private var hasNextPage = false
     private var loadGeneration = 0
@@ -38,7 +46,10 @@ final class CatalogViewModel: ObservableObject {
         self.recentlyViewed = recentlyViewed
     }
 
-    deinit { searchTask?.cancel() }
+    deinit {
+        searchTask?.cancel()
+        entityTask?.cancel()
+    }
 
     /// Loaded once per screen rather than per search: the shelf does not
     /// depend on the query, and refetching it on every keystroke would be
@@ -56,6 +67,7 @@ final class CatalogViewModel: ObservableObject {
         isLoadingNextPage = false
         nextPageError = nil
         state = .loading
+        refreshEntityHits()
         do {
             let page = try await repository.works(
                 search: requestedQuery,
@@ -131,6 +143,31 @@ final class CatalogViewModel: ObservableObject {
     func retryNextPage() async {
         guard case let .loaded(works, _) = state, let last = works.last else { return }
         await loadNextPageIfNeeded(after: last)
+    }
+
+    /// Runs beside the works request rather than before it, so a slow or
+    /// failed entity lookup never holds up or breaks the catalog.
+    private func refreshEntityHits() {
+        let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard term != entityTerm else { return }
+        entityTask?.cancel()
+        guard term.count >= 2 else {
+            authorHits = []
+            entityTerm = term
+            return
+        }
+        entityTask = Task { [weak self, repository] in
+            let hits = (try? await repository.crossSearch(
+                query: term,
+                types: ["person", "periodical"],
+                limit: 5
+            )) ?? []
+            guard !Task.isCancelled, let self,
+                  self.query.trimmingCharacters(in: .whitespacesAndNewlines) == term
+            else { return }
+            self.authorHits = hits.filter(\.isPerson)
+            self.entityTerm = term
+        }
     }
 
     /// Fetched when the filter sheet opens, not per keystroke: the facet

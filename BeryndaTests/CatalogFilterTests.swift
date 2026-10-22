@@ -55,6 +55,29 @@ final class CatalogFilterTests: XCTestCase {
         XCTAssertEqual(model.filters, WorkFilters(readableOnly: true))
     }
 
+    func testSearchOffersAuthorsButHoldsBackPeriodicals() async throws {
+        let repository = FilterRecordingStub()
+        let model = CatalogViewModel(repository: repository)
+
+        model.query = "Ш"
+        await model.load()
+        XCTAssertTrue(model.authorHits.isEmpty)
+
+        model.query = " Шевченко "
+        await model.load()
+        // The lookup runs beside the works request; wait for it to land.
+        for _ in 0..<50 where model.authorHits.isEmpty {
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTAssertEqual(model.authorHits.map(\.label), ["Тарас Шевченко"])
+
+        // A filter change does not repeat a lookup for the same words.
+        model.filters.readableOnly = true
+        await model.load()
+        let lookups = await repository.crossSearchQueries
+        XCTAssertEqual(lookups, ["Шевченко"])
+    }
+
     func testTopicPageListsItsWorksUnderTheReadableSwitch() async throws {
         let repository = FilterRecordingStub()
         let reference = TopicReference(slug: "poeziia", name: "Поезія")
@@ -100,6 +123,15 @@ private actor FilterRecordingStub: CatalogRepository {
     private(set) var workRequests: [WorkRequest] = []
     private(set) var facetRequests: [WorkFilters] = []
     private(set) var topicPages: [Int] = []
+    private(set) var crossSearchQueries: [String] = []
+
+    func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] {
+        crossSearchQueries.append(query)
+        return [
+            CrossSearchHit(entityType: "person", id: UUID(), label: "Тарас Шевченко", birthYear: 1814, deathYear: 1861),
+            CrossSearchHit(entityType: "periodical", id: UUID(), label: "Шевченківський вісник"),
+        ]
+    }
 
     func works(search: String?, page: Int) async throws -> PaginatedResponse<WorkSummary> {
         try Self.decode(#"{"count":0,"next":null,"previous":null,"results":[]}"#)
