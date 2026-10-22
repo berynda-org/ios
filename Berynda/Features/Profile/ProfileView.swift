@@ -124,10 +124,9 @@ private struct ProfileContent: View {
                 Button("Очистити локальні дані", role: .destructive) { confirmsStorageClear = true }
                     .disabled(storageUsage == nil)
                     .accessibilityIdentifier("profile.storage.clear")
-                    .confirmationDialog(
+                    .alert(
                         "Очистити локальні дані?",
-                        isPresented: $confirmsStorageClear,
-                        titleVisibility: .visible
+                        isPresented: $confirmsStorageClear
                     ) {
                         Button("Очистити", role: .destructive) {
                             Task { await clearLocalStorage() }

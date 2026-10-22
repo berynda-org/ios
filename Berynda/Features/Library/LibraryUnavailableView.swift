@@ -31,7 +31,7 @@ private struct LibraryContent: View {
             case .signedOut:
                 BeryndaEmptyState(
                     title: "Увійдіть до бібліотеки",
-                    message: "Після входу тут з’являться продовження читання, списки та збережені колекції.",
+                    message: "Після входу тут з’являться продовження читання, ваші списки та колекції Беринди.",
                     systemImage: "bookmark"
                 )
                 .overlay(alignment: .bottom) {
@@ -63,13 +63,14 @@ private struct LibraryContent: View {
         // Presented from here rather than from the list itself, which is
         // swapped out whenever the library leaves its loaded state.
         .sheet(item: $renamingList) { list in RenameListView(model: model, list: list) }
-        .confirmationDialog(
+        // An alert rather than a confirmation dialog: iOS presents the dialog
+        // as a popover beside the row that asked, not in the middle.
+        .alert(
             deletingList.map { "Видалити список «\($0.title)»?" } ?? "Видалити список?",
             isPresented: Binding(
                 get: { deletingList != nil },
                 set: { if !$0 { deletingList = nil } }
             ),
-            titleVisibility: .visible,
             presenting: deletingList
         ) { list in
             Button("Видалити", role: .destructive) {
@@ -185,9 +186,9 @@ private struct LibraryContent: View {
                 }
             }
 
-            Section("Збережені колекції") {
+            Section("Колекції Беринди") {
                 if saved.isEmpty {
-                    Text("Збережених колекцій ще немає.")
+                    Text("Ви ще не зберегли жодної колекції Беринди.")
                         .foregroundStyle(BeryndaColor.mutedInk)
                 }
                 ForEach(saved) { collection in
