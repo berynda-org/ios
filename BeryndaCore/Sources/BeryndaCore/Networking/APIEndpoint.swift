@@ -43,6 +43,8 @@ public enum APIEndpoint: Sendable, Equatable {
     /// POST: whether saved offline copies may still be kept.
     case offlineStatus
     case continueReading(limit: Int)
+    /// POST: in-app feedback and support requests (also the web contact form).
+    case contact
 
     func url(relativeTo baseURL: URL) -> URL? {
         let path: String
@@ -166,6 +168,8 @@ public enum APIEndpoint: Sendable, Equatable {
             path = "files/offline-status/"
         case let .readingPosition(fileID):
             path = "files/\(fileID.uuidString.lowercased())/reading-position/"
+        case .contact:
+            path = "contact/"
         case let .continueReading(limit):
             path = "auth/me/reading/"
             queryItems.append(.init(name: "limit", value: String(min(max(limit, 1), 50))))

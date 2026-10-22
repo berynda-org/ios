@@ -6,6 +6,8 @@ import Foundation
 final class AppEnvironment: ObservableObject {
     let catalogRepository: any CatalogRepository
     let readerRepository: any ReaderRepository
+    /// «Відгук і підтримка» in Profile.
+    let feedbackRepository: any FeedbackRepository
     let networkMonitor: NetworkMonitor
     let session: SessionController
     let account: AccountViewModel
@@ -40,6 +42,7 @@ final class AppEnvironment: ObservableObject {
         authentication: any AuthenticationServing,
         accountRepository: any AccountRepository,
         libraryRepository: any LibraryRepository,
+        feedbackRepository: any FeedbackRepository,
         networkMonitor: NetworkMonitor? = nil,
         mutationSender: (any MutationSending)? = nil,
         offlineStatusChecker: (any OfflineStatusChecking)? = nil,
@@ -47,6 +50,7 @@ final class AppEnvironment: ObservableObject {
         offlineDirectory: URL? = nil
     ) {
         self.catalogRepository = catalogRepository
+        self.feedbackRepository = feedbackRepository
         let offlineLibrary = OfflineLibrary(
             directory: offlineDirectory ?? FileManager.default.temporaryDirectory
                 .appendingPathComponent("BeryndaOffline-\(UUID().uuidString)", isDirectory: true)
@@ -153,6 +157,7 @@ final class AppEnvironment: ObservableObject {
             authentication: authentication,
             accountRepository: LiveAccountRepository(client: client),
             libraryRepository: LiveLibraryRepository(client: client),
+            feedbackRepository: LiveFeedbackRepository(client: client),
             mutationSender: LiveMutationSender(client: client),
             offlineStatusChecker: LiveOfflineStatusChecker(client: client),
             outboxURL: MutationOutbox.defaultFileURL(),
@@ -174,7 +179,8 @@ final class AppEnvironment: ObservableObject {
             session: session,
             authentication: authentication,
             accountRepository: UITestAccountRepository(),
-            libraryRepository: repository
+            libraryRepository: repository,
+            feedbackRepository: UITestFeedbackRepository()
         )
     }
     #endif

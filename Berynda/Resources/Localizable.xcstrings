@@ -171,6 +171,17 @@
         }
       }
     },
+    "%lld з 5 зірок": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of 5 stars"
+          }
+        }
+      }
+    },
     "%lld підтем": {
       "extractionState": "manual",
       "localizations": {
@@ -370,6 +381,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Name"
+          }
+        }
+      }
+    },
+    "Ім’я (необов’язково)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name (optional)"
+          }
+        }
+      }
+    },
+    "Ім’я має містити щонайменше %lld символи.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The name must be at least %lld characters long."
           }
         }
       }
@@ -715,6 +748,17 @@
         }
       }
     },
+    "Ви вже надіслали кілька повідомлень. Спробуйте знову приблизно за годину.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’ve already sent several messages. Please try again in about an hour."
+          }
+        }
+      }
+    },
     "Ви входите через Apple або Google, тож пароля в цього облікового запису ще немає. Надішлемо лист із посиланням, за яким його можна встановити.": {
       "extractionState": "manual",
       "localizations": {
@@ -968,6 +1012,17 @@
         }
       }
     },
+    "Вкажіть адресу, на яку відповісти.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter an email address for our reply."
+          }
+        }
+      }
+    },
     "Встановити пароль": {
       "extractionState": "manual",
       "localizations": {
@@ -975,6 +1030,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Set a Password"
+          }
+        }
+      }
+    },
+    "Відгук і підтримка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feedback & Support"
           }
         }
       }
@@ -1063,6 +1129,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Details of the work and its editions will open here."
+          }
+        }
+      }
+    },
+    "Відповімо на адресу вашого облікового запису.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We’ll reply to your account’s email address."
           }
         }
       }
@@ -1287,6 +1364,17 @@
         }
       }
     },
+    "Дякуємо! Повідомлення надіслано.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thank you! Your message has been sent."
+          }
+        }
+      }
+    },
     "Дію не виконано": {
       "extractionState": "manual",
       "localizations": {
@@ -1327,6 +1415,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Email"
+          }
+        }
+      }
+    },
+    "Електронна адреса (необов’язково)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email (optional)"
+          }
+        }
+      }
+    },
+    "Електронна адреса для відповіді": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email for our reply"
           }
         }
       }
@@ -1882,6 +1992,28 @@
         }
       }
     },
+    "Коментар (необов’язково)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comment (optional)"
+          }
+        }
+      }
+    },
+    "Контакти": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact details"
+          }
+        }
+      }
+    },
     "Конфіденційність": {
       "extractionState": "manual",
       "localizations": {
@@ -2069,6 +2201,17 @@
         }
       }
     },
+    "Можна залишити відгук анонімно.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can leave feedback anonymously."
+          }
+        }
+      }
+    },
     "Міжрядковий інтервал": {
       "extractionState": "manual",
       "localizations": {
@@ -2087,6 +2230,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dataset"
+          }
+        }
+      }
+    },
+    "Надіслати": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
           }
         }
       }
@@ -2175,6 +2329,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Topic name"
+          }
+        }
+      }
+    },
+    "Написати в підтримку": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact Support"
           }
         }
       }
@@ -2454,6 +2619,17 @@
         }
       }
     },
+    "Не вибрано": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not selected"
+          }
+        }
+      }
+    },
     "Некоректна конфігурація сервісу.": {
       "extractionState": "manual",
       "localizations": {
@@ -2652,6 +2828,17 @@
         }
       }
     },
+    "Оберіть оцінку від 1 до 5 зірок.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a rating from 1 to 5 stars."
+          }
+        }
+      }
+    },
     "Оберіть твір": {
       "extractionState": "manual",
       "localizations": {
@@ -2773,6 +2960,17 @@
         }
       }
     },
+    "Опишіть, що сталося": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe what happened"
+          }
+        }
+      }
+    },
     "Оповідання": {
       "extractionState": "manual",
       "localizations": {
@@ -2835,6 +3033,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Theme"
+          }
+        }
+      }
+    },
+    "Оцінити застосунок": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rate the App"
+          }
+        }
+      }
+    },
+    "Оцінка": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rating"
           }
         }
       }
@@ -3110,6 +3330,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Repeat password"
+          }
+        }
+      }
+    },
+    "Повідомлення": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
+        }
+      }
+    },
+    "Повідомлення має містити щонайменше %lld символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The message must be at least %lld characters long."
+          }
+        }
+      }
+    },
+    "Повідомлення не може бути довшим за %lld символів.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The message can’t be longer than %lld characters."
           }
         }
       }
@@ -3911,6 +4164,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "The service is temporarily unavailable."
+          }
+        }
+      }
+    },
+    "Символів: %lld з %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Characters: %1$lld of %2$lld"
           }
         }
       }
@@ -4945,6 +5209,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quick sign-in"
+          }
+        }
+      }
+    },
+    "Що сподобалося або що покращити?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What did you like, or what could be better?"
           }
         }
       }

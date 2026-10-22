@@ -517,6 +517,56 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.buttons["profile.authenticate"].waitForExistence(timeout: 5))
     }
 
+    /// Signed out: rate the app with stars and a comment, then write to
+    /// support, which refuses to send without a reply address.
+    func testSignedOutReaderRatesTheAppAndWritesToSupport() {
+        app.tabBars.buttons["Профіль"].tap()
+        let rate = app.buttons["profile.feedback.rate"]
+        reveal(rate)
+        rate.tap()
+
+        let stars = app.descendants(matching: .any)["feedback.rating"]
+        XCTAssertTrue(stars.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(stars.label, "Оцінка")
+        // The fifth star sits at the trailing end of the row.
+        stars.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        let five = NSPredicate(format: "value == %@", "5 з 5 зірок")
+        expectation(for: five, evaluatedWith: stars)
+        waitForExpectations(timeout: 5)
+
+        // A multi-line field is a text view, not a text field.
+        let comment = app.descendants(matching: .any).matching(identifier: "feedback.message").firstMatch
+        XCTAssertTrue(comment.waitForExistence(timeout: 5), app.debugDescription)
+        comment.tap()
+        comment.typeText("Дуже зручно читати")
+        let send = app.buttons["feedback.send"]
+        reveal(send)
+        send.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["feedback.sent"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Дякуємо! Повідомлення надіслано."].exists)
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let support = app.buttons["profile.feedback.support"]
+        reveal(support)
+        support.tap()
+        let message = app.descendants(matching: .any).matching(identifier: "feedback.message").firstMatch
+        XCTAssertTrue(message.waitForExistence(timeout: 5), app.debugDescription)
+        message.tap()
+        message.typeText("Книжка не відкривається офлайн.")
+        let supportSend = app.buttons["feedback.send"]
+        reveal(supportSend)
+        supportSend.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["feedback.error"].waitForExistence(timeout: 5), app.debugDescription)
+
+        let email = app.textFields["feedback.email"]
+        reveal(email)
+        email.tap()
+        email.typeText("reader@example.org")
+        reveal(supportSend)
+        supportSend.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["feedback.sent"].waitForExistence(timeout: 5), app.debugDescription)
+    }
+
     private func signInFromProfile() {
         app.tabBars.buttons["Профіль"].tap()
         let authenticate = app.buttons["profile.authenticate"]

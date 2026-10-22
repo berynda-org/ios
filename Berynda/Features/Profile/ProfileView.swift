@@ -13,6 +13,7 @@ struct ProfileView: View {
             account: environment.account,
             localStorage: environment.localStorage,
             offline: environment.offline,
+            feedback: environment.feedbackRepository,
             appearanceMode: $appearanceMode,
             interfaceLanguage: $interfaceLanguage,
             showsAuthentication: $showsAuthentication,
@@ -25,6 +26,7 @@ private struct ProfileContent: View {
     @ObservedObject var account: AccountViewModel
     let localStorage: LocalStorageSummary
     let offline: OfflineSync
+    let feedback: any FeedbackRepository
     @Binding var appearanceMode: String
     @Binding var interfaceLanguage: String
     @Binding var showsAuthentication: Bool
@@ -70,6 +72,8 @@ private struct ProfileContent: View {
                 }
                 .accessibilityIdentifier("profile.language")
             }
+
+            FeedbackSupportSection(repository: feedback, isSignedIn: account.state == .authenticated)
 
             if account.state == .authenticated, let profile = account.profile {
                 Section("Конфіденційність") {

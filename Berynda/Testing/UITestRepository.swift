@@ -421,6 +421,16 @@ actor UITestAuthenticationService: AuthenticationServing {
     }
 }
 
+/// Accepts every message, as `POST contact/` answers `201 {"ok": true}`.
+actor UITestFeedbackRepository: FeedbackRepository {
+    private(set) var submissions: [FeedbackSubmission] = []
+
+    func submit(_ submission: FeedbackSubmission) async throws -> FeedbackReceipt {
+        submissions.append(submission)
+        return FeedbackReceipt(ok: true, id: UUID().uuidString.lowercased())
+    }
+}
+
 actor UITestAccountRepository: AccountRepository {
     private var user = UserProfile(
         id: UUID(uuidString: "99999999-9999-9999-9999-999999999999")!,

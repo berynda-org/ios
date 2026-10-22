@@ -395,7 +395,13 @@ Review.
     cleared alongside positions, commit `d4a1b0f`). The storage section now
     measures reading positions, recently viewed works, and leftover reader
     files, and clears them behind a confirmation (`ab53c88`). The language
-    picker now switches the interface (slice 15). **Gaps:** session/account
+    picker now switches the interface (slice 15). «Відгук і підтримка»
+    (signed in or out) sends a 1–5 star rating with an optional comment
+    (`app_feedback`) or a support request with a reply address
+    (`app_support`) to `POST contact/` with platform, app/OS version,
+    hardware model and interface locale; a signed-in reader's name and email
+    come from the account on the server; 429 reads as "try again in about an
+    hour". Needs the server change in app@0210ab3 deployed. **Gaps:** session/account
     actions stop at
     sign-out (no change-password entry, no deletion, no sign-out-everywhere);
     and no unit test targets `AccountViewModel` or `ProfileView` directly
