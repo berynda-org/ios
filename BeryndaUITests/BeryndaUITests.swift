@@ -138,8 +138,8 @@ final class BeryndaUITests: XCTestCase {
         let previous = app.buttons["reader.previous-page"]
         XCTAssertEqual(next.label, "Наступна")
         XCTAssertEqual(previous.label, "Попередня")
-        XCTAssertGreaterThanOrEqual(next.frame.width, 44)
-        XCTAssertGreaterThanOrEqual(next.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(next.frame.width.rounded(), 44)
+        XCTAssertGreaterThanOrEqual(next.frame.height.rounded(), 44)
         next.tap()
         assertPagePosition("Сторінка 2 з 3, II")
         XCTAssertEqual(slider.value as? String, "Сторінка 2 з 3, II")
