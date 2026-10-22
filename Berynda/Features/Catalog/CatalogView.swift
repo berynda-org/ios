@@ -105,10 +105,17 @@ struct TabletCatalogColumn: View {
                     systemImage: "text.magnifyingglass"
                 )
             case let .loaded(works, _):
-                List(works, selection: $selection) { work in
-                    WorkRow(work: work)
-                        .tag(CatalogDestination.work(work))
-                        .task { await model.loadNextPageIfNeeded(after: work) }
+                List(selection: $selection) {
+                    if model.query.isEmpty {
+                        TopicsEntry()
+                            .tag(CatalogDestination.topics(readableOnly: model.filters.readableOnly))
+                            .accessibilityIdentifier("catalog.topics")
+                    }
+                    ForEach(works) { work in
+                        WorkRow(work: work)
+                            .tag(CatalogDestination.work(work))
+                            .task { await model.loadNextPageIfNeeded(after: work) }
+                    }
                 }
                 .listStyle(.plain)
                 .refreshable { await model.load() }
@@ -142,6 +149,12 @@ private struct WorkList: View {
 
     var body: some View {
         List {
+            if model.query.isEmpty {
+                NavigationLink(value: CatalogDestination.topics(readableOnly: model.filters.readableOnly)) {
+                    TopicsEntry()
+                }
+                .accessibilityIdentifier("catalog.topics")
+            }
             if !collections.isEmpty {
                 Section("Вибрані колекції") {
                     ForEach(collections.filter(\.isFeatured)) { collection in
@@ -409,6 +422,16 @@ struct WorkRow: View {
         case 1: "1 видання"
         default: "\(work.editionsCount) видань"
         }
+    }
+}
+
+/// The way into topic browsing, above the catalog's own list.
+private struct TopicsEntry: View {
+    var body: some View {
+        Label("Теми", systemImage: "square.grid.2x2")
+            .font(.headline)
+            .foregroundStyle(BeryndaColor.ink)
+            .padding(.vertical, 6)
     }
 }
 

@@ -151,6 +151,8 @@ private struct TabletRootView: View {
                         WorkDetailView(work: work, repository: environment.catalogRepository)
                     case let .linkedWork(identifier):
                         LinkedWorkView(identifier: identifier, repository: environment.catalogRepository)
+                    case let .topics(readableOnly):
+                        TopicListView(readableOnly: readableOnly)
                     case nil:
                         ContentUnavailableView(
                             "Оберіть твір",
@@ -198,6 +200,8 @@ private struct CatalogNavigationView: View {
                             identifier: identifier,
                             repository: environment.catalogRepository
                         )
+                    case let .topics(readableOnly):
+                        TopicListView(readableOnly: readableOnly)
                     }
                 }
         }

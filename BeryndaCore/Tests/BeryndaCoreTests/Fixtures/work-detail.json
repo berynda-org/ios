@@ -29,7 +29,7 @@
     { "id": "66666666-6666-6666-6666-666666666666", "name": null, "name_en": "Verse drama" }
   ],
   "topics": [
-    { "id": "77777777-7777-7777-7777-777777777777", "name": "Українська література", "name_en": null }
+    { "id": "77777777-7777-7777-7777-777777777777", "name": "Українська література", "name_en": null, "slug": "ukrainska-literatura", "color": null }
   ],
   "contributions": [
     {

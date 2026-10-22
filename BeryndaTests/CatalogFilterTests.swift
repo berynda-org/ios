@@ -55,6 +55,28 @@ final class CatalogFilterTests: XCTestCase {
         XCTAssertEqual(model.filters, WorkFilters(readableOnly: true))
     }
 
+    func testTopicPageListsItsWorksUnderTheReadableSwitch() async throws {
+        let repository = FilterRecordingStub()
+        let reference = TopicReference(slug: "poeziia", name: "Поезія")
+        let model = TopicViewModel(reference: reference, readableOnly: true, repository: repository)
+
+        await model.load()
+
+        // The stub has no topic record; the page still stands on its works.
+        XCTAssertNil(model.errorMessage)
+        XCTAssertEqual(model.title, "Поезія")
+        let requests = await repository.workRequests
+        XCTAssertEqual(requests.map(\.filters), [WorkFilters(readableOnly: true, topic: reference)])
+        XCTAssertNil(requests.first?.search ?? nil)
+    }
+
+    func testUkrainianPluralAgreement() {
+        let forms = [1, 2, 5, 11, 21, 22, 112].map {
+            UkrainianPlural.form($0, one: "твір", few: "твори", many: "творів")
+        }
+        XCTAssertEqual(forms, ["твір", "твори", "творів", "творів", "твір", "твори", "творів"])
+    }
+
     func testTopicRootsSurviveAServerThatIgnoresTheParentFilter() async throws {
         let repository = FilterRecordingStub()
         let model = TopicListViewModel(repository: repository)

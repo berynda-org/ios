@@ -134,12 +134,44 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["work.bibliography.kind"].label, "Поезія · збірка")
         XCTAssertEqual(app.staticTexts["work.bibliography.language"].label, "UK, RU")
         XCTAssertEqual(
-            app.staticTexts["work.bibliography.topics"].label,
+            app.buttons["work.topic.ukrainska-literatura"].label,
             "Українська література"
         )
 
         XCTAssertEqual(app.staticTexts["work.rights.title"].label, "Суспільне надбання")
         XCTAssertTrue(app.staticTexts["work.rights.explanation"].exists)
+    }
+
+    func testTopicsBrowseFromTheCatalogToATopicsWorks() {
+        let topics = app.buttons["catalog.topics"]
+        XCTAssertTrue(topics.waitForExistence(timeout: 5), app.debugDescription)
+        topics.tap()
+
+        let root = app.buttons["topics.topic.ukrainska-literatura"]
+        XCTAssertTrue(root.waitForExistence(timeout: 5), app.debugDescription)
+        root.tap()
+
+        let name = app.staticTexts["topic.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.label, "Українська література")
+        XCTAssertTrue(app.buttons["topic.child.poeziia"].waitForExistence(timeout: 5))
+        let kobzar = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        let forestSong = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+        XCTAssertTrue(app.buttons["topic.work.\(kobzar)"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["topic.work.\(forestSong)"].exists)
+    }
+
+    func testWorkTopicOpensTheTopicPage() {
+        openWork(named: "Кобзар")
+        let topic = app.buttons["work.topic.ukrainska-literatura"]
+        XCTAssertTrue(topic.waitForExistence(timeout: 5))
+        topic.tap()
+
+        let name = app.staticTexts["topic.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.label, "Українська література")
+        let kobzar = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        XCTAssertTrue(app.buttons["topic.work.\(kobzar)"].waitForExistence(timeout: 5))
     }
 
     func testUnconfirmedPublicDomainClaimIsAbsentFromCatalogAndDetail() {

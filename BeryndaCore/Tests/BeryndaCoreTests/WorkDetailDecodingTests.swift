@@ -11,6 +11,8 @@ final class WorkDetailDecodingTests: XCTestCase {
         XCTAssertEqual(work.literaryForm?.name, "Драма")
         XCTAssertEqual(work.additionalLanguages, ["pl"])
         XCTAssertEqual(work.topics.map { $0.name }, ["Українська література"])
+        XCTAssertEqual(work.topics.map { $0.slug }, ["ukrainska-literatura"])
+        XCTAssertEqual(work.genres.compactMap { $0.slug }, [], "Genres carry no slug in this fixture")
         XCTAssertFalse(work.isCollection)
         XCTAssertEqual(work.form, "verse")
         XCTAssertTrue(work.isDetailed)

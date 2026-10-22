@@ -199,6 +199,8 @@ enum AuthenticatedAction {
 enum CatalogDestination: Hashable {
     case work(WorkSummary)
     case linkedWork(identifier: String)
+    /// The topic browser, opened with the catalog's readable switch.
+    case topics(readableOnly: Bool)
 }
 
 struct ReaderPresentation: Identifiable, Equatable {

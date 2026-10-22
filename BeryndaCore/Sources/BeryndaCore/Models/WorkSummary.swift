@@ -41,10 +41,13 @@ public struct WorkContributor: Hashable, Sendable, Identifiable {
 public struct WorkTerm: Hashable, Sendable, Identifiable {
     public let id: UUID
     public let name: String
+    /// Present for topics on the detail record; what makes a term linkable.
+    public let slug: String?
 
-    public init(id: UUID, name: String) {
+    public init(id: UUID, name: String, slug: String? = nil) {
         self.id = id
         self.name = name
+        self.slug = slug
     }
 }
 
@@ -194,14 +197,15 @@ private struct WorkTermPayload: Decodable {
     let id: UUID?
     let name: String?
     let nameEn: String?
+    let slug: String?
 
     var term: WorkTerm? {
         guard let id, let name = name?.nilIfEmpty ?? nameEn?.nilIfEmpty else { return nil }
-        return WorkTerm(id: id, name: name)
+        return WorkTerm(id: id, name: name, slug: slug?.nilIfEmpty)
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, name
+        case id, name, slug
         case nameEn = "name_en"
     }
 }

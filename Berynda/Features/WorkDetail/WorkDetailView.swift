@@ -195,11 +195,7 @@ private struct BibliographyPanel: View {
                     value: work.firstPublishedYear.map(String.init)
                 )
                 detailRow("Обсяг", key: "extent", value: work.pages.map { "\($0) с." })
-                detailRow(
-                    "Тематика",
-                    key: "topics",
-                    value: work.topics.map { $0.name }.joined(separator: ", ")
-                )
+                topicsRow
                 detailRow(
                     "Жанри",
                     key: "genres",
@@ -224,6 +220,31 @@ private struct BibliographyPanel: View {
                     .foregroundStyle(BeryndaColor.ink)
                     .multilineTextAlignment(.trailing)
                     .accessibilityIdentifier("work.bibliography.\(key)")
+            }
+            .font(.subheadline)
+        }
+    }
+
+    /// Each topic with a slug opens its topic page; one without (an older
+    /// API) is still listed, just not as a link.
+    @ViewBuilder
+    private var topicsRow: some View {
+        if !work.topics.isEmpty {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("Тематика")
+                    .foregroundStyle(BeryndaColor.mutedInk)
+                Spacer(minLength: 12)
+                VStack(alignment: .trailing, spacing: 6) {
+                    ForEach(work.topics) { topic in
+                        if let slug = topic.slug {
+                            TopicLink(reference: TopicReference(slug: slug, name: topic.name))
+                        } else {
+                            Text(topic.name)
+                                .foregroundStyle(BeryndaColor.ink)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    }
+                }
             }
             .font(.subheadline)
         }
