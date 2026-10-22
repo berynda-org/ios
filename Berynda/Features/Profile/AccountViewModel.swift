@@ -26,7 +26,7 @@ final class AccountViewModel: ObservableObject {
     /// `UserDefaults` key behind the interface-language picker. Seeded from the
     /// server profile so a signed-in reader's stored preference is not silently
     /// replaced by whatever this device happened to have.
-    static let interfaceLanguageKey = "ui.language"
+    static let interfaceLanguageKey = AppLanguage.storageKey
 
     init(
         session: SessionController,

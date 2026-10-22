@@ -1,0 +1,39 @@
+{
+  "sourceLanguage": "uk",
+  "strings": {
+    "Бібліотека": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Library"
+          }
+        }
+      }
+    },
+    "Каталог": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalog"
+          }
+        }
+      }
+    },
+    "Профіль": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

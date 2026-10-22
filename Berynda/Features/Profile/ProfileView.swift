@@ -62,17 +62,13 @@ private struct ProfileContent: View {
                     Text("Світле").tag("light")
                     Text("Темне").tag("dark")
                 }
-                Picker("Мова", selection: $interfaceLanguage) {
-                    Text("Українська").tag("uk")
-                    Text("English").tag("en")
+                // Language names are shown in their own language, so either
+                // reader can find theirs whatever the interface is in.
+                Picker("Мова", selection: languageSelection) {
+                    Text(verbatim: "Українська").tag(AppLanguage.ukrainian.rawValue)
+                    Text(verbatim: "English").tag(AppLanguage.english.rawValue)
                 }
-                .onChange(of: interfaceLanguage) { _, language in
-                    // The stored value is seeded from the profile on sign-in, so
-                    // only a change the reader actually made reaches the server.
-                    guard account.state == .authenticated,
-                          account.profile?.uiLanguage != language else { return }
-                    Task { _ = await account.updateProfile(ProfileUpdate(uiLanguage: language)) }
-                }
+                .accessibilityIdentifier("profile.language")
             }
 
             if account.state == .authenticated, let profile = account.profile {
@@ -189,6 +185,25 @@ private struct ProfileContent: View {
             // clears the reading history this section reports.
             storageUsage = await localStorage.measure()
         }
+    }
+
+    /// Changing the language rebuilds the whole window (see `BeryndaApp`), so
+    /// the server update is started here, in the setter, rather than from an
+    /// `onChange` on a view that is about to be replaced. The stored value is
+    /// seeded from the profile on sign-in, so only a change the reader
+    /// actually made reaches the server.
+    private var languageSelection: Binding<String> {
+        Binding(
+            get: { AppLanguage(code: interfaceLanguage).rawValue },
+            set: { language in
+                guard language != interfaceLanguage else { return }
+                if account.state == .authenticated, account.profile?.uiLanguage != language {
+                    let account = account
+                    Task { _ = await account.updateProfile(ProfileUpdate(uiLanguage: language)) }
+                }
+                interfaceLanguage = language
+            }
+        )
     }
 
     @MainActor

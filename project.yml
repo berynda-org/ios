@@ -4,6 +4,9 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
+  # Ukrainian is the String Catalog's source language (Berynda/Resources/
+  # Localizable.xcstrings); English is the one translation.
+  developmentLanguage: uk
   xcodeVersion: "16.4"
 
 packages:
@@ -48,6 +51,9 @@ targets:
       path: Berynda/Info.plist
       properties:
         CFBundleDevelopmentRegion: uk
+        CFBundleLocalizations:
+          - uk
+          - en
         UIAppFonts:
           - Fedorovsk-glyphs.ttf
         CFBundleDisplayName: Беринда

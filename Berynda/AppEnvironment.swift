@@ -133,13 +133,17 @@ final class AppEnvironment: ObservableObject {
             baseURL.scheme == "https" && baseURL.absoluteString.hasSuffix("/api/v1/"),
             "The production API URL must use HTTPS and end in /api/v1/."
         )
-        let authentication = LiveAuthenticationService(baseURL: baseURL)
+        // Server-supplied copy (errors, restriction reasons) follows the
+        // interface language chosen in Profile, read fresh on every request.
+        let language: @Sendable () -> String = { AppLanguage.current.acceptLanguage }
+        let authentication = LiveAuthenticationService(baseURL: baseURL, language: language)
         let session = SessionController(
             tokenStore: KeychainTokenStore(),
             authentication: authentication
         )
         let client = BeryndaAPIClient(
             baseURL: baseURL,
+            language: language,
             authorizationSession: session
         )
         return AppEnvironment(

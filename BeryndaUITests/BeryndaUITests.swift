@@ -76,6 +76,19 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["I · с. 1 з 3"].waitForExistence(timeout: 5))
     }
 
+    /// `-ui.language en` sets the same preference as Profile → «Мова» (the
+    /// launch argument wins over the stored value), so this is the English
+    /// interface a reader gets after choosing English.
+    func testEnglishInterfaceIsTranslated() {
+        app.terminate()
+        app.launchArguments += ["-ui.language", "en"]
+        app.launch()
+        XCTAssertTrue(app.navigationBars["Catalog"].waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(app.tabBars.buttons["Catalog"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Library"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Profile"].exists)
+    }
+
     func testLaunchShowsAnonymousCatalog() {
         XCTAssertTrue(app.staticTexts["Кобзар"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.tabBars.buttons["Каталог"].isSelected)
