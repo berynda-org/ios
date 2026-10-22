@@ -160,10 +160,13 @@ struct StarRatingPicker: View {
                 Button {
                     rating = star
                 } label: {
+                    // Each star takes a fifth of the row: a target well over
+                    // 44 points that does not depend on the row's width.
                     Image(systemName: star <= (rating ?? 0) ? "star.fill" : "star")
                         .font(.title2)
                         .foregroundStyle(BeryndaColor.accent)
-                        .minimumHitTarget()
+                        .frame(maxWidth: .infinity, minHeight: BeryndaHitTarget.minimum)
+                        .contentShape(Rectangle())
                 }
                 // Plain style: several buttons in one form row each keep
                 // their own tap instead of the row firing all of them.

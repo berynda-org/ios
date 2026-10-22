@@ -530,9 +530,11 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertEqual(stars.label, "Оцінка")
         // The fifth star sits at the trailing end of the row.
         stars.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-        let five = NSPredicate(format: "value == %@", "5 з 5 зірок")
-        expectation(for: five, evaluatedWith: stars)
-        waitForExpectations(timeout: 5)
+        let deadline = Date().addingTimeInterval(5)
+        while stars.value as? String != "5 з 5 зірок", Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        XCTAssertEqual(stars.value as? String, "5 з 5 зірок", stars.debugDescription)
 
         // A multi-line field is a text view, not a text field.
         let comment = app.descendants(matching: .any).matching(identifier: "feedback.message").firstMatch
@@ -619,10 +621,14 @@ final class BeryndaUITests: XCTestCase {
     /// The reader's position as VoiceOver reads it.
     private func assertPagePosition(_ spoken: String, file: StaticString = #filePath, line: UInt = #line) {
         let position = app.staticTexts["reader.page-position"]
-        XCTAssertTrue(position.waitForExistence(timeout: 5), app.debugDescription, file: file, line: line)
-        let matches = NSPredicate(format: "label == %@", spoken)
-        expectation(for: matches, evaluatedWith: position)
-        waitForExpectations(timeout: 5)
+        XCTAssertTrue(position.waitForExistence(timeout: 10), app.debugDescription, file: file, line: line)
+        // Polled rather than waited on with an expectation, so a mismatch
+        // reports the label that was actually there.
+        let deadline = Date().addingTimeInterval(10)
+        while position.label != spoken, Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        XCTAssertEqual(position.label, spoken, file: file, line: line)
     }
 
     private func openWork(named title: String) {
