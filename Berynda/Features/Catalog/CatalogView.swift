@@ -30,7 +30,7 @@ private struct CatalogLoadedView: View {
             switch model.state {
             case .idle, .loading:
                 BeryndaLoadingState(message: "Завантажуємо каталог…")
-            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty:
+            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty && model.periodicalHits.isEmpty:
                 BeryndaEmptyState(
                     title: "Нічого не знайдено",
                     message: model.filters.hasRefinements
@@ -98,7 +98,7 @@ struct TabletCatalogColumn: View {
             switch model.state {
             case .idle, .loading:
                 BeryndaLoadingState(message: "Завантажуємо каталог…")
-            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty:
+            case let .loaded(works, _) where works.isEmpty && model.authorHits.isEmpty && model.periodicalHits.isEmpty:
                 BeryndaEmptyState(
                     title: "Нічого не знайдено",
                     message: "Спробуйте змінити запит або фільтри.",
@@ -107,16 +107,28 @@ struct TabletCatalogColumn: View {
             case let .loaded(works, _):
                 List(selection: $selection) {
                     if model.query.isEmpty {
-                        TopicsEntry()
+                        BrowseEntry(title: "Теми", systemImage: "square.grid.2x2")
                             .tag(CatalogDestination.topics(readableOnly: model.filters.readableOnly))
                             .accessibilityIdentifier("catalog.topics")
+                        BrowseEntry(title: "Періодика", systemImage: "newspaper")
+                            .tag(CatalogDestination.periodicals(readableOnly: model.filters.readableOnly))
+                            .accessibilityIdentifier("catalog.periodicals")
                     }
                     if !model.authorHits.isEmpty {
                         Section("Автори") {
-                            ForEach(model.authorHits) { author in
-                                AuthorHitLabel(author: author)
-                                    .tag(CatalogDestination.author(id: author.id, name: author.label))
-                                    .accessibilityIdentifier("catalog.author.\(author.id)")
+                            ForEach(model.authorHits) { hit in
+                                EntityHitLabel(hit: hit)
+                                    .tag(CatalogDestination(hit: hit))
+                                    .accessibilityIdentifier("catalog.author.\(hit.id)")
+                            }
+                        }
+                    }
+                    if !model.periodicalHits.isEmpty {
+                        Section("Періодика") {
+                            ForEach(model.periodicalHits) { hit in
+                                EntityHitLabel(hit: hit)
+                                    .tag(CatalogDestination(hit: hit))
+                                    .accessibilityIdentifier("catalog.periodical.\(hit.id)")
                             }
                         }
                     }
@@ -160,13 +172,22 @@ private struct WorkList: View {
         List {
             if model.query.isEmpty {
                 NavigationLink(value: CatalogDestination.topics(readableOnly: model.filters.readableOnly)) {
-                    TopicsEntry()
+                    BrowseEntry(title: "Теми", systemImage: "square.grid.2x2")
                 }
                 .accessibilityIdentifier("catalog.topics")
+                NavigationLink(value: CatalogDestination.periodicals(readableOnly: model.filters.readableOnly)) {
+                    BrowseEntry(title: "Періодика", systemImage: "newspaper")
+                }
+                .accessibilityIdentifier("catalog.periodicals")
             }
             if !model.authorHits.isEmpty {
                 Section("Автори") {
-                    AuthorHitStrip(authors: model.authorHits)
+                    EntityHitStrip(hits: model.authorHits, kind: "author")
+                }
+            }
+            if !model.periodicalHits.isEmpty {
+                Section("Періодика") {
+                    EntityHitStrip(hits: model.periodicalHits, kind: "periodical")
                 }
             }
             if !collections.isEmpty {
@@ -439,43 +460,57 @@ struct WorkRow: View {
     }
 }
 
-/// People matching the search, as one compact row of chips above the works.
-private struct AuthorHitStrip: View {
-    let authors: [CrossSearchHit]
+private extension CatalogDestination {
+    /// People open the author page, periodicals the periodical page.
+    init(hit: CrossSearchHit) {
+        if hit.isPeriodical {
+            self = .periodical(id: hit.id, name: hit.label)
+        } else {
+            self = .author(id: hit.id, name: hit.label)
+        }
+    }
+}
+
+/// People or periodicals matching the search, as one compact row of chips
+/// above the works.
+private struct EntityHitStrip: View {
+    let hits: [CrossSearchHit]
+    /// "author" or "periodical", for the identifiers.
+    let kind: String
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: 10) {
-                ForEach(authors) { author in
-                    NavigationLink(value: CatalogDestination.author(id: author.id, name: author.label)) {
-                        AuthorHitLabel(author: author)
+                ForEach(hits) { hit in
+                    NavigationLink(value: CatalogDestination(hit: hit)) {
+                        EntityHitLabel(hit: hit)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
                             .background(BeryndaColor.surface, in: Capsule())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityIdentifier("catalog.author.\(author.id)")
+                    .accessibilityIdentifier("catalog.\(kind).\(hit.id)")
                 }
             }
             .padding(.vertical, 4)
         }
-        .accessibilityIdentifier("catalog.authors")
+        .accessibilityIdentifier("catalog.\(kind)s")
     }
 }
 
-private struct AuthorHitLabel: View {
-    let author: CrossSearchHit
+private struct EntityHitLabel: View {
+    let hit: CrossSearchHit
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "person")
+            Image(systemName: hit.isPeriodical ? "newspaper" : "person")
                 .foregroundStyle(BeryndaColor.accent)
                 .accessibilityHidden(true)
-            Text(author.label)
+            Text(hit.label)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(BeryndaColor.ink)
                 .lineLimit(1)
-            if let dates = author.lifeDates {
+            if let dates = hit.lifeDates {
                 Text(dates)
                     .font(.caption)
                     .foregroundStyle(BeryndaColor.mutedInk)
@@ -484,10 +519,13 @@ private struct AuthorHitLabel: View {
     }
 }
 
-/// The way into topic browsing, above the catalog's own list.
-private struct TopicsEntry: View {
+/// A way into browsing (topics, periodicals) above the catalog's own list.
+private struct BrowseEntry: View {
+    let title: String
+    let systemImage: String
+
     var body: some View {
-        Label("Теми", systemImage: "square.grid.2x2")
+        Label(title, systemImage: systemImage)
             .font(.headline)
             .foregroundStyle(BeryndaColor.ink)
             .padding(.vertical, 6)

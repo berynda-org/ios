@@ -22,10 +22,9 @@ final class CatalogViewModel: ObservableObject {
     /// Options for the filter sheet. `nil` until first asked for, and left
     /// as it was when a lookup fails: the sheet still works without counts.
     @Published private(set) var facets: WorkFacets?
-    /// People matching the search, shown above the works. Periodicals are
-    /// asked for too but held back until the app has a periodical page:
-    /// a hit that opens nothing is worse than no hit.
+    /// People and periodicals matching the search, shown above the works.
     @Published private(set) var authorHits: [CrossSearchHit] = []
+    @Published private(set) var periodicalHits: [CrossSearchHit] = []
     /// Server-ranked shelf shown above an unfiltered catalog. Empty is normal
     /// and not an error: it simply means nothing is being suggested.
     @Published private(set) var recommended: [WorkSummary] = []
@@ -153,6 +152,7 @@ final class CatalogViewModel: ObservableObject {
         entityTask?.cancel()
         guard term.count >= 2 else {
             authorHits = []
+            periodicalHits = []
             entityTerm = term
             return
         }
@@ -166,6 +166,7 @@ final class CatalogViewModel: ObservableObject {
                   self.query.trimmingCharacters(in: .whitespacesAndNewlines) == term
             else { return }
             self.authorHits = hits.filter(\.isPerson)
+            self.periodicalHits = hits.filter(\.isPeriodical)
             self.entityTerm = term
         }
     }

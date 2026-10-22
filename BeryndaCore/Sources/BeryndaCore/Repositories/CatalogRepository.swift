@@ -15,6 +15,14 @@ public protocol CatalogRepository: Sendable {
     func topic(slug: String) async throws -> TopicSummary
     /// Non-work matches for a query of at least two characters.
     func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit]
+    func periodicals(search: String?, page: Int) async throws -> PaginatedResponse<PeriodicalSummary>
+    /// By UUID or slug.
+    func periodical(identifier: String) async throws -> PeriodicalSummary
+    func periodicalYears(identifier: String) async throws -> [PeriodicalYear]
+    func periodicalIssues(identifier: String, year: Int) async throws -> [PeriodicalIssue]
+    func works(issueID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<PeriodicalIssueWork>
+    /// Where a work was published; empty for most works.
+    func periodicalLinks(workID: UUID) async throws -> [WorkPeriodicalLink]
     func author(id: UUID) async throws -> AuthorSummary
     func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary>
     func work(identifier: String) async throws -> WorkSummary
@@ -33,6 +41,18 @@ public extension CatalogRepository {
     }
     func topic(slug: String) async throws -> TopicSummary { throw APIError.invalidResponse }
     func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] { [] }
+    func periodicals(search: String?, page: Int) async throws -> PaginatedResponse<PeriodicalSummary> {
+        throw APIError.invalidResponse
+    }
+    func periodical(identifier: String) async throws -> PeriodicalSummary { throw APIError.invalidResponse }
+    func periodicalYears(identifier: String) async throws -> [PeriodicalYear] { throw APIError.invalidResponse }
+    func periodicalIssues(identifier: String, year: Int) async throws -> [PeriodicalIssue] {
+        throw APIError.invalidResponse
+    }
+    func works(issueID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<PeriodicalIssueWork> {
+        throw APIError.invalidResponse
+    }
+    func periodicalLinks(workID: UUID) async throws -> [WorkPeriodicalLink] { [] }
     func works(authorID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<WorkSummary> {
         throw APIError.invalidResponse
     }
@@ -97,6 +117,30 @@ public struct LiveCatalogRepository: CatalogRepository {
             .crossSearch(query: query, types: types, limit: limit)
         )
         return response.results
+    }
+
+    public func periodicals(search: String?, page: Int) async throws -> PaginatedResponse<PeriodicalSummary> {
+        try await client.request(.periodicals(search: search, page: page))
+    }
+
+    public func periodical(identifier: String) async throws -> PeriodicalSummary {
+        try await client.request(.periodical(identifier: identifier))
+    }
+
+    public func periodicalYears(identifier: String) async throws -> [PeriodicalYear] {
+        try await client.request(.periodicalYears(identifier: identifier))
+    }
+
+    public func periodicalIssues(identifier: String, year: Int) async throws -> [PeriodicalIssue] {
+        try await client.request(.periodicalIssues(identifier: identifier, year: year))
+    }
+
+    public func works(issueID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<PeriodicalIssueWork> {
+        try await client.request(.periodicalIssueWorks(issueID: issueID, page: page, readableOnly: readableOnly))
+    }
+
+    public func periodicalLinks(workID: UUID) async throws -> [WorkPeriodicalLink] {
+        try await client.request(.workPeriodicalIssues(workID: workID))
     }
 
     public func author(id: UUID) async throws -> AuthorSummary {

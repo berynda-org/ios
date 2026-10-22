@@ -55,7 +55,7 @@ final class CatalogFilterTests: XCTestCase {
         XCTAssertEqual(model.filters, WorkFilters(readableOnly: true))
     }
 
-    func testSearchOffersAuthorsButHoldsBackPeriodicals() async throws {
+    func testSearchOffersAuthorsAndPeriodicals() async throws {
         let repository = FilterRecordingStub()
         let model = CatalogViewModel(repository: repository)
 
@@ -70,6 +70,7 @@ final class CatalogFilterTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(20))
         }
         XCTAssertEqual(model.authorHits.map(\.label), ["Тарас Шевченко"])
+        XCTAssertEqual(model.periodicalHits.map(\.label), ["Шевченківський вісник"])
 
         // A filter change does not repeat a lookup for the same words.
         model.filters.readableOnly = true

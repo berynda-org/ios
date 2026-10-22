@@ -20,6 +20,9 @@ struct WorkDetailView: View {
                 header
                 summaryText
                 BibliographyPanel(work: work, isEnriching: model.isEnriching)
+                if !model.periodicalLinks.isEmpty {
+                    PublishedInPanel(links: model.periodicalLinks)
+                }
                 RightsPanel(work: work)
                 if !model.collections.isEmpty {
                     CollectionsPanel(collections: model.collections)

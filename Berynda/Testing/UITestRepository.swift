@@ -83,8 +83,7 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
         }
     }
 
-    /// One author and one periodical for «шевч…»; the periodical must stay
-    /// hidden until the app has somewhere to open it.
+    /// One author and one periodical for «шевч…».
     func crossSearch(query: String, types: [String], limit: Int) async throws -> [CrossSearchHit] {
         guard query.lowercased().contains("шевч") else { return [] }
         return [
@@ -101,6 +100,45 @@ actor UITestRepository: CatalogRepository, ReaderRepository, LibraryRepository {
                 label: "Шевченківський вісник"
             ),
         ]
+    }
+
+    func periodicals(search: String?, page: Int) async throws -> PaginatedResponse<PeriodicalSummary> {
+        let term = (search ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let matches = page == 1 && (term.isEmpty || "шевченківський вісник".contains(term))
+        return try decode(Self.page(count: matches ? 1 : 0, next: nil, results: matches ? Self.periodical : ""))
+    }
+
+    func periodical(identifier: String) async throws -> PeriodicalSummary {
+        guard identifier == Self.periodicalID.uuidString.lowercased() || identifier == "shevchenkivskyi-visnyk" else {
+            throw UITestFixtureError.missingFixture
+        }
+        return try decode(Self.periodical)
+    }
+
+    func periodicalYears(identifier: String) async throws -> [PeriodicalYear] {
+        try decode(#"[{"year":1925,"issues_count":1,"works_count":2},{"year":1924,"issues_count":1,"works_count":0}]"#)
+    }
+
+    func periodicalIssues(identifier: String, year: Int) async throws -> [PeriodicalIssue] {
+        switch year {
+        case 1925: return try decode("[\(Self.issue1925)]")
+        case 1924: return try decode(#"[{"id":"77777777-1924-0000-0000-000000000001","periodical":"99999999-0000-0000-0000-000000000001","volume":"2","issue":3,"year":1924,"publication_date":null,"title":null,"page_count":null,"cover_image_url":null}]"#)
+        default: return []
+        }
+    }
+
+    func works(issueID: UUID, page: Int, readableOnly: Bool) async throws -> PaginatedResponse<PeriodicalIssueWork> {
+        guard issueID == Self.issueID, page == 1 else {
+            return try decode(Self.page(count: 0, next: nil, results: ""))
+        }
+        let kobzar = String(Self.kobzarWork.dropLast()) + #","issue_pages":"3–17"}"#
+        let rows = readableOnly ? [kobzar] : [kobzar, Self.noFileWork]
+        return try decode(Self.page(count: rows.count, next: nil, results: rows.joined(separator: ",")))
+    }
+
+    func periodicalLinks(workID: UUID) async throws -> [WorkPeriodicalLink] {
+        guard workID == Self.noFileWorkID else { return [] }
+        return try decode(#"[{"id":"66666666-6666-6666-6666-666666666666","work":"33333333-3333-3333-3333-333333333333","periodical_issue":{"id":"77777777-1925-0000-0000-000000000001","periodical":"99999999-0000-0000-0000-000000000001","periodical_name":"Шевченківський вісник","periodical_slug":"shevchenkivskyi-visnyk","volume":null,"issue":"1","year":1925,"publication_date":null,"title":"1925, № 1"},"pages":"40–52","article_number":null,"column_name":null,"doi":null}]"#)
     }
 
     func author(id: UUID) async throws -> AuthorSummary {
@@ -256,6 +294,12 @@ private extension UITestRepository {
     static let forestSongWorkID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
     static let noFileWorkID = UUID(uuidString: "33333333-3333-3333-3333-333333333333")!
     static let readerFileID = UUID(uuidString: "44444444-4444-4444-4444-444444444444")!
+    static let periodicalID = UUID(uuidString: "99999999-0000-0000-0000-000000000001")!
+    static let issueID = UUID(uuidString: "77777777-1925-0000-0000-000000000001")!
+
+    static let periodical = #"{"id":"99999999-0000-0000-0000-000000000001","slug":"shevchenkivskyi-visnyk","name":"Шевченківський вісник","periodical_type":"journal","issn":"1234-5678","language":"uk","description":"Літературний місячник.","publication_place":"Київ","founded_year":1924,"ceased_year":1925,"issues_count":2,"works_count":2}"#
+
+    static let issue1925 = #"{"id":"77777777-1925-0000-0000-000000000001","periodical":"99999999-0000-0000-0000-000000000001","volume":null,"issue":"1","year":1925,"publication_date":null,"title":"1925, № 1","doi":null,"page_count":64,"cover_image_url":null}"#
 
     static func page(count: Int, next: String?, results: String) -> String {
         let nextValue = next.map { #""\#($0)""# } ?? "null"

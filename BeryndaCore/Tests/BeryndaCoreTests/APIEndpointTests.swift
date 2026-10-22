@@ -128,6 +128,27 @@ final class APIEndpointTests: XCTestCase {
         XCTAssertEqual(query["limit"]!, "20")
     }
 
+    func testPeriodicalEndpointsUseTheCatalogPaths() throws {
+        func url(_ endpoint: APIEndpoint) throws -> String {
+            try XCTUnwrap(endpoint.url(relativeTo: baseURL)).absoluteString
+        }
+        let issueID = UUID(uuidString: "77777777-1925-0000-0000-000000000001")!
+        let workID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+
+        XCTAssertEqual(try url(.periodicals(search: " Веселка ", page: 2)),
+                       "https://berynda.org/api/v1/periodicals/?page=2&search=%D0%92%D0%B5%D1%81%D0%B5%D0%BB%D0%BA%D0%B0")
+        XCTAssertEqual(try url(.periodical(identifier: "veselka")), "https://berynda.org/api/v1/periodicals/veselka/")
+        XCTAssertEqual(try url(.periodicalYears(identifier: "veselka")), "https://berynda.org/api/v1/periodicals/veselka/years/")
+        XCTAssertEqual(try url(.periodicalIssues(identifier: "veselka", year: 1984)),
+                       "https://berynda.org/api/v1/periodicals/veselka/issues/?year=1984")
+        XCTAssertEqual(try url(.periodicalIssueWorks(issueID: issueID, page: 1, readableOnly: true)),
+                       "https://berynda.org/api/v1/periodical-issues/77777777-1925-0000-0000-000000000001/works/?page=1&mobile_readable=true")
+        XCTAssertEqual(try url(.periodicalIssueWorks(issueID: issueID, page: 3, readableOnly: false)),
+                       "https://berynda.org/api/v1/periodical-issues/77777777-1925-0000-0000-000000000001/works/?page=3")
+        XCTAssertEqual(try url(.workPeriodicalIssues(workID: workID)),
+                       "https://berynda.org/api/v1/works/11111111-1111-1111-1111-111111111111/periodical-issues/")
+    }
+
     func testTopicsListAsksForRootsAndSearchesByName() throws {
         let roots = try XCTUnwrap(
             APIEndpoint.topics(parent: "root", search: nil, page: 2).url(relativeTo: baseURL)

@@ -20,6 +20,9 @@ final class WorkDetailViewModel: ObservableObject {
     /// Public collections this work belongs to. Absent is the normal case, so
     /// a failure here is silent — the page is complete without it.
     @Published private(set) var collections: [PublicCollectionSummary] = []
+    /// The periodical issues the work appeared in («Опубліковано в»). Most
+    /// works have none, so a failure here is silent too.
+    @Published private(set) var periodicalLinks: [WorkPeriodicalLink] = []
 
     private let repository: any CatalogRepository
 
@@ -44,8 +47,10 @@ final class WorkDetailViewModel: ObservableObject {
             : nil
         async let editionOutcome = Self.fetchEditions(workID: id, from: repository)
         async let collectionList = Self.fetchCollections(workID: id, from: repository)
-        let (detailed, outcome, collectionRows) = await (detail, editionOutcome, collectionList)
+        async let linkList = Self.fetchPeriodicalLinks(workID: id, from: repository)
+        let (detailed, outcome, collectionRows, links) = await (detail, editionOutcome, collectionList, linkList)
         collections = collectionRows
+        periodicalLinks = links
 
         if let detailed, detailed.id == id {
             work = detailed
@@ -87,6 +92,13 @@ final class WorkDetailViewModel: ObservableObject {
         // Silent on failure: a work page is correct and useful without the
         // collections it happens to appear in.
         ((try? await repository.collections(workID: workID)) ?? [])
+    }
+
+    private nonisolated static func fetchPeriodicalLinks(
+        workID: UUID,
+        from repository: any CatalogRepository
+    ) async -> [WorkPeriodicalLink] {
+        ((try? await repository.periodicalLinks(workID: workID)) ?? [])
     }
 
     private nonisolated static func fetchEditions(

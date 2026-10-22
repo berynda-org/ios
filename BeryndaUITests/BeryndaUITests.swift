@@ -101,13 +101,74 @@ final class BeryndaUITests: XCTestCase {
         let tarasID = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
         let author = app.buttons["catalog.author.\(tarasID)"]
         XCTAssertTrue(author.waitForExistence(timeout: 5), app.debugDescription)
-        // No periodical page exists yet, so a periodical hit is not offered.
-        XCTAssertFalse(app.staticTexts["Шевченківський вісник"].exists)
 
         author.tap()
         let name = app.staticTexts["author.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertEqual(name.label, "Тарас Шевченко")
+    }
+
+    func testSearchShowsMatchingPeriodicalsAndOpensOne() {
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("Шевченко")
+
+        let periodicalID = UUID(uuidString: "99999999-0000-0000-0000-000000000001")!
+        let periodical = app.buttons["catalog.periodical.\(periodicalID)"]
+        XCTAssertTrue(periodical.waitForExistence(timeout: 5), app.debugDescription)
+        periodical.tap()
+
+        let name = app.staticTexts["periodical.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(name.label, "Шевченківський вісник")
+    }
+
+    func testPeriodicalsBrowseFromYearToIssueToItsWorks() {
+        let periodicals = app.buttons["catalog.periodicals"]
+        XCTAssertTrue(periodicals.waitForExistence(timeout: 5), app.debugDescription)
+        periodicals.tap()
+
+        let periodicalID = UUID(uuidString: "99999999-0000-0000-0000-000000000001")!
+        let periodical = app.buttons["periodicals.periodical.\(periodicalID)"]
+        XCTAssertTrue(periodical.waitForExistence(timeout: 5), app.debugDescription)
+        periodical.tap()
+
+        XCTAssertTrue(app.staticTexts["periodical.name"].waitForExistence(timeout: 5))
+        let year = app.buttons["periodical.year.1925"]
+        XCTAssertTrue(year.waitForExistence(timeout: 5), app.debugDescription)
+        year.tap()
+
+        let issueID = UUID(uuidString: "77777777-1925-0000-0000-000000000001")!
+        let issue = app.buttons["periodical.issue.\(issueID)"]
+        XCTAssertTrue(issue.waitForExistence(timeout: 5), app.debugDescription)
+        issue.tap()
+
+        XCTAssertTrue(app.staticTexts["issue.title"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["issue.title"].label, "1925, № 1")
+        let kobzar = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        let slovo = UUID(uuidString: "33333333-3333-3333-3333-333333333333")!
+        XCTAssertTrue(app.buttons["issue.work.\(kobzar)"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["issue.work.\(slovo)"].exists)
+        app.buttons["issue.work.\(kobzar)"].tap()
+        XCTAssertTrue(app.staticTexts["Видання"].waitForExistence(timeout: 5))
+    }
+
+    func testWorkPublishedInOpensItsIssue() {
+        let work = app.staticTexts["Слово о полку Ігоревім"]
+        if !work.waitForExistence(timeout: 2) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(work.waitForExistence(timeout: 5))
+        work.tap()
+
+        let issueID = UUID(uuidString: "77777777-1925-0000-0000-000000000001")!
+        let issue = app.buttons["work.issue.\(issueID)"]
+        XCTAssertTrue(issue.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["work.periodical.shevchenkivskyi-visnyk"].exists)
+        issue.tap()
+
+        XCTAssertTrue(app.staticTexts["issue.title"].waitForExistence(timeout: 5))
     }
 
     func testCatalogLoadsTheNextPage() {

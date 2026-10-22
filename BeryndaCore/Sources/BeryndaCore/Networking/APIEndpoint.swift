@@ -12,6 +12,14 @@ public enum APIEndpoint: Sendable, Equatable {
     case topic(slug: String)
     /// People, periodicals and other non-work entities matching a query.
     case crossSearch(query: String, types: [String], limit: Int)
+    case periodicals(search: String?, page: Int)
+    /// A periodical by UUID or slug; the server accepts either.
+    case periodical(identifier: String)
+    case periodicalYears(identifier: String)
+    /// One year's issues, as a bare list.
+    case periodicalIssues(identifier: String, year: Int)
+    case periodicalIssueWorks(issueID: UUID, page: Int, readableOnly: Bool)
+    case workPeriodicalIssues(workID: UUID)
     case author(id: UUID)
     case authorWorks(id: UUID, page: Int, readableOnly: Bool)
     case work(slug: String)
@@ -77,6 +85,26 @@ public enum APIEndpoint: Sendable, Equatable {
             }
         case let .topic(slug):
             path = "topics/\(Self.encodePathSegment(slug))/"
+        case let .periodicals(search, page):
+            path = "periodicals/"
+            queryItems.append(.init(name: "page", value: String(max(page, 1))))
+            if let normalizedSearch = search?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !normalizedSearch.isEmpty {
+                queryItems.append(.init(name: "search", value: normalizedSearch))
+            }
+        case let .periodical(identifier):
+            path = "periodicals/\(Self.encodePathSegment(identifier))/"
+        case let .periodicalYears(identifier):
+            path = "periodicals/\(Self.encodePathSegment(identifier))/years/"
+        case let .periodicalIssues(identifier, year):
+            path = "periodicals/\(Self.encodePathSegment(identifier))/issues/"
+            queryItems.append(.init(name: "year", value: String(year)))
+        case let .periodicalIssueWorks(issueID, page, readableOnly):
+            path = "periodical-issues/\(issueID.uuidString.lowercased())/works/"
+            queryItems.append(.init(name: "page", value: String(max(page, 1))))
+            if readableOnly { queryItems.append(.init(name: "mobile_readable", value: "true")) }
+        case let .workPeriodicalIssues(workID):
+            path = "works/\(workID.uuidString.lowercased())/periodical-issues/"
         case let .crossSearch(query, types, limit):
             path = "search/cross/"
             queryItems.append(.init(name: "q", value: query.trimmingCharacters(in: .whitespacesAndNewlines)))

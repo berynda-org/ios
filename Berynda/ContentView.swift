@@ -163,6 +163,14 @@ private struct TabletRootView: View {
                         TopicListView(readableOnly: readableOnly)
                     case let .author(id, name):
                         AuthorView(id: id, name: name, repository: environment.catalogRepository)
+                    case let .periodicals(readableOnly):
+                        PeriodicalListView(readableOnly: readableOnly)
+                    case let .periodical(id, name):
+                        PeriodicalView(
+                            identifier: id.uuidString.lowercased(),
+                            name: name,
+                            repository: environment.catalogRepository
+                        )
                     case nil:
                         ContentUnavailableView(
                             "Оберіть твір",
@@ -214,6 +222,14 @@ private struct CatalogNavigationView: View {
                         TopicListView(readableOnly: readableOnly)
                     case let .author(id, name):
                         AuthorView(id: id, name: name, repository: environment.catalogRepository)
+                    case let .periodicals(readableOnly):
+                        PeriodicalListView(readableOnly: readableOnly)
+                    case let .periodical(id, name):
+                        PeriodicalView(
+                            identifier: id.uuidString.lowercased(),
+                            name: name,
+                            repository: environment.catalogRepository
+                        )
                     }
                 }
         }
