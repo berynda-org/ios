@@ -115,7 +115,8 @@ private struct LibraryContent: View {
                             environment.presentReader(
                                 fileID: item.fileID,
                                 fallbackTitle: item.workTitle ?? L("Без назви"),
-                                initialPage: item.positionType == "page" ? Int(item.positionValue) : nil
+                                initialPage: item.positionType == "page" ? Int(item.positionValue) : nil,
+                                initialCharOffset: item.positionType == "char" ? Int(item.positionValue) : nil
                             )
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
@@ -142,10 +143,17 @@ private struct LibraryContent: View {
                         ForEach(list.items) { item in
                             Button {
                                 if let fileID = item.file {
+                                    // A text bookmark opens on its character
+                                    // offset; its page number was only the
+                                    // page on the screen it was made on.
+                                    let charOffset = item.positionType == "char"
+                                        ? item.positionValue.flatMap { Int($0) }
+                                        : nil
                                     environment.presentReader(
                                         fileID: fileID,
                                         fallbackTitle: item.workTitle ?? list.title,
-                                        initialPage: item.pageNumber
+                                        initialPage: charOffset == nil ? item.pageNumber : nil,
+                                        initialCharOffset: charOffset
                                     )
                                 } else if let slug = item.workSlug {
                                     environment.selectedTab = .catalog

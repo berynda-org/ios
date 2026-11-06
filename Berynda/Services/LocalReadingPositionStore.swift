@@ -4,6 +4,9 @@ struct LocalReadingPosition: Codable, Sendable, Equatable {
     let page: Int
     let totalPages: Int?
     let updatedAt: Date
+    /// UTF-16 offset into a text book's body; `nil` for paged documents and
+    /// for records written before text books had one.
+    var charOffset: Int? = nil
 }
 
 actor LocalReadingPositionStore {
@@ -40,12 +43,13 @@ actor LocalReadingPositionStore {
         records()[fileID.uuidString.lowercased()]
     }
 
-    func save(page: Int, totalPages: Int?, for fileID: UUID) {
+    func save(page: Int, totalPages: Int?, charOffset: Int? = nil, for fileID: UUID) {
         var values = records()
         values[fileID.uuidString.lowercased()] = LocalReadingPosition(
             page: max(page, 1),
             totalPages: totalPages,
-            updatedAt: Date()
+            updatedAt: Date(),
+            charOffset: charOffset.map { max($0, 0) }
         )
         guard let fileURL, let data = try? encoder.encode(values) else { return }
         do {

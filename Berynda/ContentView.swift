@@ -37,6 +37,7 @@ struct ContentView: View {
                 fileID: presentation.fileID,
                 fallbackTitle: presentation.fallbackTitle,
                 initialPage: presentation.initialPage,
+                initialCharOffset: presentation.initialCharOffset,
                 repository: environment.readerRepository,
                 session: environment.session,
                 account: environment.account,

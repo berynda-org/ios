@@ -395,18 +395,49 @@ final class BeryndaUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["auth.providers-error"].exists)
     }
 
-    func testLongCRLFTextBookDisplaysContent() {
+    /// A long plain-text book (CRLF line ends) reads a screen page at a
+    /// time like the web reader: the page buttons and a swipe turn it, the
+    /// position reads «Сторінка N з M», and a bookmark lands on the page
+    /// (as a character offset) once the anonymous reader has signed in.
+    func testLongTextBookTurnsPagesAndBookmarksAPage() {
         app.terminate()
         app.launchArguments.append("--ui-testing-long-text")
         app.launch()
         openWork(named: "Кобзар")
         app.buttons["edition.read.\(EditionID.readable)"].tap()
-        let first = app.staticTexts["reader.text.block.0"]
-        XCTAssertTrue(first.waitForExistence(timeout: 10), app.debugDescription)
-        XCTAssertTrue(first.label.hasPrefix("Тіні забутих предків."))
-        XCTAssertTrue(first.isHittable)
-        app.swipeUp()
-        XCTAssertGreaterThan(app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH %@", "reader.text.block.")).count, 1)
+
+        let firstPage = textPage(1)
+        XCTAssertTrue(firstPage.waitForExistence(timeout: 30), app.debugDescription)
+        let firstText = (firstPage.value as? String).flatMap { $0.isEmpty ? nil : $0 } ?? firstPage.label
+        XCTAssertTrue(firstText.hasPrefix("Тіні забутих предків."), firstText)
+        assertPagePosition(prefix: "Сторінка 1 з ")
+
+        app.buttons["reader.next-page"].tap()
+        assertPagePosition(prefix: "Сторінка 2 з ")
+        let secondPage = textPage(2)
+        XCTAssertTrue(secondPage.waitForExistence(timeout: 5), app.debugDescription)
+
+        secondPage.swipeLeft()
+        assertPagePosition(prefix: "Сторінка 3 з ")
+        XCTAssertTrue(textPage(3).waitForExistence(timeout: 5))
+
+        app.buttons["reader.bookmark"].tap()
+        let email = app.textFields["auth.email"]
+        let password = app.secureTextFields["auth.password"]
+        XCTAssertTrue(email.waitForExistence(timeout: 5), app.debugDescription)
+        email.tap()
+        email.typeText("reader@example.org")
+        password.tap()
+        password.typeText("password123")
+        app.buttons["auth.submit"].tap()
+        XCTAssertTrue(
+            app.staticTexts["Закладку додано до бібліографічного списку."]
+                .waitForExistence(timeout: 8),
+            app.debugDescription
+        )
+        app.buttons["Гаразд"].tap()
+        // Still on the bookmarked page.
+        assertPagePosition(prefix: "Сторінка 3 з ")
     }
 
     func testSignInUnlocksProfileAndLibrary() {
@@ -633,6 +664,24 @@ final class BeryndaUITests: XCTestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
         XCTAssertEqual(position.label, spoken, file: file, line: line)
+    }
+
+    /// The reader's position, for a book whose page count depends on the
+    /// screen it is laid out for.
+    private func assertPagePosition(prefix: String, file: StaticString = #filePath, line: UInt = #line) {
+        let position = app.staticTexts["reader.page-position"]
+        XCTAssertTrue(position.waitForExistence(timeout: 30), app.debugDescription, file: file, line: line)
+        let deadline = Date().addingTimeInterval(10)
+        while !position.label.hasPrefix(prefix), Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        XCTAssertTrue(position.label.hasPrefix(prefix), position.label, file: file, line: line)
+    }
+
+    /// One page of a paged text book. Matched by identifier whatever element
+    /// type a non-editable text view is exposed as.
+    private func textPage(_ page: Int) -> XCUIElement {
+        app.descendants(matching: .any)["reader.text.page.\(page)"]
     }
 
     private func openWork(named title: String) {

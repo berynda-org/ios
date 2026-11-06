@@ -199,12 +199,13 @@ final class AppEnvironment: ObservableObject {
             presentedReader = nil
             catalogPath = [.linkedWork(identifier: slug)]
             tabletCatalogSelection = .linkedWork(identifier: slug)
-        case let .reader(fileID, page):
+        case let .reader(fileID, page, char):
             selectedTab = .catalog
             presentedReader = ReaderPresentation(
                 fileID: fileID,
                 fallbackTitle: L("Беринда"),
-                initialPage: page
+                initialPage: page,
+                initialCharOffset: char
             )
         case .confirmEmail, .resetPassword:
             selectedTab = .profile
@@ -212,11 +213,17 @@ final class AppEnvironment: ObservableObject {
         }
     }
 
-    func presentReader(fileID: UUID, fallbackTitle: String, initialPage: Int? = nil) {
+    func presentReader(
+        fileID: UUID,
+        fallbackTitle: String,
+        initialPage: Int? = nil,
+        initialCharOffset: Int? = nil
+    ) {
         presentedReader = ReaderPresentation(
             fileID: fileID,
             fallbackTitle: fallbackTitle,
-            initialPage: initialPage
+            initialPage: initialPage,
+            initialCharOffset: initialCharOffset
         )
     }
 
@@ -257,10 +264,10 @@ final class AppEnvironment: ObservableObject {
         case let .saveCollection(collection):
             result = await library.setCollectionSaved(collection, saved: true)
             successMessage = L("Колекцію додано до бібліотеки.")
-        case let .bookmark(fileID, page):
-            // The page is the one captured when the reader tapped, not
+        case let .bookmark(fileID, page, charOffset):
+            // The place is the one captured when the reader tapped, not
             // wherever the reader has scrolled to by the time sign-in ends.
-            result = await library.quickAdd(fileID: fileID, page: page)
+            result = await library.quickAdd(fileID: fileID, page: page, charOffset: charOffset)
             successMessage = L("Закладку додано до бібліографічного списку.")
         }
 
@@ -287,7 +294,9 @@ final class AppEnvironment: ObservableObject {
 enum AuthenticatedAction {
     case addWork(UUID)
     case saveCollection(PublicCollectionSummary)
-    case bookmark(fileID: UUID, page: Int)
+    /// `charOffset` is set for a text book: the UTF-16 offset of the place,
+    /// with `page` only the page it was on at the time.
+    case bookmark(fileID: UUID, page: Int, charOffset: Int? = nil)
 }
 
 enum CatalogDestination: Hashable {
@@ -308,6 +317,8 @@ struct ReaderPresentation: Identifiable, Equatable {
     let fileID: UUID
     let fallbackTitle: String
     let initialPage: Int?
+    /// A text book's place as a UTF-16 offset into its body (`char`).
+    var initialCharOffset: Int? = nil
 }
 
 struct AuthenticationLinkPresentation: Identifiable, Equatable {

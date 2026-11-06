@@ -37,6 +37,21 @@ final class AppRouteTests: XCTestCase {
         )
     }
 
+    func testParsesTextCharacterOffsetLinks() {
+        let id = UUID(uuidString: "44444444-4444-4444-4444-444444444444")!
+        XCTAssertEqual(
+            AppRoute(url: URL(string: "https://berynda.org/read/44444444-4444-4444-4444-444444444444?char=1234")!),
+            .reader(fileID: id, page: nil, char: 1234)
+        )
+        XCTAssertEqual(
+            AppRoute(url: URL(string: "https://berynda.org/read/44444444-4444-4444-4444-444444444444?char=0")!),
+            .reader(fileID: id, page: nil, char: 0)
+        )
+        XCTAssertNil(AppRoute(url: URL(string: "https://berynda.org/read/44444444-4444-4444-4444-444444444444?char=-1")!))
+        XCTAssertNil(AppRoute(url: URL(string: "https://berynda.org/read/44444444-4444-4444-4444-444444444444?char=abc")!))
+        XCTAssertNil(AppRoute(url: URL(string: "https://berynda.org/read/44444444-4444-4444-4444-444444444444?char=1&char=2")!))
+    }
+
     func testAllowsReaderLinkWithoutPDFPage() {
         XCTAssertEqual(
             AppRoute(

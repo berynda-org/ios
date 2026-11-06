@@ -48,6 +48,7 @@ final class ReaderViewModel: ObservableObject {
 
     let fileID: UUID
     private let initialPage: Int?
+    private let initialCharOffset: Int?
     private let repository: any ReaderRepository
     private let session: SessionController
     private let account: AccountViewModel
@@ -66,7 +67,21 @@ final class ReaderViewModel: ObservableObject {
     /// substring rather than another walk over the book.
     private var fullText = ""
     private var textPageRanges: [Range<String.Index>] = []
-    @Published private(set) var isTextPaged = false
+    /// Text books open a page at a time, like the web reader; the
+    /// continuous scroll stays one tap away.
+    @Published private(set) var isTextPaged = true
+    /// Set once a text body is loaded, of either kind.
+    private(set) var hasTextBody = false
+    /// Length of the text body in UTF-16 code units.
+    private var textLength = 0
+    /// The reader's place in a text book without server pages: a UTF-16
+    /// offset into the body, the unit the web reader's `char` positions use.
+    /// It is the anchor every re-pagination keeps on screen, so a rotation
+    /// or a text-size change does not lose the place.
+    private(set) var textOffset = 0
+    /// Pages of a text book laid out for the current screen; `nil` until the
+    /// view has paginated it.
+    @Published private(set) var textLayout: TextPageMap?
     /// Set when the server answers a position save with `recorded: false`,
     /// i.e. it declined to record because the reader's history policy is off.
     private var serverDeclinedToRecord = false
@@ -76,6 +91,7 @@ final class ReaderViewModel: ObservableObject {
     init(
         fileID: UUID,
         initialPage: Int? = nil,
+        initialCharOffset: Int? = nil,
         repository: any ReaderRepository,
         session: SessionController,
         account: AccountViewModel,
@@ -84,6 +100,7 @@ final class ReaderViewModel: ObservableObject {
     ) {
         self.fileID = fileID
         self.initialPage = initialPage
+        self.initialCharOffset = initialCharOffset
         self.repository = repository
         self.session = session
         self.account = account
@@ -110,7 +127,7 @@ final class ReaderViewModel: ObservableObject {
             info = readerInfo
             let local = await localPositions.position(for: fileID)
             currentPage = restoredPage(from: readerInfo, local: local)
-            try await loadContent(for: readerInfo)
+            try await loadContent(for: readerInfo, local: local)
             phase = .loaded
         } catch is CancellationError {
             return
@@ -121,6 +138,15 @@ final class ReaderViewModel: ObservableObject {
 
     func selectPage(_ page: Int) {
         guard let info else { return }
+        if usesLayoutPaging {
+            guard let layout = textLayout else { return }
+            let bounded = min(max(page, 1), layout.pageCount)
+            guard bounded != currentPage else { return }
+            currentPage = bounded
+            textOffset = layout.startOffset(ofPage: bounded)
+            schedulePositionSave()
+            return
+        }
         if isTextPaged, supportsTextPaging {
             let bounded = min(max(page, 1), textPageCount)
             guard bounded != currentPage else { return }
@@ -199,6 +225,38 @@ final class ReaderViewModel: ObservableObject {
 
     var textPageCount: Int { max(textPageRanges.count, 1) }
 
+    /// A text book with no server pages: it is paginated on the device for
+    /// the screen it is read on, and its place is a character offset.
+    var isReflowableText: Bool { hasTextBody && !supportsTextPaging }
+
+    /// Paged reading of a reflowable text book, which the view paginates.
+    var usesLayoutPaging: Bool { isReflowableText && isTextPaged }
+
+    var canToggleTextPaging: Bool { supportsTextPaging || isReflowableText }
+
+    /// Where a bookmark in a text book points: the offset of the place on
+    /// screen. `nil` for anything with real page numbers.
+    var bookmarkCharOffset: Int? { isReflowableText ? textOffset : nil }
+
+    /// Called by the view each time it finishes paginating. The reader stays
+    /// on the page holding the same character offset; nothing is saved,
+    /// because the place has not moved.
+    func applyTextLayout(_ layout: TextPageMap) {
+        guard isReflowableText else { return }
+        textLayout = layout
+        currentPage = layout.page(containing: textOffset)
+    }
+
+    /// Called by the continuous text view as the first visible block changes.
+    func textDidScroll(to offset: Int) {
+        guard isReflowableText, !isTextPaged else { return }
+        let bounded = min(max(offset, 0), textLength)
+        guard bounded != textOffset else { return }
+        textOffset = bounded
+        if let textLayout { currentPage = textLayout.page(containing: bounded) }
+        schedulePositionSave()
+    }
+
     private var visibleText: String {
         guard isTextPaged, supportsTextPaging else { return fullText }
         return TextPagination.page(currentPage, in: fullText, ranges: textPageRanges)
@@ -208,7 +266,16 @@ final class ReaderViewModel: ObservableObject {
     /// page number is preserved, so leaving paged mode and returning lands
     /// where the reader was.
     func setTextPaged(_ paged: Bool) {
-        guard paged != isTextPaged, supportsTextPaging else { return }
+        guard paged != isTextPaged, canToggleTextPaging else { return }
+        if isReflowableText {
+            // The offset is the place in both modes; only the page it falls
+            // on needs finding again.
+            isTextPaged = paged
+            if paged, let textLayout {
+                currentPage = textLayout.page(containing: textOffset)
+            }
+            return
+        }
         isTextPaged = paged
         if paged {
             currentPage = min(max(currentPage, 1), textPageCount)
@@ -296,7 +363,8 @@ final class ReaderViewModel: ObservableObject {
     /// Pages come from the text derivative when reading paged text, and from
     /// the document itself otherwise.
     var navigablePageCount: Int? {
-        isTextPaged && supportsTextPaging ? textPageCount : info?.totalPages
+        if usesLayoutPaging { return textLayout?.pageCount }
+        return isTextPaged && supportsTextPaging ? textPageCount : info?.totalPages
     }
 
     var canGoForward: Bool {
@@ -316,7 +384,9 @@ final class ReaderViewModel: ObservableObject {
     }
 
     func pageLabel(for page: Int) -> String? {
-        ReaderNavigation.pageLabel(for: page, in: info?.pageLabels ?? [])
+        // Screen pages of a reflowed text have no printed counterpart.
+        guard !isReflowableText else { return nil }
+        return ReaderNavigation.pageLabel(for: page, in: info?.pageLabels ?? [])
     }
 
     /// Called by the publication reader as the reader moves. Cheap: it only
@@ -333,17 +403,32 @@ final class ReaderViewModel: ObservableObject {
         await persistPosition()
     }
 
-    private func loadContent(for info: ReaderInfo) async throws {
+    private func loadContent(for info: ReaderInfo, local: LocalReadingPosition?) async throws {
         switch info.resource {
         case let .structuredText(isMarkdown):
             let response = try await repository.text(fileID: fileID)
             fullText = response.body
+            hasTextBody = true
+            textLength = response.body.utf16.count
             textPageRanges = TextPagination.pageRanges(
                 in: response.body,
                 offsets: response.pageOffsets
             )
+            let restoredOffset = restoredTextOffset(from: info, local: local)
+            textOffset = min(max(restoredOffset ?? 0, 0), textLength)
+            if supportsTextPaging, let restoredOffset {
+                // A `char` place (from the web reader or a char link) opens
+                // on the server page that holds it.
+                let starts = textPageRanges.map { response.body.utf16Offset(of: $0.lowerBound) }
+                currentPage = TextPageMap(pageStarts: starts, textLength: textLength)
+                    .page(containing: restoredOffset)
+            }
             if isTextPaged, supportsTextPaging {
                 currentPage = min(max(currentPage, 1), textPageRanges.count)
+            }
+            if isReflowableText {
+                // Screen pages are counted once the view has paginated.
+                currentPage = 1
             }
             content = .text(visibleText, isMarkdown: isMarkdown)
         case .fullPDF, .pagePDF, .pageImage:
@@ -497,8 +582,25 @@ final class ReaderViewModel: ObservableObject {
         } else {
             remotePage = nil
         }
-        let page = remotePage ?? local?.page ?? 1
+        // A record with a character offset belongs to a reflowed text, whose
+        // page number was only a screen page; it is no document page.
+        let localPage = local?.charOffset == nil ? local?.page : nil
+        let page = remotePage ?? localPage ?? 1
         return min(max(page, 1), max(info.totalPages ?? page, 1))
+    }
+
+    /// A text book's place, from the most specific source that has one: a
+    /// char link or bookmark, the server's `char` position, then the copy
+    /// kept on the device. An explicit page link is not a text offset, and a
+    /// `page` position for a text without server pages was never a real
+    /// place (older builds always wrote page 1), so neither counts.
+    private func restoredTextOffset(from info: ReaderInfo, local: LocalReadingPosition?) -> Int? {
+        if let initialCharOffset { return initialCharOffset }
+        if initialPage != nil { return nil }
+        if let position = info.readingPosition, position.positionType == "char" {
+            return Int(position.positionValue)
+        }
+        return local?.charOffset
     }
 
     private func schedulePositionSave() {
@@ -518,6 +620,10 @@ final class ReaderViewModel: ObservableObject {
         }
         let page = currentPage
         let total = info.totalPages
+        if isReflowableText {
+            await persistTextPosition(page: page)
+            return
+        }
         await localPositions.save(page: page, totalPages: total, for: fileID)
 
         guard await session.state() == .authenticated else { return }
@@ -565,6 +671,30 @@ final class ReaderViewModel: ObservableObject {
 }
 
 extension ReaderViewModel {
+    /// A text book's place is a UTF-16 offset into its body (`char`), the
+    /// shape the web reader writes and reads, with progress the share of the
+    /// body before it. Screen pages are not sent: they differ per device.
+    fileprivate func persistTextPosition(page: Int) async {
+        let offset = textOffset
+        await localPositions.save(
+            page: page,
+            totalPages: textLayout?.pageCount,
+            charOffset: offset,
+            for: fileID
+        )
+        guard await session.state() == .authenticated else { return }
+        let progress = TextPageMap(pageStarts: [0], textLength: textLength).progressPercent(at: offset)
+        let recorded = await sendPosition(ReadingPositionUpdate(
+            positionType: "char",
+            positionValue: String(offset),
+            progressPercent: progress,
+            totalPages: nil
+        ))
+        guard !recorded else { return }
+        serverDeclinedToRecord = true
+        await localPositions.clearAll()
+    }
+
     /// Sends a position; `false` only for an explicit `recorded: false`.
     /// One that could not be sent — offline, or a server hiccup — is queued
     /// with the time it was reached, so a newer position saved elsewhere in

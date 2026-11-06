@@ -2,7 +2,9 @@ import Foundation
 
 public enum AppRoute: Equatable, Hashable, Sendable {
     case work(slug: String)
-    case reader(fileID: UUID, page: Int?)
+    /// `char` is a UTF-16 offset into a text book's body, the unit the web
+    /// reader writes into `?char=` share links.
+    case reader(fileID: UUID, page: Int?, char: Int? = nil)
     case confirmEmail(token: String)
     case resetPassword(uid: String, token: String)
 
@@ -47,7 +49,8 @@ public enum AppRoute: Equatable, Hashable, Sendable {
         case "read":
             guard let id = UUID(uuidString: parts[1]) else { return nil }
             guard let page = Self.readerPage(from: url) else { return nil }
-            self = .reader(fileID: id, page: page)
+            guard let char = Self.readerCharOffset(from: url) else { return nil }
+            self = .reader(fileID: id, page: page, char: char)
         default:
             return nil
         }
@@ -85,5 +88,17 @@ public enum AppRoute: Equatable, Hashable, Sendable {
         }
         guard let page = Int(raw), (1...1_000_000).contains(page) else { return nil }
         return .some(page)
+    }
+
+    /// Same doubly optional shape as `readerPage`, for `?char=<offset>`.
+    private static func readerCharOffset(from url: URL) -> Int?? {
+        let items = (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? [])
+            .filter { $0.name == "char" }
+        guard items.count <= 1 else { return nil }
+        guard let raw = items.first?.value else {
+            return items.isEmpty ? .some(nil) : nil
+        }
+        guard let offset = Int(raw), (0...1_000_000_000).contains(offset) else { return nil }
+        return .some(offset)
     }
 }

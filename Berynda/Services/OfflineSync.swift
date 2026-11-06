@@ -55,11 +55,21 @@ final class OfflineSync: ObservableObject {
 
         if let ownerID, let sender {
             let report = await outbox.flush(ownerID: ownerID, sender: sender)
-            for superseded in report.superseded where superseded.position.positionType == "page" {
-                if let page = Int(superseded.position.positionValue) {
+            for superseded in report.superseded {
+                let position = superseded.position
+                if position.positionType == "page", let page = Int(position.positionValue) {
                     await localPositions.save(
                         page: page,
-                        totalPages: superseded.position.totalPages,
+                        totalPages: position.totalPages,
+                        for: superseded.fileID
+                    )
+                } else if position.positionType == "char", let offset = Int(position.positionValue) {
+                    // A text book's page depends on the screen; the offset
+                    // is the position.
+                    await localPositions.save(
+                        page: 1,
+                        totalPages: nil,
+                        charOffset: offset,
                         for: superseded.fileID
                     )
                 }

@@ -150,6 +150,9 @@ final class BeryndaTests: XCTestCase {
         let store = LocalReadingPositionStore(directory: directory)
         let repository = ReaderPersistenceStub(recorded: false)
         let model = try await makeReaderModel(repository: repository, store: store)
+        // A plain text is paginated by the view; these tests are about the
+        // save policy, so a layout is supplied directly.
+        model.applyTextLayout(TextPageMap(pageStarts: [0, 2, 4, 6, 8], textLength: 14))
 
         model.selectPage(2)
         await model.flushPosition()
@@ -175,6 +178,9 @@ final class BeryndaTests: XCTestCase {
         let store = LocalReadingPositionStore(directory: directory)
         let repository = ReaderPersistenceStub(recorded: true)
         let model = try await makeReaderModel(repository: repository, store: store)
+        // A plain text is paginated by the view; these tests are about the
+        // save policy, so a layout is supplied directly.
+        model.applyTextLayout(TextPageMap(pageStarts: [0, 2, 4, 6, 8], textLength: 14))
 
         model.selectPage(2)
         await model.flushPosition()
@@ -192,6 +198,9 @@ final class BeryndaTests: XCTestCase {
         let store = LocalReadingPositionStore(directory: directory)
         let repository = ReaderPersistenceStub(recorded: nil)
         let model = try await makeReaderModel(repository: repository, store: store)
+        // A plain text is paginated by the view; these tests are about the
+        // save policy, so a layout is supplied directly.
+        model.applyTextLayout(TextPageMap(pageStarts: [0, 2, 4, 6, 8], textLength: 14))
 
         model.selectPage(2)
         await model.flushPosition()
@@ -472,16 +481,19 @@ final class BeryndaTests: XCTestCase {
 
         XCTAssertTrue(model.supportsTextPaging)
         XCTAssertEqual(model.textPageCount, 3)
-        guard case let .text(continuous, _) = try XCTUnwrap(model.content) else {
-            return XCTFail("Expected text content")
-        }
-        XCTAssertEqual(continuous, "Сторінка перша. Сторінка друга. Сторінка третя.")
-
-        model.setTextPaged(true)
+        // Text opens a page at a time.
+        XCTAssertTrue(model.isTextPaged)
         guard case let .text(firstPage, _) = try XCTUnwrap(model.content) else {
             return XCTFail("Expected text content")
         }
         XCTAssertEqual(firstPage, "Сторінка перша. ")
+
+        model.setTextPaged(false)
+        guard case let .text(continuous, _) = try XCTUnwrap(model.content) else {
+            return XCTFail("Expected text content")
+        }
+        XCTAssertEqual(continuous, "Сторінка перша. Сторінка друга. Сторінка третя.")
+        model.setTextPaged(true)
 
         model.selectPage(3)
         guard case let .text(thirdPage, _) = try XCTUnwrap(model.content) else {
@@ -515,14 +527,23 @@ final class BeryndaTests: XCTestCase {
     }
 
     @MainActor
-    func testPlainTextOffersNoPaging() async throws {
+    func testPlainTextIsPagedByLayout() async throws {
         let repository = PagedTextStub(body: "Суцільний текст", pageOffsets: [])
         let model = try await makeReaderModel(repository: repository, store: nil)
 
+        // No server pages: the view paginates it for the screen instead.
         XCTAssertFalse(model.supportsTextPaging)
-        model.setTextPaged(true)
-        XCTAssertFalse(model.isTextPaged)
-        XCTAssertFalse(model.canGoForward)
+        XCTAssertTrue(model.isReflowableText)
+        XCTAssertTrue(model.usesLayoutPaging)
+        XCTAssertFalse(model.canGoForward, "Nothing to turn until the view has paginated")
+
+        model.applyTextLayout(TextPageMap(pageStarts: [0, 10], textLength: 15))
+        XCTAssertEqual(model.navigablePageCount, 2)
+        XCTAssertTrue(model.canGoForward)
+        guard case let .text(body, _) = try XCTUnwrap(model.content) else {
+            return XCTFail("Expected text content")
+        }
+        XCTAssertEqual(body, "Суцільний текст", "The view gets the whole body to paginate")
     }
 
     @MainActor

@@ -3915,6 +3915,17 @@
         }
       }
     },
+    "Розбиваємо текст на сторінки…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Splitting the text into pages…"
+          }
+        }
+      }
+    },
     "Розгорнуто": {
       "extractionState": "manual",
       "localizations": {

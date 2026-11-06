@@ -173,10 +173,15 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// `charOffset` marks a place in a text book: a UTF-16 offset into its
+    /// body, stored as a `char` position the web reader also opens. `page`
+    /// then goes along as the informational page number only, because a
+    /// text book's pages depend on the screen it was read on.
     func quickAdd(
         workID: UUID? = nil,
         fileID: UUID? = nil,
-        page: Int? = nil
+        page: Int? = nil,
+        charOffset: Int? = nil
     ) async -> SaveResult {
         guard account.state == .authenticated else { return .signInRequired }
         guard !isMutating else { return .inProgress }
@@ -191,15 +196,22 @@ final class LibraryViewModel: ObservableObject {
                 return .failed(L("Не вдалося перевірити бібліотечний список."))
             }
         }
-        if isDuplicate(workID: workID, fileID: fileID, page: page) {
+        if isDuplicate(workID: workID, fileID: fileID, page: page, charOffset: charOffset) {
             return .alreadySaved
+        }
+        let position: (type: String, value: String)? = if let charOffset {
+            (type: "char", value: String(charOffset))
+        } else if let page {
+            (type: "page", value: String(page))
+        } else {
+            nil
         }
         do {
             _ = try await repository.quickAdd(
                 workID: workID,
                 fileID: fileID,
-                positionType: page == nil ? nil : "page",
-                positionValue: page.map(String.init),
+                positionType: position?.type,
+                positionValue: position?.value,
                 pageNumber: page
             )
             await reload()
@@ -208,8 +220,8 @@ final class LibraryViewModel: ObservableObject {
             let request = QuickAddRequest(
                 workID: workID,
                 fileID: fileID,
-                positionType: page == nil ? nil : "page",
-                positionValue: page.map(String.init),
+                positionType: position?.type,
+                positionValue: position?.value,
                 pageNumber: page
             )
             if let queued = await queueIfOffline(error, .quickAdd(request)) { return queued }
@@ -353,10 +365,15 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
-    private func isDuplicate(workID: UUID?, fileID: UUID?, page: Int?) -> Bool {
+    private func isDuplicate(workID: UUID?, fileID: UUID?, page: Int?, charOffset: Int?) -> Bool {
         guard case let .loaded(_, lists, _) = state else { return false }
         return lists.flatMap(\.items).contains { item in
             if let fileID, item.file == fileID {
+                // A text bookmark is the same place only at the same offset:
+                // its page number differs from screen to screen.
+                if let charOffset {
+                    return item.positionType == "char" && item.positionValue == String(charOffset)
+                }
                 return page == nil || item.pageNumber == page
             }
             if let workID { return item.work == workID && item.file == nil }

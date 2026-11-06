@@ -26,6 +26,7 @@ struct ReaderView: View {
         fileID: UUID,
         fallbackTitle: String,
         initialPage: Int? = nil,
+        initialCharOffset: Int? = nil,
         repository: any ReaderRepository,
         session: SessionController,
         account: AccountViewModel,
@@ -39,6 +40,7 @@ struct ReaderView: View {
             wrappedValue: ReaderViewModel(
                 fileID: fileID,
                 initialPage: initialPage,
+                initialCharOffset: initialCharOffset,
                 repository: repository,
                 session: session,
                 account: account,
@@ -90,7 +92,7 @@ struct ReaderView: View {
                         .accessibilityIdentifier("reader.appearance")
                     }
                 }
-                if model.supportsTextPaging {
+                if model.canToggleTextPaging {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(
                             model.isTextPaged ? L("Суцільний текст") : L("Посторінково"),
@@ -137,14 +139,20 @@ struct ReaderView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Закладка", systemImage: "bookmark") {
                         Task {
+                            // A text book is bookmarked at the character
+                            // offset of the page on screen, so the bookmark
+                            // opens on the same text on any screen and on the
+                            // web; the page number goes along for display.
                             let page = model.currentPage
+                            let charOffset = model.bookmarkCharOffset
                             let result = await library.quickAdd(
                                 fileID: model.fileID,
-                                page: page
+                                page: page,
+                                charOffset: charOffset
                             )
                             if result == .signInRequired {
                                 environment.requireAuthentication(
-                                    for: .bookmark(fileID: model.fileID, page: page)
+                                    for: .bookmark(fileID: model.fileID, page: page, charOffset: charOffset)
                                 )
                             } else {
                                 saveMessage = result.message
@@ -259,13 +267,26 @@ struct ReaderView: View {
             Group {
                 switch model.content {
                 case let .text(body, isMarkdown):
-                    TextReaderView(
-                        content: body,
-                        isMarkdown: isMarkdown,
-                        allowsSelection: model.info?.rights.canCopyText == true,
-                        textScale: textScale,
-                        lineSpacingScale: lineSpacingScale
-                    )
+                    if model.usesLayoutPaging {
+                        PagedTextReaderView(
+                            text: body,
+                            isMarkdown: isMarkdown,
+                            allowsSelection: model.info?.rights.canCopyText == true,
+                            textScale: textScale,
+                            lineSpacingScale: lineSpacingScale,
+                            model: model
+                        )
+                    } else {
+                        TextReaderView(
+                            content: body,
+                            isMarkdown: isMarkdown,
+                            allowsSelection: model.info?.rights.canCopyText == true,
+                            textScale: textScale,
+                            lineSpacingScale: lineSpacingScale,
+                            anchorOffset: model.isReflowableText ? model.textOffset : nil,
+                            onScroll: model.isReflowableText ? { model.textDidScroll(to: $0) } : nil
+                        )
+                    }
                 case let .pdf(data, tracksDocumentPages):
                     if case let .pdf(facing, _)? = model.facingContent {
                         HStack(spacing: 0) {
@@ -321,6 +342,10 @@ struct ReaderView: View {
     }
 
     private var showsPageControls: Bool {
+        // Shown from the start, even while the book is being paginated: the
+        // controls take height from the pane the pages are laid out for, so
+        // appearing later would force a second pagination.
+        if model.usesLayoutPaging { return true }
         if model.isTextPaged, model.supportsTextPaging { return true }
         guard let info = model.info else { return false }
         return info.isPagedDocument && (info.totalPages ?? 0) > 1
@@ -335,7 +360,7 @@ struct ReaderView: View {
         VStack(spacing: 5) {
             Slider(
                 value: $draftPage,
-                in: 1...Double(max(model.navigablePageCount ?? 1, 1)),
+                in: 1...Double(max(model.navigablePageCount ?? 2, 2)),
                 step: 1
             ) { editing in
                 isScrubbing = editing
@@ -343,7 +368,7 @@ struct ReaderView: View {
                     model.selectPage(Int(draftPage.rounded()))
                 }
             }
-            .disabled(model.pageIsLoading)
+            .disabled(model.pageIsLoading || (model.navigablePageCount ?? 0) < 2)
             .accessibilityLabel("Перейти до сторінки")
             .accessibilityValue(spokenPageLabel(for: displayedPage))
             // Swiping up or down with VoiceOver turns one page (or spread),
@@ -406,16 +431,22 @@ struct ReaderView: View {
     /// The compact position under the page: «I · с. 3 з 120».
     private func pageLabel(for page: Int) -> String {
         let prefix = model.pageLabel(for: page).map { "\($0) · " } ?? ""
-        guard let total = model.info?.totalPages else { return prefix + L("с. \(page)") }
+        guard let total = totalPages else { return prefix + L("с. \(page)") }
         return prefix + L("с. \(page) з \(total)")
     }
 
     /// What VoiceOver says for the position: «Сторінка 3 з 120», then the
     /// printed page label when the book has one («Сторінка 3 з 120, I»).
     private func spokenPageLabel(for page: Int) -> String {
-        let position = model.info?.totalPages.map { L("Сторінка \(page) з \($0)") } ?? L("Сторінка \(page)")
+        let position = totalPages.map { L("Сторінка \(page) з \($0)") } ?? L("Сторінка \(page)")
         guard let printed = model.pageLabel(for: page), !printed.isEmpty else { return position }
         return "\(position), \(printed)"
+    }
+
+    /// A text book counts its own pages (server pages or screen pages); a
+    /// document has the count the server reports.
+    private var totalPages: Int? {
+        model.hasTextBody ? model.navigablePageCount : model.info?.totalPages
     }
 
     private var textScale: CGFloat { CGFloat(storedTextScale) }
@@ -440,7 +471,10 @@ struct ReaderView: View {
         components.scheme = "https"
         components.host = "berynda.org"
         components.path = "/read/\(model.fileID.uuidString.lowercased())"
-        if model.info?.isPagedDocument == true {
+        if let offset = model.bookmarkCharOffset {
+            // The web reader's own share-link form for a text book.
+            components.queryItems = [URLQueryItem(name: "char", value: String(offset))]
+        } else if model.info?.isPagedDocument == true {
             components.queryItems = [URLQueryItem(name: "p", value: String(model.currentPage))]
         }
         return components.url!
@@ -539,13 +573,19 @@ private struct TextReaderView: View {
     let allowsSelection: Bool
     let textScale: CGFloat
     let lineSpacingScale: CGFloat
+    /// For a text read by character offset: where to open, and where the
+    /// first visible block is reported as the reader scrolls.
+    var anchorOffset: Int? = nil
+    var onScroll: ((Int) -> Void)? = nil
     @ScaledMetric(relativeTo: .body) private var baseFontSize: CGFloat = 19
     @ScaledMetric(relativeTo: .body) private var baseLineSpacing: CGFloat = 7
+    @State private var topBlock: Int?
 
     var body: some View {
+        let blocks = ReaderTextBlock.split(content)
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(ReaderTextBlock.split(content)) { block in
+                ForEach(blocks) { block in
                     Group {
                         if allowsSelection {
                             renderedText(block.text).textSelection(.enabled)
@@ -558,12 +598,24 @@ private struct TextReaderView: View {
                     .accessibilityIdentifier("reader.text.block.\(block.id)")
                 }
             }
+            .scrollTargetLayout()
             .font(.system(size: baseFontSize * textScale, weight: .regular, design: .serif))
             .lineSpacing(baseLineSpacing * lineSpacingScale)
             .foregroundStyle(BeryndaColor.ink)
             .frame(maxWidth: 720, alignment: .leading)
             .padding(.horizontal, 24)
             .padding(.vertical, 28)
+        }
+        // Block ids are UTF-16 offsets of each block in the body, so the top
+        // block is the reader's place to the nearest block.
+        .scrollPosition(id: $topBlock, anchor: .top)
+        .onAppear {
+            guard let anchorOffset, topBlock == nil else { return }
+            topBlock = blocks.last(where: { $0.id <= anchorOffset })?.id
+        }
+        .onChange(of: topBlock) { _, block in
+            guard let block else { return }
+            onScroll?(block)
         }
     }
 
