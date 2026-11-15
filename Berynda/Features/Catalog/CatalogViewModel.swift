@@ -58,14 +58,28 @@ final class CatalogViewModel: ObservableObject {
         recommended = (try? await repository.recommended(limit: 12)) ?? []
     }
 
+    /// Pull to refresh. Reloads the first page while the list stays on
+    /// screen: switching to `.loading` would replace the `List` that owns the
+    /// refresh control mid-gesture, which cancels the refresh and leaves the
+    /// scroll inset and section headers stuck where the gesture left them.
+    /// A failed refresh keeps what the reader was already looking at.
+    func refresh() async {
+        guard case .loaded = state else { return await load() }
+        await load(keepingContent: true)
+    }
+
     func load() async {
+        await load(keepingContent: false)
+    }
+
+    private func load(keepingContent: Bool) async {
         loadGeneration += 1
         let generation = loadGeneration
         let requestedQuery = query.nilIfBlank
         let requestedFilters = filters
         isLoadingNextPage = false
         nextPageError = nil
-        state = .loading
+        if !keepingContent { state = .loading }
         refreshEntityHits()
         do {
             let page = try await repository.works(
@@ -81,9 +95,14 @@ final class CatalogViewModel: ObservableObject {
             hasNextPage = page.next != nil && page.results.count < page.count
             state = .loaded(page.results, totalCount: page.count)
         } catch is CancellationError {
+            // A load cancelled before it answered (the screen left, or its
+            // task was torn down) must not leave a spinner that nothing will
+            // ever replace: `.idle` lets the next appearance load again.
+            if generation == loadGeneration, case .loading = state { state = .idle }
             return
         } catch {
             guard generation == loadGeneration else { return }
+            if keepingContent, case .loaded = state { return }
             // Only a request that never completed falls back. A 403, 404, or
             // malformed response is a real answer about the catalog and must
             // not be papered over with a list of things the reader happened to

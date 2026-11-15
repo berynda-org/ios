@@ -14,7 +14,9 @@ struct AuthorView: View {
 
     var body: some View {
         Group {
-            if model.isLoading {
+            // Only before the first answer: hiding the list during a pull to
+            // refresh would tear down the refresh control mid-gesture.
+            if model.isLoading && model.author == nil {
                 BeryndaLoadingState(message: "Завантажуємо автора…")
             } else if let message = model.errorMessage {
                 BeryndaErrorState(title: "Не вдалося завантажити автора", message: message) {

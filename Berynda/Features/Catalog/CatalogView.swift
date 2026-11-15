@@ -139,7 +139,7 @@ struct TabletCatalogColumn: View {
                     }
                 }
                 .listStyle(.plain)
-                .refreshable { await model.load() }
+                .refreshable { await model.refresh() }
             case let .failed(message):
                 BeryndaErrorState(
                     title: "Не вдалося завантажити",
@@ -219,7 +219,7 @@ private struct WorkList: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(BeryndaColor.paper)
-        .refreshable { await model.load() }
+        .refreshable { await model.refresh() }
         .accessibilityLabel("Каталог, показано \(works.count) із \(totalCount)")
         // A search or filter swaps the list without moving focus, so the
         // new result count is spoken. The unfiltered catalog stays quiet.

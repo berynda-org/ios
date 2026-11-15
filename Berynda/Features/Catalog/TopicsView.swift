@@ -62,7 +62,7 @@ private struct TopicListContent: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .refreshable { await model.load() }
+                .refreshable { await model.refresh() }
             }
         }
         .accessibilityIdentifier("topics.screen")

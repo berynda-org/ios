@@ -36,11 +36,22 @@ final class TopicListViewModel: ObservableObject {
 
     var isSearching: Bool { searchTerm != nil }
 
+    /// Pull to refresh: reloads in place, keeping the list (and the refresh
+    /// control it owns) on screen; a failure keeps the rows already shown.
+    func refresh() async {
+        guard case .loaded = state else { return await load() }
+        await load(keepingContent: true)
+    }
+
     func load() async {
+        await load(keepingContent: false)
+    }
+
+    private func load(keepingContent: Bool) async {
         generation += 1
         let requestGeneration = generation
         let term = searchTerm
-        state = .loading
+        if !keepingContent { state = .loading }
         isLoadingNextPage = false
         do {
             let fetched = try await fetch(from: 1, term: term)
@@ -53,6 +64,7 @@ final class TopicListViewModel: ObservableObject {
             return
         } catch {
             guard requestGeneration == generation else { return }
+            if keepingContent, case .loaded = state { return }
             state = .failed(error.localizedDescription)
         }
     }

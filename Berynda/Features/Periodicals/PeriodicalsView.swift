@@ -62,7 +62,7 @@ private struct PeriodicalListContent: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .refreshable { await model.load() }
+                .refreshable { await model.refresh() }
             }
         }
         .accessibilityIdentifier("periodicals.screen")
