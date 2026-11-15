@@ -4,6 +4,12 @@ import XCTest
 
 @MainActor
 final class CatalogFilterTests: XCTestCase {
+    func testRecommendedIssuesAreNotPresentedAsBooks() async throws {
+        let model = CatalogViewModel(repository: JournalRecommendationStub())
+        await model.loadRecommendedIfNeeded()
+        XCTAssertEqual(model.recommended.map(\.title), ["Book"])
+    }
+
     func testCatalogSendsEveryFilterWithTheSearch() async throws {
         let repository = FilterRecordingStub()
         let model = CatalogViewModel(repository: repository)
@@ -21,7 +27,7 @@ final class CatalogFilterTests: XCTestCase {
         let requests = await repository.workRequests
         XCTAssertEqual(requests.count, 1)
         XCTAssertEqual(requests.first?.search, "Кобзар")
-        XCTAssertEqual(requests.first?.filters, model.filters)
+        XCTAssertEqual(requests.first?.filters, model.filters.foldingJournalIssues)
     }
 
     func testFacetsIgnoreTheSheetsOwnChoicesAndAreFetchedOncePerBase() async throws {
@@ -37,7 +43,7 @@ final class CatalogFilterTests: XCTestCase {
 
         var requests = await repository.facetRequests
         XCTAssertEqual(requests.count, 1)
-        XCTAssertEqual(requests.first, WorkFilters(readableOnly: true, topic: topic))
+        XCTAssertEqual(requests.first, WorkFilters(readableOnly: true, topic: topic).foldingJournalIssues)
         XCTAssertEqual(model.facets?.languages.first?.value, "uk")
 
         model.filters.readableOnly = false
@@ -175,4 +181,13 @@ private actor FilterRecordingStub: CatalogRepository {
     private static func decode<Value: Decodable>(_ json: String) throws -> Value {
         try JSONDecoder().decode(Value.self, from: Data(json.utf8))
     }
+}
+
+private struct JournalRecommendationStub: CatalogRepository {
+    func recommended(limit: Int) async throws -> [WorkSummary] {
+        try JSONDecoder().decode([WorkSummary].self, from: Data(#"[{"id":"11111111-1111-1111-1111-111111111111","slug":"issue","title":"Issue","work_type":"journal_issue"},{"id":"22222222-2222-2222-2222-222222222222","slug":"book","title":"Book","work_type":"book"}]"#.utf8))
+    }
+    func works(search: String?, page: Int) async throws -> PaginatedResponse<WorkSummary> { throw APIError.invalidResponse }
+    func work(identifier: String) async throws -> WorkSummary { throw APIError.invalidResponse }
+    func editions(workID: UUID) async throws -> [EditionSummary] { [] }
 }

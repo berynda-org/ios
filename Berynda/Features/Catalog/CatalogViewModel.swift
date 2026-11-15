@@ -55,7 +55,7 @@ final class CatalogViewModel: ObservableObject {
     /// pure waste.
     func loadRecommendedIfNeeded() async {
         guard recommended.isEmpty else { return }
-        recommended = (try? await repository.recommended(limit: 12)) ?? []
+        recommended = ((try? await repository.recommended(limit: 12)) ?? []).filter { $0.workType != "journal_issue" }
     }
 
     /// Pull to refresh. Reloads the first page while the list stays on
@@ -85,7 +85,7 @@ final class CatalogViewModel: ObservableObject {
             let page = try await repository.works(
                 search: requestedQuery,
                 page: 1,
-                filters: requestedFilters
+                filters: requestedFilters.foldingJournalIssues
             )
             guard generation == loadGeneration,
                   requestedQuery == query.nilIfBlank,
@@ -138,7 +138,7 @@ final class CatalogViewModel: ObservableObject {
             let page = try await repository.works(
                 search: requestedQuery,
                 page: requestedPage,
-                filters: requestedFilters
+                filters: requestedFilters.foldingJournalIssues
             )
             guard generation == loadGeneration,
                   requestedQuery == query.nilIfBlank,
@@ -169,6 +169,8 @@ final class CatalogViewModel: ObservableObject {
         let term = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard term != entityTerm else { return }
         entityTask?.cancel()
+        authorHits = []
+        periodicalHits = []
         guard term.count >= 2 else {
             authorHits = []
             periodicalHits = []
@@ -200,7 +202,7 @@ final class CatalogViewModel: ObservableObject {
     func loadFacetsIfNeeded() async {
         let key = FacetsKey(
             query: query.nilIfBlank,
-            filters: WorkFilters(readableOnly: filters.readableOnly, topic: filters.topic)
+            filters: WorkFilters(readableOnly: filters.readableOnly, topic: filters.topic).foldingJournalIssues
         )
         guard key != facetsKey else { return }
         guard let loaded = try? await repository.facets(search: key.query, filters: key.filters) else { return }

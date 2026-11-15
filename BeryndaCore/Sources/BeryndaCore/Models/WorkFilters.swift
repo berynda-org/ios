@@ -25,6 +25,7 @@ public struct WorkFilters: Hashable, Sendable {
     public var yearFrom: Int?
     public var yearTo: Int?
     public var topic: TopicReference?
+    public var foldJournalIssues: Bool = false
 
     public init(
         readableOnly: Bool = false,
@@ -57,7 +58,9 @@ public struct WorkFilters: Hashable, Sendable {
 
     /// The sheet's refinements cleared, the readable switch left as it was.
     public func clearingRefinements() -> WorkFilters {
-        WorkFilters(readableOnly: readableOnly)
+        var cleared = WorkFilters(readableOnly: readableOnly)
+        cleared.foldJournalIssues = foldJournalIssues
+        return cleared
     }
 
     /// A range typed back to front still means the same span of years.
@@ -66,8 +69,18 @@ public struct WorkFilters: Hashable, Sendable {
         return (yearFrom, yearTo)
     }
 
+    /// Use only for catalog discovery; journal and issue pages retain their works.
+    public var foldingJournalIssues: WorkFilters {
+        var copy = self
+        copy.foldJournalIssues = true
+        return copy
+    }
+
     var queryItems: [URLQueryItem] {
         var items: [URLQueryItem] = []
+        if foldJournalIssues {
+            items.append(.init(name: "fold_journal_issues", value: "true"))
+        }
         if readableOnly {
             items.append(.init(name: "mobile_readable", value: "true"))
         }
