@@ -181,17 +181,17 @@ private struct WorkList: View {
                 .accessibilityIdentifier("catalog.periodicals")
             }
             if !model.authorHits.isEmpty {
-                Section("Автори") {
+                ShelfSection("Автори") {
                     EntityHitStrip(hits: model.authorHits, kind: "author")
                 }
             }
             if !model.periodicalHits.isEmpty {
-                Section("Періодика") {
+                ShelfSection("Періодика") {
                     EntityHitStrip(hits: model.periodicalHits, kind: "periodical")
                 }
             }
             if !collections.isEmpty {
-                Section("Вибрані колекції") {
+                ShelfSection("Вибрані колекції") {
                     ForEach(collections.filter(\.isFeatured)) { collection in
                         CollectionShelf(collection: collection)
                     }
@@ -200,7 +200,7 @@ private struct WorkList: View {
             // Only above an unfiltered catalog: a shelf that ignores the
             // reader's query would be noise next to their own search.
             if model.query.isEmpty, model.filters.isUnfiltered, !model.recommended.isEmpty {
-                Section("Рекомендовані") {
+                ShelfSection("Рекомендовані") {
                     RecommendedShelf(works: model.recommended)
                 }
             }
@@ -388,6 +388,32 @@ private struct RecentlyViewedList: View {
 ///
 /// Nothing here is personalised: the server ranks only the work, so this shows
 /// every reader the same shelf and reveals nothing about what anyone has read.
+/// A shelf above the works, titled inside the list rather than with a
+/// section header. A plain `List` pins section headers: a one-row shelf's
+/// title then stayed stuck under the reading switch while the works
+/// scrolled underneath it.
+private struct ShelfSection<Content: View>: View {
+    let title: LocalizedStringKey
+    let content: Content
+
+    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        Section {
+            Text(title)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(BeryndaColor.ink)
+                .accessibilityAddTraits(.isHeader)
+                .listRowSeparator(.hidden)
+                .padding(.top, 8)
+            content
+        }
+    }
+}
+
 private struct RecommendedShelf: View {
     let works: [WorkSummary]
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
