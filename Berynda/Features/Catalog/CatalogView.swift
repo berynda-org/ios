@@ -538,12 +538,12 @@ private struct EntityHitLabel: View {
                 .foregroundStyle(BeryndaColor.accent)
                 .accessibilityHidden(true)
             Text(hit.label)
-            if hit.isPeriodical {
-                Text("Періодика").font(.caption).foregroundStyle(BeryndaColor.mutedInk)
-            }
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(BeryndaColor.ink)
                 .lineLimit(1)
+            if hit.isPeriodical {
+                Text("Періодика").font(.caption).foregroundStyle(BeryndaColor.mutedInk)
+            }
             if let dates = hit.lifeDates {
                 Text(dates)
                     .font(.caption)
