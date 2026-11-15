@@ -3,18 +3,25 @@ import Foundation
 public actor SessionController: AuthorizationSession {
     private let tokenStore: any TokenStore
     private let authentication: any AuthenticationServing
+    private let now: @Sendable () -> Date
 
     private var tokens: AuthTokens?
+    /// Bumped whenever the stored pair is replaced or erased outside a refresh,
+    /// so a rotation that lands afterwards is dropped rather than saved over
+    /// a newer sign-in, a password change or a sign-out.
+    private var sessionGeneration = 0
     private var didLoadTokens = false
     private var refreshTask: Task<AuthTokens, Error>?
     private var currentState: SessionState = .anonymous
 
     public init(
         tokenStore: any TokenStore,
-        authentication: any AuthenticationServing
+        authentication: any AuthenticationServing,
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.tokenStore = tokenStore
         self.authentication = authentication
+        self.now = now
     }
 
     public func state() -> SessionState {
@@ -82,6 +89,9 @@ public actor SessionController: AuthorizationSession {
         tokens = rotated
         didLoadTokens = true
         currentState = .authenticated
+        sessionGeneration += 1
+        refreshTask?.cancel()
+        refreshTask = nil
     }
 
     /// Deletes the account, then forgets the session locally. No logout call
@@ -120,6 +130,9 @@ public actor SessionController: AuthorizationSession {
         tokens = session.tokens
         didLoadTokens = true
         currentState = .authenticated
+        sessionGeneration += 1
+        refreshTask?.cancel()
+        refreshTask = nil
         return session.user
     }
 
@@ -131,6 +144,18 @@ public actor SessionController: AuthorizationSession {
         if current.access != rejectedAccessToken {
             return current.access
         }
+
+        // The server's stated refresh lifetime has passed: the refresh would
+        // only come back 401, so ask for a new sign-in straight away.
+        if current.isRefreshExpired(at: now()) {
+            expireSession()
+            throw SessionError.expired
+        }
+
+        // Only the pair held right now is ever sent. A refresh token that has
+        // been rotated away must never be presented again: after the server's
+        // short replay grace that revokes the whole sign-in.
+        let generation = sessionGeneration
 
         let task: Task<AuthTokens, Error>
         if let existing = refreshTask {
@@ -149,16 +174,21 @@ public actor SessionController: AuthorizationSession {
         do {
             rotated = try await task.value
         } catch is CancellationError {
-            refreshTask = nil
+            if generation == sessionGeneration { refreshTask = nil }
             throw CancellationError()
         } catch let error as SessionError where error == .expired || error == .invalidToken {
+            guard generation == sessionGeneration else { throw SessionError.expired }
             refreshTask = nil
             expireSession()
             throw SessionError.expired
         } catch {
-            refreshTask = nil
+            if generation == sessionGeneration { refreshTask = nil }
             throw error
         }
+
+        // Signed out, signed in afresh or changed the password while the
+        // refresh was in flight.
+        guard generation == sessionGeneration else { throw SessionError.expired }
 
         if tokens?.access == rotated.access {
             refreshTask = nil
@@ -182,6 +212,7 @@ public actor SessionController: AuthorizationSession {
         loadTokensIfNeeded()
         let sessionToRevoke = tokens
         tokens = nil
+        sessionGeneration += 1
         didLoadTokens = true
         currentState = .anonymous
         refreshTask?.cancel()
@@ -230,6 +261,9 @@ public actor SessionController: AuthorizationSession {
         do {
             tokens = try tokenStore.load()
             currentState = tokens == nil ? .anonymous : .authenticated
+            if let tokens, tokens.isRefreshExpired(at: now()) {
+                expireSession()
+            }
         } catch {
             // Do not delete an unreadable Keychain record. Anonymous access can
             // continue and a later explicit sign-in may replace the record.
@@ -244,6 +278,7 @@ public actor SessionController: AuthorizationSession {
 
     private func clearLocalSession(state: SessionState) {
         tokens = nil
+        sessionGeneration += 1
         didLoadTokens = true
         currentState = state
         refreshTask?.cancel()

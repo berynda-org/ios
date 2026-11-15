@@ -49,7 +49,14 @@ public extension AuthenticationServing {
 }
 
 public actor LiveAuthenticationService: AuthenticationServing {
+    /// Opts a token-issuing request into opaque `bat_`/`brt_` tokens. On a
+    /// refresh with a stored legacy JWT it makes the server exchange the JWT
+    /// for an opaque pair (see the server's docs/OPAQUE_TOKENS.md).
+    public static let tokenFormatHeader = "X-Berynda-Token-Format"
+    public static let opaqueTokenFormat = "opaque"
+
     private let baseURL: URL
+    private let now: @Sendable () -> Date
     private let transport: any HTTPTransport
     private let language: @Sendable () -> String
     private let encoder = JSONEncoder()
@@ -58,11 +65,13 @@ public actor LiveAuthenticationService: AuthenticationServing {
     public init(
         baseURL: URL,
         transport: any HTTPTransport = URLSessionTransport(),
-        language: @escaping @Sendable () -> String = { "uk" }
+        language: @escaping @Sendable () -> String = { "uk" },
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.baseURL = baseURL
         self.transport = transport
         self.language = language
+        self.now = now
     }
 
     public func socialConfiguration() async throws -> SocialProviderConfiguration {
@@ -77,8 +86,9 @@ public actor LiveAuthenticationService: AuthenticationServing {
 
     public func socialLogin(_ credential: SocialCredential) async throws -> AuthSession {
         let response: LoginResponse = try await post(path: "auth/social/login/", body: credential,
-                                                    bearerToken: nil, unauthorizedError: .socialVerificationFailed)
-        return AuthSession(tokens: try AuthTokens(access: response.access, refresh: response.refresh), user: response.user)
+                                                    bearerToken: nil, unauthorizedError: .socialVerificationFailed,
+                                                    requestsOpaqueTokens: true)
+        return AuthSession(tokens: try response.tokens.authTokens(receivedAt: now()), user: response.user)
     }
 
     public func linkSocialIdentity(_ credential: SocialCredential, accessToken: String) async throws -> UserProfile {
@@ -95,10 +105,10 @@ public actor LiveAuthenticationService: AuthenticationServing {
             path: "auth/login/",
             body: body,
             bearerToken: nil,
-            unauthorizedError: .invalidCredentials
+            unauthorizedError: .invalidCredentials,
+            requestsOpaqueTokens: true
         )
-        let tokens = try AuthTokens(access: response.access, refresh: response.refresh)
-        return AuthSession(tokens: tokens, user: response.user)
+        return AuthSession(tokens: try response.tokens.authTokens(receivedAt: now()), user: response.user)
     }
 
     public func register(
@@ -159,18 +169,21 @@ public actor LiveAuthenticationService: AuthenticationServing {
     }
 
     public func refresh(refreshToken: String) async throws -> AuthTokens {
-        guard AuthTokens.isValidJWT(refreshToken) else { throw SessionError.invalidToken }
-        let response: RefreshResponse = try await post(
+        guard AuthTokens.isValidRefreshToken(refreshToken) else { throw SessionError.invalidToken }
+        // A 401 here means the sign-in is gone (expired, revoked, or a reused
+        // rotated token revoked it): `.expired` makes the caller sign in again.
+        let response: TokenPairResponse = try await post(
             path: "auth/token/refresh/",
             body: RefreshBody(refresh: refreshToken),
             bearerToken: nil,
-            unauthorizedError: .expired
+            unauthorizedError: .expired,
+            requestsOpaqueTokens: true
         )
-        return try AuthTokens(access: response.access, refresh: response.refresh)
+        return try response.authTokens(receivedAt: now())
     }
 
     public func logout(accessToken: String, refreshToken: String) async throws {
-        guard AuthTokens.isValidJWT(accessToken), AuthTokens.isValidJWT(refreshToken) else {
+        guard AuthTokens.isValidAccessToken(accessToken), AuthTokens.isValidRefreshToken(refreshToken) else {
             throw SessionError.invalidToken
         }
         let _: EmptyResponse = try await post(
@@ -196,13 +209,14 @@ public actor LiveAuthenticationService: AuthenticationServing {
         newPassword: String,
         accessToken: String
     ) async throws -> AuthTokens {
-        let response: RefreshResponse = try await accountRequest(
+        let response: TokenPairResponse = try await accountRequest(
             method: "POST",
             path: "auth/me/password/",
             body: PasswordChangeBody(currentPassword: currentPassword, newPassword: newPassword),
-            accessToken: accessToken
+            accessToken: accessToken,
+            requestsOpaqueTokens: true
         )
-        return try AuthTokens(access: response.access, refresh: response.refresh)
+        return try response.authTokens(receivedAt: now())
     }
 
     public func deleteAccount(proof: AccountDeletionProof, accessToken: String) async throws {
@@ -221,9 +235,10 @@ public actor LiveAuthenticationService: AuthenticationServing {
         method: String,
         path: String,
         body: Body,
-        accessToken: String
+        accessToken: String,
+        requestsOpaqueTokens: Bool = false
     ) async throws -> Response {
-        guard AuthTokens.isValidJWT(accessToken) else { throw SessionError.expired }
+        guard AuthTokens.isValidAccessToken(accessToken) else { throw SessionError.expired }
         guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
             throw SessionError.invalidResponse
         }
@@ -243,6 +258,9 @@ public actor LiveAuthenticationService: AuthenticationServing {
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        if requestsOpaqueTokens {
+            request.setValue(Self.opaqueTokenFormat, forHTTPHeaderField: Self.tokenFormatHeader)
+        }
 
         let data: Data
         let http: HTTPURLResponse
@@ -329,7 +347,8 @@ public actor LiveAuthenticationService: AuthenticationServing {
         body: Body,
         bearerToken: String?,
         unauthorizedError: SessionError,
-        acceptsEmptyResponse: Bool = false
+        acceptsEmptyResponse: Bool = false,
+        requestsOpaqueTokens: Bool = false
     ) async throws -> Response {
         guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
             throw SessionError.invalidResponse
@@ -353,6 +372,9 @@ public actor LiveAuthenticationService: AuthenticationServing {
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
         if let bearerToken {
             request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+        }
+        if requestsOpaqueTokens {
+            request.setValue(Self.opaqueTokenFormat, forHTTPHeaderField: Self.tokenFormatHeader)
         }
 
         let data: Data
@@ -443,14 +465,40 @@ private struct RefreshBody: Encodable {
 }
 
 private struct LoginResponse: Decodable {
-    let access: String
-    let refresh: String
+    let tokens: TokenPairResponse
     let user: UserProfile
+
+    init(from decoder: any Decoder) throws {
+        tokens = try TokenPairResponse(from: decoder)
+        user = try decoder.container(keyedBy: CodingKeys.self).decode(UserProfile.self, forKey: .user)
+    }
+
+    enum CodingKeys: String, CodingKey { case user }
 }
 
-private struct RefreshResponse: Decodable {
+/// The token part of a login, social-login, refresh or password-change
+/// response. A legacy JWT response has no lifetimes; an opaque one always does.
+private struct TokenPairResponse: Decodable {
     let access: String
     let refresh: String
+    let expiresIn: Int?
+    let refreshExpiresIn: Int?
+
+    func authTokens(receivedAt: Date) throws -> AuthTokens {
+        try AuthTokens(
+            access: access,
+            refresh: refresh,
+            expiresIn: expiresIn,
+            refreshExpiresIn: refreshExpiresIn,
+            receivedAt: receivedAt
+        )
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case access, refresh
+        case expiresIn = "expires_in"
+        case refreshExpiresIn = "refresh_expires_in"
+    }
 }
 
 private struct EmptyResponse: Decodable {

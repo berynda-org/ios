@@ -1,15 +1,59 @@
 import Foundation
 
 public struct AuthTokens: Codable, Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum Format: Equatable, Sendable {
+        case opaque
+        case legacyJWT
+    }
+
     public let access: String
     public let refresh: String
+    /// When the access token stops working, if the server said so.
+    public let accessExpiresAt: Date?
+    /// When the refresh token stops working, if the server said so.
+    public let refreshExpiresAt: Date?
 
-    public init(access: String, refresh: String) throws {
-        guard Self.isValidJWT(access), Self.isValidJWT(refresh) else {
+    public init(
+        access: String,
+        refresh: String,
+        accessExpiresAt: Date? = nil,
+        refreshExpiresAt: Date? = nil
+    ) throws {
+        guard Self.isValidPair(access: access, refresh: refresh) else {
             throw SessionError.invalidToken
         }
         self.access = access
         self.refresh = refresh
+        self.accessExpiresAt = accessExpiresAt
+        self.refreshExpiresAt = refreshExpiresAt
+    }
+
+    /// Builds a pair from a token response, turning the relative lifetimes
+    /// into dates measured from `receivedAt`, the moment the response arrived.
+    public init(
+        access: String,
+        refresh: String,
+        expiresIn: Int?,
+        refreshExpiresIn: Int?,
+        receivedAt: Date
+    ) throws {
+        try self.init(
+            access: access,
+            refresh: refresh,
+            accessExpiresAt: Self.date(after: expiresIn, from: receivedAt),
+            refreshExpiresAt: Self.date(after: refreshExpiresIn, from: receivedAt)
+        )
+    }
+
+    public var format: Format {
+        Self.isOpaque(access, prefix: Self.opaqueAccessPrefix) ? .opaque : .legacyJWT
+    }
+
+    /// True when the server's stated refresh lifetime has passed, so a refresh
+    /// cannot succeed and the reader has to sign in again.
+    public func isRefreshExpired(at now: Date) -> Bool {
+        guard let refreshExpiresAt else { return false }
+        return now >= refreshExpiresAt
     }
 
     public var description: String { "AuthTokens(<redacted>)" }
@@ -19,20 +63,70 @@ public struct AuthTokens: Codable, Equatable, Sendable, CustomStringConvertible,
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let access = try container.decode(String.self, forKey: .access)
         let refresh = try container.decode(String.self, forKey: .refresh)
-        guard Self.isValidJWT(access), Self.isValidJWT(refresh) else {
+        guard Self.isValidPair(access: access, refresh: refresh) else {
             throw DecodingError.dataCorrupted(
                 .init(codingPath: decoder.codingPath, debugDescription: "Invalid token representation")
             )
         }
         self.access = access
         self.refresh = refresh
+        // Records saved before opaque tokens have no lifetimes.
+        accessExpiresAt = try container.decodeIfPresent(Date.self, forKey: .accessExpiresAt)
+        refreshExpiresAt = try container.decodeIfPresent(Date.self, forKey: .refreshExpiresAt)
     }
 
-    static func isValidJWT(_ value: String) -> Bool {
+    enum CodingKeys: String, CodingKey {
+        case access
+        case refresh
+        case accessExpiresAt = "access_expires_at"
+        case refreshExpiresAt = "refresh_expires_at"
+    }
+
+    static let opaqueAccessPrefix = "bat_"
+    static let opaqueRefreshPrefix = "brt_"
+
+    /// Both tokens opaque, or both legacy JWTs. A mixed pair never comes from
+    /// the server and is rejected.
+    static func isValidPair(access: String, refresh: String) -> Bool {
+        (isOpaque(access, prefix: opaqueAccessPrefix) && isOpaque(refresh, prefix: opaqueRefreshPrefix))
+            || (isLegacyJWT(access) && isLegacyJWT(refresh))
+    }
+
+    /// A value that may go into `Authorization: Bearer`.
+    static func isValidAccessToken(_ value: String) -> Bool {
+        isOpaque(value, prefix: opaqueAccessPrefix) || isLegacyJWT(value)
+    }
+
+    /// A value that may be sent to `auth/token/refresh/` or `auth/logout/`.
+    static func isValidRefreshToken(_ value: String) -> Bool {
+        isOpaque(value, prefix: opaqueRefreshPrefix) || isLegacyJWT(value)
+    }
+
+    /// The prefix followed by base64url text. The server sends 43 characters
+    /// after the prefix today; the bound is loose so it can lengthen tokens
+    /// without breaking installed apps. The content is never interpreted.
+    static func isOpaque(_ value: String, prefix: String) -> Bool {
+        guard value.hasPrefix(prefix) else { return false }
+        let body = value.dropFirst(prefix.count)
+        guard (32...512).contains(body.count) else { return false }
+        return body.unicodeScalars.allSatisfy { base64URL.contains($0) }
+    }
+
+    /// Shape check only: legacy JWTs are no longer decoded.
+    static func isLegacyJWT(_ value: String) -> Bool {
         guard !value.isEmpty, value.count <= 16_384 else { return false }
-        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
-        return value.unicodeScalars.allSatisfy { allowed.contains($0) }
+        return value.unicodeScalars.allSatisfy { jwtCharacters.contains($0) }
             && value.split(separator: ".", omittingEmptySubsequences: false).count == 3
+    }
+
+    private static let base64URL = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    )
+    private static let jwtCharacters = base64URL.union(CharacterSet(charactersIn: "."))
+
+    private static func date(after seconds: Int?, from start: Date) -> Date? {
+        guard let seconds, seconds > 0 else { return nil }
+        return start.addingTimeInterval(TimeInterval(seconds))
     }
 }
 

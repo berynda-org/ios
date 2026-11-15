@@ -167,7 +167,7 @@ public actor BeryndaAPIClient {
             || headers.keys.contains { $0.caseInsensitiveCompare(IdempotencyKey.headerName) == .orderedSame }
 
         var bearerToken = await authorizationSession?.accessToken()
-        if let token = bearerToken, AuthTokens.isValidJWT(token) {
+        if let token = bearerToken, AuthTokens.isValidAccessToken(token) {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         } else {
             bearerToken = nil
@@ -237,7 +237,7 @@ public actor BeryndaAPIClient {
                         let refreshed = try await authorizationSession.refreshAccessToken(
                             rejectedAccessToken: rejectedAccessToken
                         )
-                        guard AuthTokens.isValidJWT(refreshed) else {
+                        guard AuthTokens.isValidAccessToken(refreshed) else {
                             throw SessionError.invalidToken
                         }
                         bearerToken = refreshed
