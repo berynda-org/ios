@@ -27,6 +27,22 @@
             <key>NSPrivacyCollectedDataTypePurposes</key>
             <array>
                 <string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <!-- The account id: sign-in, lists and bookmarks, and the page views
+             of a signed-in user, which the server stores with the account. -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeUserID</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <true/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+                <string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
             </array>
         </dict>
     </array>
