@@ -59,6 +59,7 @@ public actor LiveAuthenticationService: AuthenticationServing {
     private let now: @Sendable () -> Date
     private let transport: any HTTPTransport
     private let language: @Sendable () -> String
+    private let clientIdentity: ClientIdentity
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
@@ -66,8 +67,10 @@ public actor LiveAuthenticationService: AuthenticationServing {
         baseURL: URL,
         transport: any HTTPTransport = URLSessionTransport(),
         language: @escaping @Sendable () -> String = { "uk" },
-        now: @escaping @Sendable () -> Date = { Date() }
+        now: @escaping @Sendable () -> Date = { Date() },
+        clientIdentity: ClientIdentity = .current
     ) {
+        self.clientIdentity = clientIdentity
         self.baseURL = baseURL
         self.transport = transport
         self.language = language
@@ -257,6 +260,7 @@ public actor LiveAuthenticationService: AuthenticationServing {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        clientIdentity.apply(to: &request)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         if requestsOpaqueTokens {
             request.setValue(Self.opaqueTokenFormat, forHTTPHeaderField: Self.tokenFormatHeader)
@@ -306,6 +310,7 @@ public actor LiveAuthenticationService: AuthenticationServing {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        clientIdentity.apply(to: &request)
 
         let data: Data
         let http: HTTPURLResponse
@@ -370,6 +375,7 @@ public actor LiveAuthenticationService: AuthenticationServing {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        clientIdentity.apply(to: &request)
         if let bearerToken {
             request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
         }

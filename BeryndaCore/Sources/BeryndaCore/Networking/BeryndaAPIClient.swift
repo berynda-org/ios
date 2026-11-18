@@ -20,6 +20,7 @@ public actor BeryndaAPIClient {
     private let sleeper: @Sendable (TimeInterval) async throws -> Void
     private let jitter: @Sendable () -> Double
     private let authorizationSession: (any AuthorizationSession)?
+    private let clientIdentity: ClientIdentity
 
     public init(
         baseURL: URL,
@@ -30,7 +31,8 @@ public actor BeryndaAPIClient {
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
         },
         jitter: @escaping @Sendable () -> Double = { Double.random(in: 0.8...1.2) },
-        authorizationSession: (any AuthorizationSession)? = nil
+        authorizationSession: (any AuthorizationSession)? = nil,
+        clientIdentity: ClientIdentity = .current
     ) {
         self.baseURL = baseURL
         self.transport = transport
@@ -39,6 +41,7 @@ public actor BeryndaAPIClient {
         self.sleeper = sleeper
         self.jitter = jitter
         self.authorizationSession = authorizationSession
+        self.clientIdentity = clientIdentity
         self.decoder = JSONDecoder()
     }
 
@@ -158,6 +161,7 @@ public actor BeryndaAPIClient {
         }
         request.setValue(language(), forHTTPHeaderField: "Accept-Language")
         request.setValue(UUID().uuidString, forHTTPHeaderField: "X-Request-ID")
+        clientIdentity.apply(to: &request)
         for (name, value) in headers {
             request.setValue(value, forHTTPHeaderField: name)
         }
