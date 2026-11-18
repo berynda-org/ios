@@ -66,6 +66,7 @@ private struct PeriodicalListContent: View {
             }
         }
         .accessibilityIdentifier("periodicals.screen")
+        .reportsPageView(PageViewPath.periodicals)
         .background(BeryndaColor.paper)
         .navigationTitle("Періодика")
         .navigationBarTitleDisplayMode(.inline)
@@ -160,6 +161,7 @@ struct PeriodicalView: View {
             }
         }
         .accessibilityIdentifier("periodical.screen")
+        .reportsPageView(PageViewPath.periodical(identifier: model.identifier))
         .background(BeryndaColor.paper)
         .navigationTitle("Періодичне видання")
         .navigationBarTitleDisplayMode(.inline)
@@ -344,6 +346,10 @@ struct PeriodicalIssueView: View {
             }
         }
         .accessibilityIdentifier("issue.screen")
+        .reportsPageView(PageViewPath.periodicalIssue(
+            periodicalIdentifier: issue.periodicalSlug ?? issue.periodicalID?.uuidString,
+            issueID: issue.id
+        ))
         .background(BeryndaColor.paper)
         .navigationTitle("Випуск")
         .navigationBarTitleDisplayMode(.inline)

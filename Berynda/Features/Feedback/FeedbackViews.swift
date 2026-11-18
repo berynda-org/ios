@@ -50,6 +50,7 @@ struct FeedbackFormView: View {
         .scrollContentBackground(.hidden)
         .background(BeryndaColor.paper)
         .navigationTitle(model.kind == .rating ? Text("Оцінити застосунок") : Text("Написати в підтримку"))
+        .reportsPageView(PageViewPath.app(model.kind == .rating ? "feedback/rating" : "feedback/support"))
         .navigationBarTitleDisplayMode(.inline)
         .announcesChanges(of: model.errorMessage)
         .onChange(of: model.didSend) { _, sent in

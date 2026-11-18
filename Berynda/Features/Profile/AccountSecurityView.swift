@@ -50,6 +50,7 @@ struct PasswordChangeView: View {
         .scrollContentBackground(.hidden)
         .background(BeryndaColor.paper)
         .navigationTitle(model.needsPasswordSetup ? Text("Встановити пароль") : Text("Змінити пароль"))
+        .reportsPageView(PageViewPath.app("profile/password"))
         .navigationBarTitleDisplayMode(.inline)
         .announcesChanges(of: model.errorMessage)
         .onChange(of: model.passwordChanged) { _, changed in
@@ -181,6 +182,7 @@ struct AccountDeletionView: View {
         .scrollContentBackground(.hidden)
         .background(BeryndaColor.paper)
         .navigationTitle("Видалення облікового запису")
+        .reportsPageView(PageViewPath.app("profile/delete-account"))
         .navigationBarTitleDisplayMode(.inline)
         .announcesChanges(of: model.errorMessage)
         .task { await account.loadSocialProviders() }

@@ -45,6 +45,8 @@ public enum APIEndpoint: Sendable, Equatable {
     case continueReading(limit: Int)
     /// POST: in-app feedback and support requests (also the web contact form).
     case contact
+    /// POST: one screen view for the site's page-view analytics; always 204.
+    case pageView
 
     func url(relativeTo baseURL: URL) -> URL? {
         let path: String
@@ -170,6 +172,8 @@ public enum APIEndpoint: Sendable, Equatable {
             path = "files/\(fileID.uuidString.lowercased())/reading-position/"
         case .contact:
             path = "contact/"
+        case .pageView:
+            path = "pv/"
         case let .continueReading(limit):
             path = "auth/me/reading/"
             queryItems.append(.init(name: "limit", value: String(min(max(limit, 1), 50))))

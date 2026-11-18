@@ -243,6 +243,7 @@ struct ReaderView: View {
             Text(saveMessage ?? "")
         }
         .accessibilityIdentifier("reader.\(model.fileID)")
+        .reportsPageView(PageViewPath.reader(fileID: model.fileID))
     }
 
     @ViewBuilder

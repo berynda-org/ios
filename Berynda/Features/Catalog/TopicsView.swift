@@ -66,6 +66,7 @@ private struct TopicListContent: View {
             }
         }
         .accessibilityIdentifier("topics.screen")
+        .reportsPageView(PageViewPath.topics)
         .background(BeryndaColor.paper)
         .navigationTitle("Теми")
         .navigationBarTitleDisplayMode(.inline)
@@ -190,6 +191,7 @@ struct TopicView: View {
             }
         }
         .accessibilityIdentifier("topic.screen")
+        .reportsPageView(PageViewPath.topic(slug: model.reference.slug))
         .background(BeryndaColor.paper)
         .navigationTitle("Тема")
         .navigationBarTitleDisplayMode(.inline)

@@ -61,6 +61,8 @@ private struct CatalogLoadedView: View {
             }
         }
             .accessibilityIdentifier("catalog_screen")
+            // The query itself is never sent, only that this is a search.
+            .reportsPageView(model.query.isEmpty ? PageViewPath.catalog : PageViewPath.search)
             .background(BeryndaColor.paper)
             .navigationTitle("Каталог")
             .searchable(text: $model.query, prompt: "Назва або автор")
@@ -155,6 +157,7 @@ struct TabletCatalogColumn: View {
         .navigationTitle("Каталог")
         .searchable(text: $model.query, prompt: "Назва або автор")
         .modifier(CatalogFiltering(model: model))
+        .reportsPageView(model.query.isEmpty ? PageViewPath.catalog : PageViewPath.search)
         // No recommended shelf here: the iPad master column is a narrow list
         // that does not render one, so fetching it would be a request whose
         // result is never shown.

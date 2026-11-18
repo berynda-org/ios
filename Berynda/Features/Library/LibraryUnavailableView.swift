@@ -8,6 +8,7 @@ struct LibraryView: View {
         LibraryContent(model: environment.library)
         .navigationTitle("Бібліотека")
         .accessibilityIdentifier("library_screen")
+        .reportsPageView(PageViewPath.app("library"))
     }
 }
 

@@ -17,6 +17,9 @@ final class AppEnvironment: ObservableObject {
     let localStorage: LocalStorageSummary
     /// Queued writes and the offline shelf.
     let offline: OfflineSync
+    /// Screen views for the site's page-view analytics; nil in UI tests and
+    /// screenshot runs, which must not count as real use.
+    let pageViews: PageViewReporter?
     private var cancellables: Set<AnyCancellable> = []
     @Published var selectedTab: RootTab = .catalog
     @Published var pendingRoute: AppRoute?
@@ -47,9 +50,11 @@ final class AppEnvironment: ObservableObject {
         mutationSender: (any MutationSending)? = nil,
         offlineStatusChecker: (any OfflineStatusChecking)? = nil,
         outboxURL: URL? = nil,
-        offlineDirectory: URL? = nil
+        offlineDirectory: URL? = nil,
+        pageViews: PageViewReporter? = nil
     ) {
         self.catalogRepository = catalogRepository
+        self.pageViews = pageViews
         self.feedbackRepository = feedbackRepository
         let offlineLibrary = OfflineLibrary(
             directory: offlineDirectory ?? FileManager.default.temporaryDirectory
@@ -161,7 +166,12 @@ final class AppEnvironment: ObservableObject {
             mutationSender: LiveMutationSender(client: client),
             offlineStatusChecker: LiveOfflineStatusChecker(client: client),
             outboxURL: MutationOutbox.defaultFileURL(),
-            offlineDirectory: OfflineLibrary.defaultDirectory()
+            offlineDirectory: OfflineLibrary.defaultDirectory(),
+            // The App Store screenshot run drives the live app; it passes
+            // `--no-page-views` so its screens are not counted as use.
+            pageViews: ProcessInfo.processInfo.arguments.contains("--no-page-views")
+                ? nil
+                : PageViewReporter(client: client)
         )
     }
 
@@ -184,6 +194,12 @@ final class AppEnvironment: ObservableObject {
         )
     }
     #endif
+
+    /// Counts a screen in the site's page-view analytics, in the interface
+    /// language. Returns at once; see `View.reportsPageView(_:)`.
+    func reportPageView(_ path: String) {
+        pageViews?.report(path: path, language: AppLanguage.current.acceptLanguage)
+    }
 
     func open(_ url: URL) {
         guard let route = AppRoute(url: url) else { return }

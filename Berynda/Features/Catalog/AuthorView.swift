@@ -73,6 +73,7 @@ struct AuthorView: View {
             }
         }
         .accessibilityIdentifier("author.screen")
+        .reportsPageView(PageViewPath.person(id: model.authorID))
         .background(BeryndaColor.paper)
         .navigationTitle("Автор")
         .navigationBarTitleDisplayMode(.inline)

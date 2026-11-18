@@ -102,6 +102,34 @@ public actor BeryndaAPIClient {
         }
     }
 
+    /// Sends a JSON body and returns the raw answer without checking its
+    /// content type, for endpoints that answer with an empty 204.
+    @discardableResult
+    public func send<Body: Encodable & Sendable>(
+        _ endpoint: APIEndpoint,
+        method: APIRequestMethod,
+        body: Body,
+        headers: [String: String] = [:]
+    ) async throws -> HTTPPayload {
+        let encoded: Data
+        do {
+            encoded = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.invalidConfiguration
+        }
+        guard encoded.count <= 1 * 1_024 * 1_024 else {
+            throw APIError.responseTooLarge
+        }
+        return try await performData(
+            endpoint,
+            method: method,
+            body: encoded,
+            headers: headers,
+            accept: "application/json",
+            maximumBytes: 1 * 1_024 * 1_024
+        )
+    }
+
     @discardableResult
     public func send(
         _ endpoint: APIEndpoint,

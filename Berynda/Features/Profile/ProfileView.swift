@@ -164,6 +164,7 @@ private struct ProfileContent: View {
         .background(BeryndaColor.paper)
         .navigationTitle("Профіль")
         .accessibilityIdentifier("profile_screen")
+        .reportsPageView(PageViewPath.app("profile"))
         .announcesChanges(of: account.errorMessage)
         .sheet(isPresented: $showsAuthentication) {
             AuthenticationView(account: account)

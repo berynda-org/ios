@@ -16,7 +16,9 @@ final class AppStoreScreenshotTests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
         app.launchArguments = [
             "-AppleLanguages", "(\(locale))", "-AppleLocale", locale == "uk" ? "uk_UA" : "en_US",
-            "-ui.language", locale, "-appearance.mode", "light"
+            "-ui.language", locale, "-appearance.mode", "light",
+            // Keep the screenshot run out of the site's page-view analytics.
+            "--no-page-views"
         ]
         app.launch()
         if isPad { XCUIDevice.shared.orientation = .landscapeLeft }

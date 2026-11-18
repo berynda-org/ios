@@ -60,6 +60,7 @@ struct WorkDetailView: View {
             Text(saveMessage ?? "")
         }
         .task { await model.load() }
+        .reportsPageView(PageViewPath.work(slug: work.slug, id: work.id))
         .task {
             // Reading history is a privacy setting, so a reader who turned it
             // off leaves no trace here either.

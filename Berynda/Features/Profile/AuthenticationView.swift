@@ -94,6 +94,7 @@ struct AuthenticationView: View {
                 }
             }
             .navigationTitle(mode.title)
+            .reportsPageView(PageViewPath.app(mode == .signIn ? "sign-in" : "register"))
             // Errors and the confirmation e-mail appear below the fields
             // without moving focus, so VoiceOver reads them out.
             .announcesChanges(of: localError ?? account.errorMessage)
