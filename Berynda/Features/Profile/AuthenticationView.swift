@@ -1,3 +1,4 @@
+import BeryndaCore
 import SwiftUI
 
 struct AuthenticationView: View {
